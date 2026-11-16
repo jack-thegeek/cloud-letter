@@ -37,6 +37,7 @@ aside{background:#fff;display:flex;flex-direction:column;min-height:0}
 .panel{display:none;flex:1;overflow:auto;padding:12px 12px 30px;min-height:0}
 .panel.on{display:block}
 .sec{font-size:11px;color:#93a2bd;letter-spacing:1px;margin:14px 0 8px;font-weight:600}
+#inspector .sec{font-size:13.5px;color:#2b3a55;letter-spacing:.5px;margin:20px 0 10px;font-weight:700}
 .sec:first-child{margin-top:2px}
 .tpl-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
 .tpl-card{border:2px solid #eef2f9;border-radius:12px;padding:5px;cursor:pointer;background:#fff;transition:.15s;text-align:center;position:relative;overflow:hidden}
@@ -66,7 +67,37 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;heigh
 input[type=range]::-moz-range-track{height:5px;border-radius:5px;background:#e4ecf8}
 input[type=range]::-moz-range-thumb{width:13px;height:13px;border-radius:50%;background:#fff;border:2px solid #6aa9ff}
 input[type=color]{width:36px;height:27px;padding:0;border:1px solid #dbe4f2;border-radius:8px;background:#fff;cursor:pointer;flex:0 0 auto}
-input[type=checkbox]{width:15px;height:15px;accent-color:#6aa9ff;cursor:pointer}
+/* 颜色选择器 */
+.chip-wrap{position:relative;display:inline-flex;flex:0 0 auto}
+.chip-wrap input[type=color]{pointer-events:none}
+.chip-open{position:absolute;inset:0;border-radius:8px;cursor:pointer}
+.cp{position:fixed;inset:0;z-index:500;display:block}
+.cp[hidden]{display:none}
+.cp-box{position:absolute;background:#fff;border-radius:14px;padding:14px;width:272px;box-shadow:0 18px 48px rgba(20,30,50,.28);border:1px solid #e6ecf5}
+.cp-sv{position:relative;height:150px;border-radius:10px;overflow:hidden;cursor:crosshair;touch-action:none}
+.cp-sv b{position:absolute;inset:0;display:block}
+.cp-base{background:#f00}
+.cp-white{background:linear-gradient(to right,#fff,rgba(255,255,255,0))}
+.cp-black{background:linear-gradient(to top,#000,rgba(0,0,0,0))}
+.cp-dot{position:absolute;width:14px;height:14px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.35);transform:translate(-50%,-50%);pointer-events:none}
+.cp-hue{position:relative;height:14px;border-radius:7px;margin-top:14px;cursor:pointer;touch-action:none;background:linear-gradient(to right,#f00,#ff0,#0f0,#0ff,#00f,#f0f,#f00)}
+.cp-hdot{position:absolute;top:50%;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,.25),0 2px 6px rgba(0,0,0,.25);transform:translate(-50%,-50%);pointer-events:none}
+.cp-row{display:flex;align-items:center;gap:8px;margin-top:14px}
+.cp-prev{width:30px;height:30px;border-radius:9px;box-shadow:inset 0 0 0 1px rgba(43,58,85,.12);flex:0 0 auto}
+.cp-hex{flex:1;border:1px solid #dbe4f2;border-radius:8px;padding:6px 9px;font-size:12.5px;text-transform:uppercase;outline:none}
+.cp-hex:focus{border-color:#8fbdf8;box-shadow:0 0 0 3px rgba(106,169,255,.13)}
+.cp-swatches{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.cp-swatches i{width:20px;height:20px;border-radius:50%;cursor:pointer;border:2px solid #fff;box-shadow:0 0 0 1px #dbe4f2}
+.cp-actions{display:flex;justify-content:flex-end;margin-top:14px}
+/* 自绘勾选框 */
+.cbx{display:inline-flex;align-items:center;gap:8px;cursor:pointer;color:#6b7a96;user-select:none;font-size:12.5px}
+.cbx input{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
+.cbx i{width:18px;height:18px;border-radius:6px;border:2px solid #cfdcf0;background:#fff;display:inline-flex;align-items:center;justify-content:center;transition:.15s;flex:0 0 auto}
+.cbx i::after{content:'';width:8px;height:4px;border-left:2.5px solid #fff;border-bottom:2.5px solid #fff;transform:rotate(-45deg) scale(0);transition:.15s;margin-top:-2px}
+.cbx:hover i{border-color:#9dc6fb}
+.cbx input:checked + i{background:linear-gradient(135deg,#7cc4f5,#6aa9ff);border-color:#6aa9ff;box-shadow:0 2px 8px rgba(106,169,255,.35)}
+.cbx input:checked + i::after{transform:rotate(-45deg) scale(1)}
+.cbx input:focus-visible + i{box-shadow:0 0 0 3px rgba(106,169,255,.22)}
 /* 自绘下拉框 */
 .csel{position:relative;display:flex;align-items:center;gap:6px;width:100%;border:1px solid #dbe4f2;border-radius:8px;padding:6px 9px;background:#fff;cursor:pointer;outline:none;user-select:none;font-size:13px;line-height:1.25;transition:.15s}
 .csel:hover{border-color:#b9d3f7}
@@ -74,7 +105,7 @@ input[type=checkbox]{width:15px;height:15px;accent-color:#6aa9ff;cursor:pointer}
 .csel-label{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .csel-caret{color:#93a2bd;font-size:9px;line-height:1;transition:transform .15s}
 .csel.open .csel-caret{transform:rotate(180deg)}
-.csel.compact{width:auto;min-width:196px}
+.csel.compact{width:auto;min-width:150px}
 .csel-native{display:none!important}
 #cselPop{position:fixed;z-index:400;background:#fff;border:1px solid #e3eaf5;border-radius:10px;box-shadow:0 12px 32px rgba(43,58,85,.18);padding:5px;max-height:300px;overflow:auto}
 #cselPop[hidden]{display:none}
@@ -922,8 +953,7 @@ function syncInspector() {
   const box = $('#inspector');
   const el = selectedEls()[0];
   if (!el) {
-    box.innerHTML = '<p class="hint">在画布上点选一个云朵字元素。<br><br>双击画布空白处新建，或点左侧模板 / 短语。</p>' +
-      '<hr><div class="sec">页面</div>' + row('方向', '<div class="seg" id="segOrient2"><button data-v="portrait" class="' + (state.page.orient === 'portrait' ? 'on' : '') + '">纵向</button><button data-v="landscape" class="' + (state.page.orient === 'landscape' ? 'on' : '') + '">横向</button></div>', true);
+    box.innerHTML = '<p class="hint">在画布上点选一个云朵字元素。</p>';
     bindInspector(); return;
   }
   const st = el.style;
@@ -937,12 +967,11 @@ function syncInspector() {
   h += row('字重', '<div class="seg" data-key="weight">' + [[400, '常规'], [700, '粗'], [900, '超粗']].map(([v, t]) => '<button data-val="' + v + '" class="' + (getVal('weight') === v ? 'on' : '') + '">' + t + '</button>').join('') + '</div>', true);
   h += row('字间距', range('letterSpacing', -0.05, 0.4, 0.01, 'em'), true);
 
-  h += '<div class="sec">文字颜色</div>';
-  h += row('颜色', '<input type="color" data-key="fill" value="' + st.fill + '">' + '<div class="swatches">' + SWATCHES.map(c => '<i data-swatch="fill" data-c="' + c + '" style="background:' + c + '"></i>').join('') + '</div>');
+  h += row('颜色', '<span class="chip-wrap"><input type="color" data-key="fill" value="' + st.fill + '"><i class="chip-open"></i></span>' + '<div class="swatches">' + SWATCHES.map(c => '<i data-swatch="fill" data-c="' + c + '" style="background:' + c + '"></i>').join('') + '</div>');
 
-  h += '<div class="sec">轮廓（云朵边）</div>';
-  h += row('类型', '<select data-key="outline">' + [['cloud', '☁ 云朵 Cloud'], ['bubble', '● 气泡 Bubble'], ['rounded', '⬭ 圆角 Rounded'], ['wave', '〰 波浪 Wave'], ['irregular', '✳ 不规则 Irregular'], ['none', '无轮廓 None']].map(([v, t]) => '<option value="' + v + '"' + (getVal('outline') === v ? ' selected' : '') + '>' + t + '</option>').join('') + '</select>', true);
-  h += row('外框颜色', '<input type="color" data-key="outerColor" value="' + st.outerColor + '">' + '<div class="swatches">' + SWATCHES.map(c => '<i data-swatch="outerColor" data-c="' + c + '" style="background:' + c + '"></i>').join('') + '</div>');
+  h += '<div class="sec">轮廓</div>';
+  h += row('类型', '<select data-key="outline">' + [['cloud', '云朵'], ['bubble', '气泡'], ['rounded', '圆角'], ['wave', '波浪'], ['irregular', '不规则'], ['none', '无轮廓']].map(([v, t]) => '<option value="' + v + '"' + (getVal('outline') === v ? ' selected' : '') + '>' + t + '</option>').join('') + '</select>', true);
+  h += row('外框颜色', '<span class="chip-wrap"><input type="color" data-key="outerColor" value="' + st.outerColor + '"><i class="chip-open"></i></span>' + '<div class="swatches">' + SWATCHES.map(c => '<i data-swatch="outerColor" data-c="' + c + '" style="background:' + c + '"></i>').join('') + '</div>');
   h += row('外框粗细', range('outerWidth', 0, 76, 1, 'px'), true);
   h += row('内框颜色', '<input type="color" data-key="innerColor" value="' + st.innerColor + '"><div class="swatches">' + SWATCHES.map(c => '<i data-swatch="innerColor" data-c="' + c + '" style="background:' + c + '"></i>').join('') + '</div>');
   h += row('内框粗细', range('innerWidth', 0, 53, 1, 'px'), true);
@@ -951,8 +980,8 @@ function syncInspector() {
 
   h += '<div class="sec">装饰 / 阴影</div>';
   h += row('装饰', '<select data-key="deco">' + [['none', '无'], ['dots', '圆点'], ['stars', '星星'], ['hearts', '爱心'], ['confetti', '彩纸'], ['flowers', '小花']].map(([v, t]) => '<option value="' + v + '"' + (getVal('deco') === v ? ' selected' : '') + '>' + t + '</option>').join('') + '</select>', true);
-  h += row('装饰色', '<input type="color" data-key="decoColor" value="' + st.decoColor + '">');
-  h += row('阴影', '<label style="display:flex;align-items:center;gap:6px;color:#6b7a96"><input type="checkbox" data-key="shadow"' + (getVal('shadow') ? ' checked' : '') + '> 开启立体阴影</label>');
+  h += row('装饰色', '<span class="chip-wrap"><input type="color" data-key="decoColor" value="' + st.decoColor + '"><i class="chip-open"></i></span>');
+  h += row('阴影', '<label class="cbx"><input type="checkbox" data-key="shadow"' + (getVal('shadow') ? ' checked' : '') + '><i></i><span>开启立体阴影</span></label>');
   h += row('阴影色', '<input type="color" data-key="shadowColor" value="' + st.shadowColor + '"><div class="swatches">' + SWATCHES.map(c => '<i data-swatch="shadowColor" data-c="' + c + '" style="background:' + c + '"></i>').join('') + '</div>');
   h += row('阴影偏移', '<input type="range" data-key="shadowX" min="-15" max="15" step="1" value="' + st.shadowX + '"><span class="val">' + n2(st.shadowX) + '</span><input type="range" data-key="shadowY" min="-4" max="6" step="0.2" value="' + st.shadowY + '"><span class="val">' + n2(st.shadowY) + '</span>');
 
@@ -981,6 +1010,7 @@ function syncInspector() {
   });
   bindInspector();
   closeCsel();
+  cpClose();
   box.querySelectorAll('select').forEach(sel => enhanceSelect(sel));
 }
 
@@ -1030,6 +1060,13 @@ function bindInspector() {
       commit(inp.dataset.prop || inp.dataset.key);
     };
   });
+  box.querySelectorAll('.chip-open').forEach(el => {
+    el.onclick = e => {
+      e.stopPropagation();
+      const inp = el.parentNode.querySelector('input[type=color]');
+      if (inp) cpOpen(inp);
+    };
+  });
   box.querySelectorAll('input[type=color]').forEach(inp => {
     inp.oninput = () => {
       selectedEls().forEach(e => { e.style[inp.dataset.key] = inp.value; });
@@ -1069,12 +1106,6 @@ function bindInspector() {
   box.querySelectorAll('[data-align]').forEach(b => { b.onclick = () => alignSel(b.dataset.align); });
   box.querySelectorAll('[data-dist]').forEach(b => { b.onclick = () => distribute(b.dataset.dist); });
   box.querySelectorAll('[data-act]').forEach(b => { b.onclick = () => action(b.dataset.act); });
-  if (box.querySelector('#segOrient2')) bindOrient(box);
-}
-function bindOrient(root) {
-  root.querySelectorAll('#segOrient2 button').forEach(b => {
-    b.onclick = () => setOrient(b.dataset.v);
-  });
 }
 /* =========================================================
    6.5 自绘下拉框（原生 select 只负责存值，界面用 div 渲染）
@@ -1144,6 +1175,124 @@ function enhanceSelect(sel, compact) {
 document.addEventListener('click', () => closeCsel());
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeCsel(); });
 window.addEventListener('scroll', () => closeCsel(), true);
+
+/* =========================================================
+   6.6 颜色选择器（居中弹窗，替代原生取色器）
+   ========================================================= */
+let cpEl = null, cpTarget = null, cpH = 0, cpS = 1, cpV = 1;
+const cp01 = v => Math.max(0, Math.min(1, v));
+
+function hsv2hex(h, s, v) {
+  const c = v * s, x = c * (1 - Math.abs(((h / 60) % 2) - 1)), m = v - c;
+  const t = [[c, x, 0], [x, c, 0], [0, c, x], [0, x, c], [x, 0, c], [c, 0, x]][Math.floor(h / 60) % 6];
+  return '#' + t.map(n => {
+    const q = Math.round((n + m) * 255);
+    return (q < 16 ? '0' : '') + q.toString(16);
+  }).join('');
+}
+function hex2hsv(hex) {
+  const m = /^#?([0-9a-f]{6})$/i.exec(String(hex || ''));
+  const h6 = m ? m[1] : '000000';
+  const r = parseInt(h6.substr(0, 2), 16) / 255, g = parseInt(h6.substr(2, 2), 16) / 255, b = parseInt(h6.substr(4, 2), 16) / 255;
+  const mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn;
+  let hh = 0;
+  if (d) {
+    if (mx === r) hh = ((g - b) / d) % 6;
+    else if (mx === g) hh = (b - r) / d + 2;
+    else hh = (r - g) / d + 4;
+    hh *= 60;
+    if (hh < 0) hh += 360;
+  }
+  return { h: hh, s: mx ? d / mx : 0, v: mx };
+}
+function cpBuild() {
+  if (cpEl) return;
+  cpEl = document.createElement('div');
+  cpEl.className = 'cp';
+  cpEl.hidden = true;
+  cpEl.innerHTML =
+    '<div class="cp-box">' +
+    '<div class="cp-sv"><b class="cp-base"></b><b class="cp-white"></b><b class="cp-black"></b><u class="cp-dot"></u></div>' +
+    '<div class="cp-hue"><u class="cp-hdot"></u></div>' +
+    '<div class="cp-row"><span class="cp-prev"></span><input class="cp-hex" maxlength="7" spellcheck="false" aria-label="十六进制颜色值"></div>' +
+    '<div class="cp-swatches"></div>' +
+    '<div class="cp-actions"><button class="btn sm" data-cp-close="1">完成</button></div>' +
+    '</div>';
+  document.body.appendChild(cpEl);
+  cpEl.querySelector('.cp-swatches').innerHTML = SWATCHES.map(c => '<i data-cp-c="' + c + '" style="background:' + c + '"></i>').join('');
+  const sv = cpEl.querySelector('.cp-sv'), hue = cpEl.querySelector('.cp-hue');
+  const drag = (node, fn) => {
+    let on = false;
+    node.addEventListener('pointerdown', e => { on = true; try { node.setPointerCapture(e.pointerId); } catch (err) {} fn(e); });
+    node.addEventListener('pointermove', e => { if (on) fn(e); });
+    node.addEventListener('pointerup', () => { on = false; });
+    node.addEventListener('pointercancel', () => { on = false; });
+  };
+  drag(sv, e => {
+    const r = sv.getBoundingClientRect();
+    cpS = cp01((e.clientX - r.left) / r.width);
+    cpV = 1 - cp01((e.clientY - r.top) / r.height);
+    cpPaint();
+  });
+  drag(hue, e => {
+    const r = hue.getBoundingClientRect();
+    cpH = cp01((e.clientX - r.left) / r.width) * 360;
+    cpPaint();
+  });
+  cpEl.querySelector('.cp-hex').addEventListener('change', e => {
+    const c = hex2hsv(e.target.value);
+    cpH = c.h; cpS = c.s; cpV = c.v;
+    cpPaint();
+  });
+  cpEl.querySelector('.cp-swatches').addEventListener('click', e => {
+    const i = e.target.closest('[data-cp-c]');
+    if (!i) return;
+    const c = hex2hsv(i.dataset.cpC);
+    cpH = c.h; cpS = c.s; cpV = c.v;
+    cpPaint();
+  });
+  cpEl.addEventListener('click', e => {
+    if (e.target === cpEl || (e.target.closest && e.target.closest('[data-cp-close]'))) cpClose();
+  });
+}
+function cpPaint() {
+  const hex = hsv2hex(cpH, cpS, cpV);
+  cpEl.querySelector('.cp-base').style.background = 'hsl(' + Math.round(cpH) + ',100%,50%)';
+  cpEl.querySelector('.cp-dot').style.left = (cpS * 100) + '%';
+  cpEl.querySelector('.cp-dot').style.top = ((1 - cpV) * 100) + '%';
+  cpEl.querySelector('.cp-hdot').style.left = (cpH / 360 * 100) + '%';
+  cpEl.querySelector('.cp-prev').style.background = hex;
+  const hx = cpEl.querySelector('.cp-hex');
+  if (document.activeElement !== hx) hx.value = hex.toUpperCase();
+  if (cpTarget) {
+    cpTarget.value = hex;
+    cpTarget.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+}
+function cpOpen(input) {
+  cpBuild();
+  cpTarget = input;
+  const c = hex2hsv(input.value);
+  cpH = c.h; cpS = c.s; cpV = c.v;
+  cpEl.hidden = false;
+  cpPaint();
+  /* 贴着点击的色块弹出，四周留 10px，空间不够就翻到上方 / 左边 */
+  const box = cpEl.querySelector('.cp-box');
+  const r = input.getBoundingClientRect();
+  const bw = box.offsetWidth, bh = box.offsetHeight, gap = 8, pad = 10;
+  let left = r.right - bw;
+  if (left + bw > window.innerWidth - pad) left = window.innerWidth - bw - pad;
+  if (left < pad) left = pad;
+  let top = r.bottom + gap;
+  if (top + bh > window.innerHeight - pad) top = r.top - bh - gap;
+  if (top < pad) top = pad;
+  box.style.left = Math.round(left) + 'px';
+  box.style.top = Math.round(top) + 'px';
+}
+function cpClose() {
+  if (cpEl) cpEl.hidden = true;
+  cpTarget = null;
+}
 
 /* =========================================================
    7. 编辑操作：选择 / 拖拽 / 缩放 / 旋转 / 对齐 / 分布
@@ -1426,6 +1575,13 @@ function pdfPath(pts, M) {
 function buildPDF() {
   const { w: PW, h: PH } = pageDims();
   const pages = [];
+  /* 透明度要用 ExtGState 命名资源（PDF 的 gs 操作符只接受名字，不接受数值） */
+  const gstates = new Map();
+  const gsFor = a => {
+    const k = Math.round(clamp(a, 0, 1) * 100) / 100;
+    if (!gstates.has(k)) gstates.set(k, 'GA' + gstates.size);
+    return gstates.get(k);
+  };
   for (let p = 0; p < state.page.pages; p++) {
     const L = ['q 0 0 ' + pn(PW * PX2PT) + ' ' + pn(PH * PX2PT) + ' re W n'];
     state.elements.filter(e => e.page === p && !e.hidden).forEach(el => {
@@ -1435,7 +1591,7 @@ function buildPDF() {
       const a = cos * sc, b = -sin * sc, c = -sin * sc, d = -cos * sc;
       const e0 = el.x * PX2PT, f0 = (PH - el.y) * PX2PT;
       L.push('q');
-      if (st.opacity != null && st.opacity < 1) L.push(pn(st.opacity) + ' gs');
+      if (st.opacity != null && st.opacity < 1) L.push('/' + gsFor(st.opacity) + ' gs');
       L.push([a, b, c, d, e0, f0].map(pn).join(' ') + ' cm');
       const fill = (loops, hex) => {
         if (!loops || !loops.length) return;
@@ -1447,9 +1603,12 @@ function buildPDF() {
       if (st.shadow && base.length) {
         const rgb = hexToRgbF(st.shadowColor);
         const al = st.shadowAlpha == null ? 0.18 : st.shadowAlpha;
-        L.push(al + ' ' + rgb.map(pn).join(' ') + ' rg');
         const MS = (x, y) => LPT(x + (st.shadowX || 0), y + (st.shadowY || 0));
+        L.push('q');
+        L.push('/' + gsFor(al) + ' gs');
+        L.push(rgb.map(pn).join(' ') + ' rg');
         L.push(base.map(x => pdfPath(x, MS)).join(' ') + ' f*');
+        L.push('Q');
       }
       fill(geo.outerPts, st.outerColor);
       fill(geo.innerPts, st.innerColor);
@@ -1468,12 +1627,15 @@ function buildPDF() {
   const add = x => { objs.push(x); return objs.length; };
   const catalogId = add(null), pagesId = add(null);
   const fontId = add('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>');
-  const gsId = add('<< /Type /ExtGState /ca 1 /CA 1 >>');
+  const gsList = Array.from(gstates.entries());
+  const gsStart = objs.length + 1;
+  gsList.forEach(([a]) => add('<< /Type /ExtGState /ca ' + a + ' /CA ' + a + ' >>'));
+  const gsDict = gsList.length ? ' /ExtGState << ' + gsList.map(([a, n], i) => '/' + n + ' ' + (gsStart + i) + ' 0 R').join(' ') + ' >>' : '';
   const kids = [];
   pages.forEach(content => {
     const cId = add('<< /Length ' + content.length + ' >>\nstream\n' + content + 'endstream');
     kids.push(add('<< /Type /Page /Parent ' + pagesId + ' 0 R /MediaBox [0 0 ' + pn(PW * PX2PT) + ' ' + pn(PH * PX2PT) + ']' +
-      ' /Resources << /ExtGState << /GS1 ' + gsId + ' 0 R >> /Font << /F1 ' + fontId + ' 0 R >> >>' +
+      ' /Resources << ' + gsDict + ' /Font << /F1 ' + fontId + ' 0 R >> >>' +
       ' /Contents ' + cId + ' 0 R >>'));
   });
   objs[catalogId - 1] = '<< /Type /Catalog /Pages ' + pagesId + ' 0 R >>';
@@ -1719,7 +1881,7 @@ document.addEventListener('keydown', e => {
   if (meta && e.key.toLowerCase() === 'd') { e.preventDefault(); duplicateSel(); return; }
   if (meta && e.key.toLowerCase() === 'a') { e.preventDefault(); state.selected = curPageEls().map(x => x.id); renderAll(); renderPanels(); syncInspector(); return; }
   if (e.key === 'Delete' || e.key === 'Backspace') { e.preventDefault(); deleteSel(); return; }
-  if (e.key === 'Escape') { closeCsel(); select(null); return; }
+  if (e.key === 'Escape') { if (cpEl && !cpEl.hidden) { cpClose(); return; } closeCsel(); select(null); return; }
   if (e.key.indexOf('Arrow') === 0) {
     const sel = selectedEls();
     if (!sel.length) return;
