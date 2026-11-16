@@ -9,7 +9,7 @@
 html,body{height:100%;margin:0}
 body{font-family:"PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;background:#eef2f9;color:#2b3a55;overflow:hidden;display:flex;flex-direction:column;font-size:13px;-webkit-font-smoothing:antialiased}
 button,input,select,textarea{font-family:inherit;font-size:13px;color:inherit}
-#topbar{height:56px;flex:0 0 56px;display:flex;align-items:center;gap:10px;padding:0 14px;background:#fff;border-bottom:1px solid #e3eaf5;box-shadow:0 1px 10px rgba(43,58,85,.06);z-index:20}
+#topbar{height:56px;flex:0 0 56px;display:flex;align-items:center;gap:8px;padding:0 14px;overflow-x:auto;background:#fff;border-bottom:1px solid #e3eaf5;box-shadow:0 1px 10px rgba(43,58,85,.06);z-index:20}
 .brand{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:700;letter-spacing:.5px;margin-right:6px;white-space:nowrap}
 .brand i{font-style:normal;font-size:19px}
 .brand small{display:block;font-size:10px;color:#93a2bd;font-weight:400;letter-spacing:0}
@@ -63,6 +63,20 @@ input[type=range]::-moz-range-track{height:5px;border-radius:5px;background:#e4e
 input[type=range]::-moz-range-thumb{width:13px;height:13px;border-radius:50%;background:#fff;border:2px solid #6aa9ff}
 input[type=color]{width:36px;height:27px;padding:0;border:1px solid #dbe4f2;border-radius:8px;background:#fff;cursor:pointer;flex:0 0 auto}
 input[type=checkbox]{width:15px;height:15px;accent-color:#6aa9ff;cursor:pointer}
+/* 自绘下拉框 */
+.csel{position:relative;display:flex;align-items:center;gap:6px;width:100%;border:1px solid #dbe4f2;border-radius:8px;padding:6px 9px;background:#fff;cursor:pointer;outline:none;user-select:none;font-size:13px;line-height:1.25;transition:.15s}
+.csel:hover{border-color:#b9d3f7}
+.csel:focus{border-color:#8fbdf8;box-shadow:0 0 0 3px rgba(106,169,255,.13)}
+.csel-label{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.csel-caret{color:#93a2bd;font-size:9px;line-height:1;transition:transform .15s}
+.csel.open .csel-caret{transform:rotate(180deg)}
+.csel.compact{width:auto;min-width:196px}
+.csel-native{display:none!important}
+#cselPop{position:fixed;z-index:400;background:#fff;border:1px solid #e3eaf5;border-radius:10px;box-shadow:0 12px 32px rgba(43,58,85,.18);padding:5px;max-height:300px;overflow:auto}
+#cselPop[hidden]{display:none}
+.csel-opt{padding:7px 10px;border-radius:7px;cursor:pointer;font-size:12.5px;white-space:nowrap;color:#3a4a68}
+.csel-opt:hover{background:#f3f8ff}
+.csel-opt.on{background:#eaf3ff;color:#2b6fd6;font-weight:600}
 .seg{display:flex;background:#f2f6fc;border-radius:9px;padding:2px;flex:1}
 .seg button{flex:1;border:0;background:transparent;border-radius:7px;padding:5px 0;cursor:pointer;color:#7d8aa3;font-size:12px}
 .seg button.on{background:#fff;color:#2b6fd6;font-weight:600;box-shadow:0 1px 4px rgba(43,58,85,.1)}
@@ -72,36 +86,22 @@ input[type=checkbox]{width:15px;height:15px;accent-color:#6aa9ff;cursor:pointer}
 .mini-grid button:hover{background:#f3f8ff;border-color:#bcd8fb;color:#2b6fd6}
 .swatches{display:flex;gap:5px;flex-wrap:wrap}
 .swatches i{width:17px;height:17px;border-radius:50%;cursor:pointer;border:2px solid #fff;box-shadow:0 0 0 1px #dbe4f2}
-.stops{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
-.stops input[type=color]{width:28px;height:24px;border-radius:6px}
 hr{border:0;border-top:1px solid #eef2f9;margin:14px 0}
 .hint{color:#93a2bd;font-size:12px;line-height:1.7;padding:20px 6px;text-align:center}
 #stage{flex:1;display:flex;flex-direction:column;min-width:0;background:#eef2f9}
-#stagebar{flex:0 0 42px;display:flex;align-items:center;gap:8px;padding:0 12px;background:rgba(255,255,255,.75);border-bottom:1px solid #e3eaf5;backdrop-filter:blur(6px)}
+.tbgroup{display:flex;align-items:center;gap:4px}
+.tbsep{width:1px;height:22px;background:#e6ecf5;margin:0 3px;flex:0 0 auto}
+#zoomLabel{color:#8b98b0;font-size:12px;min-width:40px;text-align:center;font-variant-numeric:tabular-nums}
 #wrap{flex:1;overflow:auto;padding:26px;display:flex;min-height:0}
 #canvas{background:#fff;box-shadow:0 8px 30px rgba(43,58,85,.16);border-radius:2px;display:block;touch-action:none;flex:0 0 auto;margin:auto}
 #canvas text{user-select:none}
-.modal{position:fixed;inset:0;background:rgba(28,39,58,.5);display:flex;align-items:center;justify-content:center;z-index:100;padding:20px}
-.modal[hidden]{display:none}
-.modal-box{background:#fff;border-radius:16px;width:min(880px,96vw);max-height:94vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 60px rgba(20,30,50,.35)}
-.modal-head{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid #eef2f9}
-.modal-head .muted{color:#93a2bd;font-size:12px}
-.modal-body{overflow:auto;padding:18px;background:#f1f4fa;display:flex;flex-direction:column;align-items:center;gap:16px}
-.print-page{background:#fff;box-shadow:0 4px 18px rgba(43,58,85,.15)}
-.print-page svg{display:block;width:100%;height:100%}
-#toast{position:fixed;left:50%;bottom:28px;transform:translate(-50%,14px);background:rgba(43,58,85,.94);color:#fff;padding:9px 16px;border-radius:10px;font-size:12.5px;opacity:0;pointer-events:none;transition:.25s;z-index:200}
-#toast.on{opacity:1;transform:translate(-50%,0)}
-@media print{
-  @page{margin:0}
-  body{overflow:visible;display:block;background:#fff}
-  #topbar,#stage,#left,#right,#toast{display:none!important}
-  .modal{position:static;inset:auto;background:none;padding:0;display:block;overflow:visible}
-  .modal-box{box-shadow:none;border-radius:0;width:auto;max-height:none;display:block;overflow:visible}
-  .modal-head{display:none}
-  .modal-body{padding:0;background:#fff;display:block;overflow:visible}
-  .print-page{box-shadow:none;margin:0;break-after:page;page-break-after:always}
-  .print-page:last-child{break-after:auto;page-break-after:auto}
-}
+#canvas g[data-id]{cursor:move}
+#canvas [data-handle="scale"]{cursor:nwse-resize}
+#canvas [data-handle="rotate"]{cursor:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath fill='%232b3a55' d='M17.65 6.35A7.95 7.95 0 0 0 12 4a8 8 0 1 0 7.73 10h-2.08A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z'/%3E%3C/svg%3E") 12 12, grab}
+#canvas.dragging{cursor:move}
+#canvas.dragging.scl{cursor:nwse-resize}
+#canvas.dragging.rot{cursor:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath fill='%232b3a55' d='M17.65 6.35A7.95 7.95 0 0 0 12 4a8 8 0 1 0 7.73 10h-2.08A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z'/%3E%3C/svg%3E") 12 12, grab}
+#canvas.dragging *{cursor:inherit!important}
 </style>
 </head>
 <body>
@@ -109,12 +109,22 @@ hr{border:0;border-top:1px solid #eef2f9;margin:14px 0}
   <div class="brand"><i>☁️</i><span>云朵字工坊<small>KT Board Cloud Letter Maker</small></span></div>
   <button class="btn ghost" id="btnUndo" title="撤销 Ctrl+Z">↶ 撤销</button>
   <button class="btn ghost" id="btnRedo" title="重做 Ctrl+Shift+Z">↷ 重做</button>
+  <span class="tbsep"></span>
+  <button class="btn" id="btnSnap" title="拖拽时吸附到 20px 网格">▦ 网格吸附</button>
+  <button class="btn" id="btnGuides" title="显示可打印区域">▭ 边距线</button>
+  <span class="tbsep"></span>
+  <div class="tbgroup">
+    <button class="btn sm" id="btnZoomOut" title="缩小">－</button>
+    <span id="zoomLabel">100%</span>
+    <button class="btn sm" id="btnZoomIn" title="放大">＋</button>
+  </div>
   <div class="spacer"></div>
   <select id="selOrient" aria-label="纸张方向" style="width:auto;padding:6px 10px;border-radius:10px">
-    <option value="portrait">A4 纵向 210×297</option>
-    <option value="landscape" selected>A4 横向 297×210</option>
+    <option value="portrait">A4 纵向 794×1123</option>
+    <option value="landscape" selected>A4 横向 1123×794</option>
   </select>
-  <button class="btn" id="btnPreview">🖨 打印预览</button>
+  <button class="btn" id="btnImportJson" title="导入 JSON 工程文件（可换电脑继续编辑）">⬆ 导入 JSON</button>
+  <button class="btn" id="btnExportJson" title="导出 JSON 工程文件">⬇ 导出 JSON</button>
   <button class="btn primary" id="btnExport">⬇ 导出 PDF</button>
 </header>
 <main>
@@ -146,7 +156,7 @@ hr{border:0;border-top:1px solid #eef2f9;margin:14px 0}
     <div class="panel" id="panel-page">
       <div class="sec">页面</div>
       <div class="row"><label>方向</label><div class="ctl"><div class="seg" id="segOrient"><button data-v="portrait">纵向</button><button data-v="landscape" class="on">横向</button></div></div></div>
-      <div class="row"><label>页边距</label><div class="ctl"><input type="range" id="rngMargin" aria-label="页边距" min="0" max="25" step="1"><span class="val" id="valMargin">10mm</span></div></div>
+      <div class="row"><label>页边距</label><div class="ctl"><input type="range" id="rngMargin" aria-label="页边距" min="0" max="94" step="1"><span class="val" id="valMargin">38px</span></div></div>
       <div class="row"><label>页数</label><div class="ctl"><button class="btn sm" id="btnPagePrev">◀</button><span id="pageLabel" style="flex:1;text-align:center">1 / 1</span><button class="btn sm" id="btnPageNext">▶</button></div></div>
       <div class="mini-grid two">
         <button id="btnAddPage">新增页</button>
@@ -157,13 +167,6 @@ hr{border:0;border-top:1px solid #eef2f9;margin:14px 0}
         <button id="btnFit">适应窗口</button>
         <button id="btnZoomReset">100%</button>
       </div>
-      <div class="sec">工程文件</div>
-      <div class="mini-grid two">
-        <button id="btnExportJson">导出 JSON</button>
-        <button id="btnImportJson">导入 JSON</button>
-      </div>
-      <input type="file" id="fileJson" accept=".json,application/json" hidden>
-      <p class="hint" style="text-align:left;padding:8px 2px">JSON 可在别的电脑导入继续编辑。字体需对方已安装，缺失时自动回退。</p>
       <hr>
       <div class="sec">危险操作</div>
       <div class="mini-grid two">
@@ -174,17 +177,6 @@ hr{border:0;border-top:1px solid #eef2f9;margin:14px 0}
     </div>
   </aside>
   <section id="stage">
-    <div id="stagebar">
-      <button class="btn sm" id="btnAddText">＋ 添加文字</button>
-      <button class="btn sm" id="btnAddRow">＋ 一行单词</button>
-      <span style="width:8px"></span>
-      <button class="btn sm" id="btnSnap" title="拖拽时吸附到网格">▦ 网格吸附</button>
-      <button class="btn sm" id="btnGuides" title="显示可打印区域">▭ 边距线</button>
-      <div class="spacer"></div>
-      <span id="zoomLabel" style="color:#8b98b0;font-size:12px;min-width:42px;text-align:right">100%</span>
-      <button class="btn sm" id="btnZoomOut">－</button>
-      <button class="btn sm" id="btnZoomIn">＋</button>
-    </div>
     <div id="wrap"><svg id="canvas" xmlns="http://www.w3.org/2000/svg"></svg></div>
   </section>
   <aside id="right">
@@ -197,32 +189,22 @@ hr{border:0;border-top:1px solid #eef2f9;margin:14px 0}
     <div class="panel on" id="inspector" style="display:block"></div>
   </aside>
 </main>
-<div class="modal" id="modal" hidden>
-  <div class="modal-box">
-    <div class="modal-head">
-      <b>打印预览</b>
-      <span class="muted">按实际尺寸 1:1 输出，打印时请选择 A4、边距「无」</span>
-      <div class="spacer"></div>
-      <button class="btn" id="btnCloseModal">关闭</button>
-      <button class="btn primary" id="btnDoPrint">打印</button>
-    </div>
-    <div class="modal-body" id="printArea"></div>
-  </div>
-</div>
+<input type="file" id="fileJson" accept=".json,application/json" hidden>
 <div id="toast"></div>
 <script>
 'use strict';
 /* =========================================================
    Cloud Letter Maker — 单文件离线版
-   坐标单位：全部为 mm（A4 = 210×297），PDF 输出时换算为 pt
+   坐标单位：px（96dpi，1mm = 3.7795px），A4 = 793.7×1122.52px
    ========================================================= */
 const $ = s => document.querySelector(s);
 const $$ = s => Array.prototype.slice.call(document.querySelectorAll(s));
 const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
-const MM2PT = 72 / 25.4;
+const PXMM = 96 / 25.4;          /* 1mm = 3.7795px */
+const PX2PT = 0.75;              /* 1px = 0.75pt（96dpi） */
 const uid = () => 'e' + Math.random().toString(36).slice(2, 8);
 const n2 = v => Math.round(v * 100) / 100;
-const A4 = { w: 210, h: 297 };
+const A4 = { w: 210 * PXMM, h: 297 * PXMM };
 
 /* ---------------- 字体 ---------------- */
 const FONTS = {
@@ -242,7 +224,7 @@ const fontCSS = (st, px) => (st.weight || 900) + ' ' + px + 'px ' + fontStack(st
    1. 位图 -> 矢量：Canvas 渲染 -> 距离场 -> Marching Squares
    ========================================================= */
 
-/* 渲染文字掩膜。返回 ink(1=墨迹) 与每 mm 的像素数 */
+/* 渲染文字掩膜。返回 ink(1=墨迹) 与栅格比例 scale */
 function renderMask(st) {
   const cv = document.createElement('canvas');
   const ctx = cv.getContext('2d', { willReadFrequently: true });
@@ -261,25 +243,25 @@ function renderMask(st) {
   const lineH0 = BASE * LINE_HEIGHT;
   const blockH0 = asc0 + desc0 + (lines.length - 1) * lineH0;
 
-  /* 目标字号：随 mm 字号放大，同时限制总像素量 */
-  let targetFont = clamp((st.size || 30) * 12, 90, 640);
+  /* 目标字号：按 3.2 倍超采样栅格化，同时限制总像素量 */
+  let targetFont = clamp((st.size || 113) * 3.2, 90, 640);
   let k = targetFont / BASE;
   const tw0 = Math.max.apply(null, widths) * k, th0 = blockH0 * k;
   const CAP = 1700;
   k *= Math.min(1, CAP / Math.max(tw0, 1), CAP / Math.max(th0, 1));
   let fontPx = BASE * k;
-  let pxPerMm = fontPx / (st.size || 30);
+  let scale = fontPx / (st.size || 113);   /* 栅格像素 / 用户像素 */
 
   const outlineW = (st.outline || 'cloud') === 'none' ? 0 : Math.max(st.outerWidth || 0, st.innerWidth || 0);
-  const ampMM = (st.outline || 'cloud') === 'none' ? 0 : (st.bumpAmp || 0) * (st.bumpSize || 0);
-  let pad = Math.ceil((outlineW + ampMM * 1.4 + 2) * pxPerMm) + 8;
+  const ampPx = (st.outline || 'cloud') === 'none' ? 0 : (st.bumpAmp || 0) * (st.bumpSize || 0);
+  let pad = Math.ceil((outlineW + ampPx * 1.4 + 2) * scale) + 8;
   let W = Math.ceil(Math.max.apply(null, widths) * k + pad * 2);
   let H = Math.ceil(blockH0 * k + pad * 2);
   const MAXPX = 9e6;
   if (W * H > MAXPX) {
     const s = Math.sqrt(MAXPX / (W * H));
-    k *= s; fontPx = BASE * k; pxPerMm = fontPx / (st.size || 30);
-    pad = Math.ceil((outlineW + ampMM * 1.4 + 2) * pxPerMm) + 8;
+    k *= s; fontPx = BASE * k; scale = fontPx / (st.size || 113);
+    pad = Math.ceil((outlineW + ampPx * 1.4 + 2) * scale) + 8;
     W = Math.ceil(Math.max.apply(null, widths) * k + pad * 2);
     H = Math.ceil(blockH0 * k + pad * 2);
   }
@@ -303,7 +285,7 @@ function renderMask(st) {
   const data = ctx.getImageData(0, 0, W, H).data;
   const ink = new Uint8Array(W * H);
   for (let i = 0, j = 3; i < ink.length; i++, j += 4) ink[i] = data[j] > 110 ? 1 : 0;
-  return { ink, W, H, pxPerMm, pad };
+  return { ink, W, H, scale, pad };
 }
 
 /* 欧氏距离变换（Felzenszwalb & Huttenlocher），返回平方距离 */
@@ -339,14 +321,14 @@ function dt1d(f, n, out, off, stride, v, z) {
 }
 
 /* 起伏函数：控制轮廓的云朵/波浪/气泡/不规则手感 */
-function makeBump(st, pxPerMm) {
+function makeBump(st, scale) {
   const type = st.outline || 'cloud';
-  const size = Math.max(2, st.bumpSize || 8);
+  const size = Math.max(8, st.bumpSize || 57);      /* 起伏波长（用户 px） */
   /* 起伏幅度不能超过文字到第一层边框的空隙，否则轮廓会啃到字 */
-  const gap = (st.innerWidth > 0.2 ? st.innerWidth : (st.outerWidth || 0)) * 0.8;
-  const A = Math.min((st.bumpAmp || 0) * size, gap) * pxPerMm;
+  const gap = (st.innerWidth > 1 ? st.innerWidth : (st.outerWidth || 0)) * 0.8;
+  const A = Math.min((st.bumpAmp || 0) * size, gap) * scale;
   const on = type !== 'rounded' && type !== 'none' && A > 0.01;
-  const k = 2 * Math.PI / (size * pxPerMm);
+  const k = 2 * Math.PI / (size * scale);
   let f = () => 0;
   if (type === 'cloud') f = (x, y) => A * (0.58 * Math.sin(x * k * 0.62 + 0.9) + 0.42 * Math.sin(y * k * 0.85 + 2.3));
   else if (type === 'wave') f = (x, y) => A * (0.5 * Math.sin(x * k + 0.5) + 0.5 * Math.sin(y * k * 0.9 + 1.7));
@@ -358,14 +340,14 @@ function makeBump(st, pxPerMm) {
 /* 构建有符号距离场：内部为负，外部为正，并叠加起伏 */
 function buildField(st) {
   const m = renderMask(st);
-  const { ink, W, H, pxPerMm } = m, N = W * H;
+  const { ink, W, H, scale } = m, N = W * H;
   const notInk = new Uint8Array(N);
   for (let i = 0; i < N; i++) notInk[i] = ink[i] ? 0 : 1;
   const dInk = edt(ink, W, H), dEmpty = edt(notInk, W, H);
   const fw = W + 2, fh = H + 2;
   const F = new Float32Array(fw * fh);
-  const bump = makeBump(st, pxPerMm);
-  const soft = Math.max(2, ((st.innerWidth > 0.2 ? st.innerWidth : 2) * pxPerMm) * 0.85);
+  const bump = makeBump(st, scale);
+  const soft = Math.max(2, ((st.innerWidth > 1 ? st.innerWidth : 8) * scale) * 0.85);
   for (let y = 0; y < H; y++) {
     for (let x = 0; x < W; x++) {
       const i = y * W + x;
@@ -381,7 +363,7 @@ function buildField(st) {
   /* 边界复制填充：让等值线自然闭合，避免出现环绕整张画布的伪轮廓 */
   for (let x = 0; x < fw; x++) { F[x] = F[fw + x]; F[(fh - 1) * fw + x] = F[(fh - 2) * fw + x]; }
   for (let y = 0; y < fh; y++) { F[y * fw] = F[y * fw + 1]; F[y * fw + fw - 1] = F[y * fw + fw - 2]; }
-  return { F, fw, fh, pxPerMm, W, H };
+  return { F, fw, fh, scale, W, H };
 }
 
 /* Marching Squares：提取等值线闭合环 */
@@ -533,16 +515,16 @@ function shapePoly(kind, s, seed) {
   return p;
 }
 
-/* 生成一个元素的完整几何（单位 mm，原点为轮廓包围盒中心） */
+/* 生成一个元素的完整几何（单位 px，原点为轮廓包围盒中心） */
 function buildGeometry(st) {
-  const { F, fw, fh, pxPerMm } = buildField(st);
+  const { F, fw, fh, scale } = buildField(st);
   const hasOutline = (st.outline || 'cloud') !== 'none';
   const L1 = hasOutline ? Math.max(st.outerWidth || 0, st.innerWidth || 0) : 0;
-  const L2 = hasOutline ? Math.min(st.innerWidth || 0, Math.max(0, L1 - 0.2)) : 0;
+  const L2 = hasOutline ? Math.min(st.innerWidth || 0, Math.max(0, L1 - 0.8)) : 0;
 
   const rawText = isoLoops(F, fw, fh, 0);
-  const rawOuter = L1 > 0.05 ? isoLoops(F, fw, fh, L1 * pxPerMm) : [];
-  const rawInner = L2 > 0.05 ? isoLoops(F, fw, fh, L2 * pxPerMm) : [];
+  const rawOuter = L1 > 0.2 ? isoLoops(F, fw, fh, L1 * scale) : [];
+  const rawInner = L2 > 0.2 ? isoLoops(F, fw, fh, L2 * scale) : [];
   const depth = loops => loops.map((L, i) => loops.reduce((c, o, j) => (j !== i && pointInPoly(L[0], o) ? c + 1 : c), 0));
 
   const textLoops = rawText.map(smoothLoop);
@@ -558,9 +540,9 @@ function buildGeometry(st) {
   }));
   if (minx > maxx) { minx = miny = 0; maxx = maxy = 10; }
   const cx = (minx + maxx) / 2, cy = (miny + maxy) / 2;
-  const toMM = L => L.map(p => [(p[0] - cx) / pxPerMm, (p[1] - cy) / pxPerMm]);
-  const o = outerLoops.map(toMM), iN = innerLoops.map(toMM), tx = textLoops.map(toMM);
-  const w = (maxx - minx) / pxPerMm, h = (maxy - miny) / pxPerMm;
+  const toPX = L => L.map(p => [(p[0] - cx) / scale, (p[1] - cy) / scale]);
+  const o = outerLoops.map(toPX), iN = innerLoops.map(toPX), tx = textLoops.map(toPX);
+  const w = (maxx - minx) / scale, h = (maxy - miny) / scale;
 
   /* 装饰：沿轮廓外侧均匀散布 */
   let deco = [];
@@ -575,8 +557,8 @@ function buildGeometry(st) {
         const d = Math.hypot(b[0] - a[0], b[1] - a[1]);
         seg.push({ a, b, d, at: per }); per += d;
       }
-      const N = Math.max(4, Math.min(9, Math.round(per / Math.max(14, w * 0.32))));
-      const base = st.deco === 'dots' ? 1.5 : st.deco === 'confetti' ? 1.8 : st.deco === 'hearts' ? 2.4 : 2.2;
+      const N = Math.max(4, Math.min(9, Math.round(per / Math.max(53, w * 0.32))));
+      const base = st.deco === 'dots' ? 6 : st.deco === 'confetti' ? 7 : st.deco === 'hearts' ? 9 : 8;
       for (let k = 0; k < N; k++) {
         const target = per * (k + 0.5) / N;
         let s0 = seg[0];
@@ -586,7 +568,7 @@ function buildGeometry(st) {
         let nx = px - cen[0], ny = py - cen[1];
         const nl = Math.hypot(nx, ny) || 1; nx /= nl; ny /= nl;
         const sc = base * (0.75 + 0.45 * Math.abs(Math.sin(k * 2.3 + 1.1)));
-        const off = 1.6 + sc * 0.85;
+        const off = 6 + sc * 0.85;
         const pts = shapePoly(st.deco, sc, k + 1).map(p => [p[0] + px + nx * off, p[1] + py + ny * off]);
         deco.push(pts);
       }
@@ -627,11 +609,11 @@ function getGeo(st) {
    ========================================================= */
 const DEFAULT_STYLE = {
   text: 'Hello',
-  font: 'round', weight: 900, size: 30, letterSpacing: 0.02,
-  fillMode: 'solid', fill: '#3aa0e8', grad: ['#ff5f6d', '#ffc371', '#47e0a0', '#4aa8e8', '#a97bff'], gradAngle: 90,
-  outline: 'cloud', outerColor: '#bfe4ff', outerWidth: 9, innerColor: '#ffffff', innerWidth: 3.5,
-  bumpSize: 15, bumpAmp: 0.22,
-  shadow: true, shadowColor: '#4a90c2', shadowX: 1, shadowY: 1.6, shadowAlpha: 0.18,
+  font: 'round', weight: 900, size: 113, letterSpacing: 0.02,
+  fill: '#3aa0e8',
+  outline: 'cloud', outerColor: '#bfe4ff', outerWidth: 34, innerColor: '#ffffff', innerWidth: 13,
+  bumpSize: 57, bumpAmp: 0.22,
+  shadow: true, shadowColor: '#4a90c2', shadowX: 4, shadowY: 6, shadowAlpha: 0.18,
   deco: 'none', decoColor: '#ffd93d', opacity: 1
 };
 
@@ -645,43 +627,43 @@ function pruneStyle(st) {
 const T = (id, name, text, style) => ({ id, name, text, style });
 const TEMPLATES = [
   T('cloud', '云朵 Cloud', 'Hello', {
-    font: 'round', size: 32, outline: 'cloud', bumpSize: 15, bumpAmp: 0.22,
-    fill: '#3aa0e8', innerColor: '#ffffff', innerWidth: 3.5, outerColor: '#bfe4ff', outerWidth: 9,
+    font: 'round', size: 121, outline: 'cloud', bumpSize: 57, bumpAmp: 0.22,
+    fill: '#3aa0e8', innerColor: '#ffffff', innerWidth: 13, outerColor: '#bfe4ff', outerWidth: 34,
     shadow: true, shadowColor: '#4a90c2', shadowAlpha: 0.18
   }),
   T('bubble', '气泡 Bubble', 'POP', {
-    font: 'black', weight: 900, size: 34, outline: 'rounded', bumpSize: 16, bumpAmp: 0.08,
-    fill: '#ffd6e2', innerColor: '#ffffff', innerWidth: 3, outerColor: '#ff6f9c', outerWidth: 7,
+    font: 'black', weight: 900, size: 129, outline: 'rounded', bumpSize: 60, bumpAmp: 0.08,
+    fill: '#ffd6e2', innerColor: '#ffffff', innerWidth: 11, outerColor: '#ff6f9c', outerWidth: 26,
     shadow: true, shadowColor: '#ff6f9c', shadowAlpha: 0.3
   }),
   T('cute', '可爱 Cute', 'Sweet', {
-    font: 'round', size: 30, outline: 'cloud', bumpSize: 13, bumpAmp: 0.24,
-    fill: '#ff5c8a', innerColor: '#ffffff', innerWidth: 2.8, outerColor: '#ffe066', outerWidth: 7.5,
+    font: 'round', size: 113, outline: 'cloud', bumpSize: 49, bumpAmp: 0.24,
+    fill: '#ff5c8a', innerColor: '#ffffff', innerWidth: 11, outerColor: '#ffe066', outerWidth: 28,
     deco: 'hearts', decoColor: '#ff9ec4', shadow: true, shadowColor: '#d99ab0', shadowAlpha: 0.25
   }),
   T('cartoon', '卡通 Cartoon', 'WOW!', {
-    font: 'black', weight: 900, size: 34, outline: 'cloud', bumpSize: 20, bumpAmp: 0.26,
-    fill: '#ffd93d', innerColor: '#ffffff', innerWidth: 3.5, outerColor: '#1b1b1b', outerWidth: 5.5,
+    font: 'black', weight: 900, size: 129, outline: 'cloud', bumpSize: 76, bumpAmp: 0.26,
+    fill: '#ffd93d', innerColor: '#ffffff', innerWidth: 13, outerColor: '#1b1b1b', outerWidth: 21,
     deco: 'stars', decoColor: '#ff6f9c', shadow: true, shadowColor: '#1b1b1b', shadowAlpha: 0.22
   }),
   T('classroom', '英语课堂', 'Welcome!', {
-    font: 'round', size: 30, outline: 'cloud', bumpSize: 14, bumpAmp: 0.24,
-    fill: '#ffffff', innerColor: '#4a90e2', innerWidth: 3, outerColor: '#ffef5c', outerWidth: 9.5,
+    font: 'round', size: 113, outline: 'cloud', bumpSize: 53, bumpAmp: 0.24,
+    fill: '#ffffff', innerColor: '#4a90e2', innerWidth: 11, outerColor: '#ffef5c', outerWidth: 36,
     deco: 'dots', decoColor: '#4a90e2', shadow: true, shadowColor: '#c9a227', shadowAlpha: 0.22
   }),
   T('sunny', '阳光 Sunny', 'Sunny', {
-    font: 'round', size: 32, outline: 'cloud', bumpSize: 13, bumpAmp: 0.24,
-    fill: '#fff3c4', innerColor: '#ffb020', innerWidth: 3, outerColor: '#ff8c42', outerWidth: 7,
+    font: 'round', size: 121, outline: 'cloud', bumpSize: 49, bumpAmp: 0.24,
+    fill: '#fff3c4', innerColor: '#ffb020', innerWidth: 11, outerColor: '#ff8c42', outerWidth: 26,
     deco: 'dots', decoColor: '#ffb020', shadow: true, shadowColor: '#d97b1a', shadowAlpha: 0.25
   }),
   T('navy', '星星 Star', 'Super', {
-    font: 'sans', weight: 900, size: 30, outline: 'irregular', bumpSize: 16, bumpAmp: 0.3,
-    fill: '#ffffff', innerColor: '#5b8def', innerWidth: 3, outerColor: '#1f3c88', outerWidth: 7,
+    font: 'sans', weight: 900, size: 113, outline: 'irregular', bumpSize: 60, bumpAmp: 0.3,
+    fill: '#ffffff', innerColor: '#5b8def', innerWidth: 11, outerColor: '#1f3c88', outerWidth: 26,
     deco: 'stars', decoColor: '#ffd93d', shadow: true, shadowColor: '#12224d', shadowAlpha: 0.3
   }),
   T('wordcards', '单词卡 Word Cards', 'Apple', {
-    font: 'round', size: 20, outline: 'rounded', bumpSize: 10, bumpAmp: 0,
-    fill: '#ffffff', innerColor: '#ffffff', innerWidth: 0, outerColor: '#ffb3c9', outerWidth: 4,
+    font: 'round', size: 76, outline: 'rounded', bumpSize: 38, bumpAmp: 0,
+    fill: '#ffffff', innerColor: '#ffffff', innerWidth: 0, outerColor: '#ffb3c9', outerWidth: 15,
     shadow: true, shadowColor: '#c98aa0', shadowAlpha: 0.2
   })
 ];
@@ -689,18 +671,18 @@ const PHRASES = ['Welcome', 'Good Job', "Let's Learn", 'Happy English', 'Well Do
   'Hello!', 'Thank You', 'Super Star', 'Class Rules', 'Good Morning', 'See You'];
 
 const state = {
-  page: { orient: 'landscape', margin: 10, pages: 1 },
+  page: { orient: 'landscape', margin: 38, pages: 1 },
   elements: [],
   selected: [],
   currentPage: 0,
   zoom: 1,
   snap: true,
   guides: true,
-  grid: 5,
+  grid: 20,
   tpl: 'cloud'
 };
 
-const pageDims = () => state.page.orient === 'portrait' ? { w: 210, h: 297 } : { w: 297, h: 210 };
+const pageDims = () => state.page.orient === 'portrait' ? { w: A4.w, h: A4.h } : { w: A4.h, h: A4.w };
 const selectedEls = () => state.elements.filter(e => state.selected.includes(e.id));
 const curPageEls = () => state.elements.filter(e => e.page === state.currentPage);
 
@@ -719,26 +701,12 @@ const polyD = pts => {
   for (let i = 1; i < pts.length; i++) d += 'L' + n2(pts[i][0]) + ' ' + n2(pts[i][1]);
   return d + 'Z';
 };
-const gradStops = st => (st.grad && st.grad.length ? st.grad : ['#ff9ec4', '#ffd93d']);
-function gradAxis(st, w, h) {
-  const a = (st.gradAngle || 0) * Math.PI / 180;
-  const L = (Math.abs(w * Math.cos(a)) + Math.abs(h * Math.sin(a))) / 2 || 1;
-  return { x1: -L * Math.cos(a), y1: -L * Math.sin(a), x2: L * Math.cos(a), y2: L * Math.sin(a) };
-}
 function elTransform(el) {
   return 'translate(' + n2(el.x) + ' ' + n2(el.y) + ') rotate(' + n2(el.rotation || 0) + ') scale(' + n2(el.scale || 1) + ')';
 }
-function elementMarkup(el, geo, withDefs) {
-  const st = el.style, gid = 'gd_' + el.id, isGrad = st.fillMode === 'grad';
-  let defs = '';
-  if (isGrad && withDefs) {
-    const ax = gradAxis(st, geo.w, geo.h), stops = gradStops(st);
-    defs = '<linearGradient id="' + gid + '" gradientUnits="userSpaceOnUse" x1="' + n2(ax.x1) + '" y1="' + n2(ax.y1) +
-      '" x2="' + n2(ax.x2) + '" y2="' + n2(ax.y2) + '">' +
-      stops.map((c, i) => '<stop offset="' + n2(i / (stops.length - 1 || 1)) + '" stop-color="' + c + '"/>').join('') +
-      '</linearGradient>';
-  }
-  const fill = isGrad ? 'url(#' + gid + ')' : (st.fill || '#fff');
+function elementMarkup(el, geo) {
+  const st = el.style;
+  const fill = st.fill || '#fff';
   let s = '<g data-id="' + el.id + '" transform="' + elTransform(el) + '" opacity="' + (st.opacity == null ? 1 : st.opacity) + '">';
   const base = geo.outerD || geo.textD;
   if (st.shadow) s += '<path d="' + base + '" fill="' + st.shadowColor + '" fill-rule="evenodd" opacity="' + (st.shadowAlpha == null ? 0.18 : st.shadowAlpha) +
@@ -747,7 +715,7 @@ function elementMarkup(el, geo, withDefs) {
   if (geo.innerD) s += '<path d="' + geo.innerD + '" fill="' + st.innerColor + '" fill-rule="evenodd"/>';
   s += '<path d="' + geo.textD + '" fill="' + fill + '" fill-rule="evenodd"/>';
   geo.deco.forEach(p => { s += '<path d="' + polyD(p) + '" fill="' + (st.decoColor || '#ffd93d') + '"/>'; });
-  return { defs, body: s + '</g>' };
+  return s + '</g>';
 }
 function selectionMarkup() {
   const z = state.zoom || 1;
@@ -760,8 +728,8 @@ function selectionMarkup() {
     s += '<rect x="' + n2(-w) + '" y="' + n2(-h) + '" width="' + n2(2 * w) + '" height="' + n2(2 * h) +
       '" fill="none" stroke="#6aa9ff" stroke-width="' + n2(sw) + '" stroke-dasharray="' + n2(dash) + ' ' + n2(dash * 0.7) + '" pointer-events="none"/>';
     s += '<rect data-handle="scale" x="' + n2(w - hs) + '" y="' + n2(h - hs) + '" width="' + n2(hs * 2) + '" height="' + n2(hs * 2) +
-      '" rx="' + n2(hs * 0.4) + '" fill="#fff" stroke="#6aa9ff" stroke-width="' + n2(sw) + '" style="cursor:nwse-resize"/>';
-    s += '<circle data-handle="rotate" cx="0" cy="' + n2(-h - hs * 1.8) + '" r="' + n2(hs) + '" fill="#fff" stroke="#6aa9ff" stroke-width="' + n2(sw) + '" style="cursor:grab"/>';
+      '" rx="' + n2(hs * 0.4) + '" fill="#fff" stroke="#6aa9ff" stroke-width="' + n2(sw) + '"/>';
+    s += '<circle data-handle="rotate" cx="0" cy="' + n2(-h - hs * 1.8) + '" r="' + n2(hs) + '" fill="#fff" stroke="#6aa9ff" stroke-width="' + n2(sw) + '"/>';
     s += '</g>';
   });
   return s;
@@ -769,8 +737,8 @@ function selectionMarkup() {
 function renderAll() {
   const { w: W, h: H } = pageDims();
   canvas.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
-  canvas.style.width = (W * state.zoom) + 'mm';
-  canvas.style.height = (H * state.zoom) + 'mm';
+  canvas.style.width = (W * state.zoom) + 'px';
+  canvas.style.height = (H * state.zoom) + 'px';
   let defs = '', body = '';
   if (state.snap) {
     defs += '<pattern id="gridp" width="' + state.grid + '" height="' + state.grid + '" patternUnits="userSpaceOnUse">' +
@@ -784,14 +752,13 @@ function renderAll() {
       '" fill="none" stroke="#c9dcf5" stroke-width="0.3" stroke-dasharray="2 2" pointer-events="none"/>';
   }
   curPageEls().filter(e => !e.hidden).forEach(el => {
-    const m = elementMarkup(el, getGeo(el.style), true);
-    defs += m.defs; body += m.body;
+    body += elementMarkup(el, getGeo(el.style));
   });
   body += selectionMarkup();
   canvas.innerHTML = (defs ? '<defs>' + defs + '</defs>' : '') + body;
   $('#zoomLabel').textContent = Math.round(state.zoom * 100) + '%';
 }
-function toMM(e) {
+function toSVG(e) {
   const pt = canvas.createSVGPoint();
   pt.x = e.clientX; pt.y = e.clientY;
   const p = pt.matrixTransform(canvas.getScreenCTM().inverse());
@@ -804,7 +771,21 @@ function toMM(e) {
 const LSKEY = 'cloudletter.v1';
 const hist = { undo: [], redo: [], key: '', t: 0 };
 let saveTimer = 0;
-const snapshot = () => JSON.stringify({ page: state.page, elements: state.elements, currentPage: state.currentPage });
+const snapshot = () => JSON.stringify({ unit: 'px', page: state.page, elements: state.elements, currentPage: state.currentPage });
+/* 旧存档 / 旧工程文件用的是 mm，读到后统一换算成 px */
+function migrateToPX(d) {
+  if (!d || d.unit === 'px') return d;
+  const K = PXMM, r = v => (typeof v === 'number' && isFinite(v)) ? Math.round(v * K * 10) / 10 : v;
+  if (d.page) d.page.margin = r(d.page.margin);
+  (Array.isArray(d.elements) ? d.elements : []).forEach(e => {
+    if (!e || typeof e !== 'object') return;
+    e.x = r(e.x); e.y = r(e.y);
+    const st = e.style;
+    if (st && typeof st === 'object') ['size', 'outerWidth', 'innerWidth', 'bumpSize', 'shadowX', 'shadowY'].forEach(k => { if (k in st) st[k] = r(st[k]); });
+  });
+  d.unit = 'px';
+  return d;
+}
 function saveSoon() {
   clearTimeout(saveTimer);
   saveTimer = setTimeout(() => {
@@ -835,21 +816,16 @@ function redo() { if (!hist.redo.length) return; const s = hist.redo.pop(); hist
    5. 左侧面板：模板 / 图层 / 页面
    ========================================================= */
 function tplThumbSvg(tpl) {
-  const st = Object.assign({}, DEFAULT_STYLE, tpl.style, { text: tpl.text, size: Math.min(tpl.style.size || 30, 22) });
+  const st = Object.assign({}, DEFAULT_STYLE, tpl.style, { text: tpl.text, size: Math.min(tpl.style.size || 113, 83) });
   let geo;
   try { geo = getGeo(st); } catch (e) { geo = null; }
   const pad = Math.max(geo ? geo.w : 30, geo ? geo.h : 20);
   const vb = (-pad * 0.62) + ' ' + (-pad * 0.48) + ' ' + (pad * 1.24) + ' ' + (pad * 0.96);
   if (!geo) return '<svg viewBox="0 0 100 60"></svg>';
-  const gid = 'tg_' + tpl.id;
-  const ax = gradAxis(st, geo.w, geo.h);
-  const stops = gradStops(st);
   let s = '<svg viewBox="' + vb + '" preserveAspectRatio="xMidYMid meet">';
-  s += '<defs><linearGradient id="' + gid + '" gradientUnits="userSpaceOnUse" x1="' + n2(ax.x1) + '" y1="' + n2(ax.y1) + '" x2="' + n2(ax.x2) + '" y2="' + n2(ax.y2) + '">' +
-    stops.map((c, i) => '<stop offset="' + n2(i / (stops.length - 1 || 1)) + '" stop-color="' + c + '"/>').join('') + '</linearGradient></defs>';
   if (geo.outerD) s += '<path d="' + geo.outerD + '" fill="' + st.outerColor + '" fill-rule="evenodd"/>';
   if (geo.innerD) s += '<path d="' + geo.innerD + '" fill="' + st.innerColor + '" fill-rule="evenodd"/>';
-  s += '<path d="' + geo.textD + '" fill="' + (st.fillMode === 'grad' ? 'url(#' + gid + ')' : st.fill) + '" fill-rule="evenodd"/>';
+  s += '<path d="' + geo.textD + '" fill="' + st.fill + '" fill-rule="evenodd"/>';
   geo.deco.forEach(p => { s += '<path d="' + polyD(p) + '" fill="' + st.decoColor + '"/>'; });
   return s + '</svg>';
 }
@@ -863,15 +839,16 @@ function renderPanels() {
   const els = curPageEls().slice().reverse();
   $('#layerList').innerHTML = els.length ? els.map(e =>
     '<div class="layer' + (state.selected.includes(e.id) ? ' on' : '') + '" data-el="' + e.id + '">' +
-    '<span class="dot" style="background:' + (e.style.fillMode === 'grad' ? e.style.grad[0] : e.style.fill) + '"></span>' +
+    '<span class="dot" style="background:' + e.style.fill + '"></span>' +
     '<span class="t">' + (e.style.text.replace(/\n/g, ' ↵ ') || '（空）') + '</span>' +
     '<span class="eye" data-eye="' + e.id + '" title="显示/隐藏">' + (e.hidden ? '🚫' : '👁') + '</span></div>').join('')
-    : '<p class="hint">还没有元素，点击「＋ 添加文字」开始。</p>';
+    : '<p class="hint">还没有元素：双击画布空白处新建，或点左侧模板 / 短语。</p>';
   $('#pageLabel').textContent = (state.currentPage + 1) + ' / ' + state.page.pages;
   $('#selOrient').value = state.page.orient;
+  syncCsel($('#selOrient'));
   $$('#segOrient button').forEach(b => b.classList.toggle('on', b.dataset.v === state.page.orient));
   $('#rngMargin').value = state.page.margin;
-  $('#valMargin').textContent = state.page.margin + 'mm';
+  $('#valMargin').textContent = state.page.margin + 'px';
   $('#btnSnap').classList.toggle('on', state.snap);
   $('#btnGuides').classList.toggle('on', state.guides);
   $('#inspTitle').textContent = state.selected.length ? (state.selected.length > 1 ? state.selected.length + ' 个元素' : '') : '未选中';
@@ -896,20 +873,9 @@ function applyTemplate(id, single) {
     const { w: W, h: H } = pageDims();
     const el = makeElement(Object.assign({ text: tpl.text }, tpl.style), W / 2, H * 0.36);
     const geo = getGeo(el.style);
-    const sc = Math.min(1, (W - 2 * state.page.margin - 10) / geo.w);
+    const sc = Math.min(1, (W - 2 * state.page.margin - 38) / geo.w);
     el.scale = n2(sc);
-    if (id === 'wordcards') {
-      const words = ('apple, banana, orange, grape, peach, lemon').split(/[,，\n]/).map(x => x.trim()).filter(Boolean).slice(0, 12);
-      const cols = W > H ? 4 : 3;
-      words.forEach((wd, i) => {
-        const c = i % cols, r = Math.floor(i / cols);
-        const e2 = makeElement(Object.assign({ text: wd }, tpl.style), 0, 0);
-        e2.scale = n2(Math.min(1, (W - 2 * state.page.margin) / cols / (getGeo(e2.style).w + 8)));
-        e2.x = state.page.margin + (c + 0.5) * (W - 2 * state.page.margin) / cols;
-        e2.y = state.page.margin + 18 + r * 26;
-        state.elements.push(e2);
-      });
-    } else state.elements.push(el);
+    state.elements.push(el);
     state.selected = [el.id];
   }
   commit('tpl-' + id);
@@ -946,7 +912,7 @@ function syncInspector() {
   const box = $('#inspector');
   const el = selectedEls()[0];
   if (!el) {
-    box.innerHTML = '<p class="hint">在画布上点选一个云朵字元素，或点击「＋ 添加文字」。<br><br>双击画布空白处也可新建。</p>' +
+    box.innerHTML = '<p class="hint">在画布上点选一个云朵字元素。<br><br>双击画布空白处新建，或点左侧模板 / 短语。</p>' +
       '<hr><div class="sec">页面</div>' + row('方向', '<div class="seg" id="segOrient2"><button data-v="portrait" class="' + (state.page.orient === 'portrait' ? 'on' : '') + '">纵向</button><button data-v="landscape" class="' + (state.page.orient === 'landscape' ? 'on' : '') + '">横向</button></div>', true);
     bindInspector(); return;
   }
@@ -957,26 +923,20 @@ function syncInspector() {
   if (multi) h += '<p class="hint" style="padding:2px 2px 10px;text-align:left">已选中 ' + state.selected.length + ' 个元素，参数会一起修改；文字内容请逐个编辑。</p>';
   else h += '<textarea id="txtInput" aria-label="文字内容" placeholder="输入英文单词、短语或句子">' + st.text + '</textarea>';
   h += row('字体', '<select data-key="font">' + Object.keys(FONTS).map(k => '<option value="' + k + '"' + (getVal('font') === k ? ' selected' : '') + '>' + FONTS[k].name + '</option>').join('') + '</select>', true);
-  h += row('字号', range('size', 8, 120, 0.5, 'mm'), true);
+  h += row('字号', range('size', 30, 450, 1, 'px'), true);
   h += row('字重', '<div class="seg" data-key="weight">' + [[400, '常规'], [700, '粗'], [900, '超粗']].map(([v, t]) => '<button data-val="' + v + '" class="' + (getVal('weight') === v ? 'on' : '') + '">' + t + '</button>').join('') + '</div>', true);
   h += row('字间距', range('letterSpacing', -0.05, 0.4, 0.01, 'em'), true);
 
   h += '<div class="sec">文字颜色</div>';
-  h += row('填充', '<div class="seg" data-key="fillMode">' + [['solid', '纯色'], ['grad', '渐变']].map(([v, t]) => '<button data-val="' + v + '" class="' + (getVal('fillMode') === v ? 'on' : '') + '">' + t + '</button>').join('') + '</div>', true);
   h += row('颜色', '<input type="color" data-key="fill" value="' + st.fill + '">' + '<div class="swatches">' + SWATCHES.map(c => '<i data-swatch="fill" data-c="' + c + '" style="background:' + c + '"></i>').join('') + '</div>');
-  if (getVal('fillMode') === 'grad') {
-    h += row('渐变色', '<div class="stops">' + (st.grad || []).map((c, i) => '<input type="color" data-grad="' + i + '" value="' + c + '">').join('') +
-      '<button class="btn sm" data-grad-add="1">＋</button><button class="btn sm" data-grad-del="1">－</button></div>');
-    h += row('渐变角', range('gradAngle', 0, 360, 5, '°'), true);
-  }
 
   h += '<div class="sec">轮廓（云朵边）</div>';
   h += row('类型', '<select data-key="outline">' + [['cloud', '☁ 云朵 Cloud'], ['bubble', '● 气泡 Bubble'], ['rounded', '⬭ 圆角 Rounded'], ['wave', '〰 波浪 Wave'], ['irregular', '✳ 不规则 Irregular'], ['none', '无轮廓 None']].map(([v, t]) => '<option value="' + v + '"' + (getVal('outline') === v ? ' selected' : '') + '>' + t + '</option>').join('') + '</select>', true);
   h += row('外框颜色', '<input type="color" data-key="outerColor" value="' + st.outerColor + '">' + '<div class="swatches">' + SWATCHES.map(c => '<i data-swatch="outerColor" data-c="' + c + '" style="background:' + c + '"></i>').join('') + '</div>');
-  h += row('外框粗细', range('outerWidth', 0, 20, 0.5, 'mm'), true);
+  h += row('外框粗细', range('outerWidth', 0, 76, 1, 'px'), true);
   h += row('内框颜色', '<input type="color" data-key="innerColor" value="' + st.innerColor + '"><div class="swatches">' + SWATCHES.map(c => '<i data-swatch="innerColor" data-c="' + c + '" style="background:' + c + '"></i>').join('') + '</div>');
-  h += row('内框粗细', range('innerWidth', 0, 14, 0.5, 'mm'), true);
-  h += row('起伏大小', range('bumpSize', 3, 30, 0.5, 'mm'), true);
+  h += row('内框粗细', range('innerWidth', 0, 53, 1, 'px'), true);
+  h += row('起伏大小', range('bumpSize', 11, 113, 1, 'px'), true);
   h += row('起伏强度', range('bumpAmp', 0, 0.8, 0.02, ''), true);
 
   h += '<div class="sec">装饰 / 阴影</div>';
@@ -984,11 +944,11 @@ function syncInspector() {
   h += row('装饰色', '<input type="color" data-key="decoColor" value="' + st.decoColor + '">');
   h += row('阴影', '<label style="display:flex;align-items:center;gap:6px;color:#6b7a96"><input type="checkbox" data-key="shadow"' + (getVal('shadow') ? ' checked' : '') + '> 开启立体阴影</label>');
   h += row('阴影色', '<input type="color" data-key="shadowColor" value="' + st.shadowColor + '"><div class="swatches">' + SWATCHES.map(c => '<i data-swatch="shadowColor" data-c="' + c + '" style="background:' + c + '"></i>').join('') + '</div>');
-  h += row('阴影偏移', '<input type="range" data-key="shadowX" min="-4" max="4" step="0.2" value="' + st.shadowX + '"><span class="val">' + n2(st.shadowX) + '</span><input type="range" data-key="shadowY" min="-4" max="6" step="0.2" value="' + st.shadowY + '"><span class="val">' + n2(st.shadowY) + '</span>');
+  h += row('阴影偏移', '<input type="range" data-key="shadowX" min="-15" max="15" step="1" value="' + st.shadowX + '"><span class="val">' + n2(st.shadowX) + '</span><input type="range" data-key="shadowY" min="-4" max="6" step="0.2" value="' + st.shadowY + '"><span class="val">' + n2(st.shadowY) + '</span>');
 
   h += '<div class="sec">位置与变换</div>';
-  h += row('X 位置', '<input type="range" data-prop="x" min="-50" max="' + pageDims().w + '" step="0.5" value="' + el.x + '"><span class="val">' + n2(el.x) + '</span>');
-  h += row('Y 位置', '<input type="range" data-prop="y" min="-50" max="' + pageDims().h + '" step="0.5" value="' + el.y + '"><span class="val">' + n2(el.y) + '</span>');
+  h += row('X 位置', '<input type="range" data-prop="x" min="-190" max="' + pageDims().w + '" step="1" value="' + el.x + '"><span class="val">' + n2(el.x) + '</span>');
+  h += row('Y 位置', '<input type="range" data-prop="y" min="-190" max="' + pageDims().h + '" step="1" value="' + el.y + '"><span class="val">' + n2(el.y) + '</span>');
   h += row('缩放', '<input type="range" data-prop="scale" min="0.1" max="3" step="0.01" value="' + el.scale + '"><span class="val">' + Math.round(el.scale * 100) + '%</span>');
   h += row('旋转', '<input type="range" data-prop="rotation" min="-180" max="180" step="1" value="' + el.rotation + '"><span class="val">' + Math.round(el.rotation) + '°</span>');
   h += row('透明度', '<input type="range" data-key="opacity" min="0.1" max="1" step="0.01" value="' + st.opacity + '"><span class="val">' + Math.round(st.opacity * 100) + '%</span>');
@@ -1011,9 +971,11 @@ function syncInspector() {
     });
   });
   bindInspector();
+  closeCsel();
+  box.querySelectorAll('select').forEach(sel => enhanceSelect(sel));
 }
 
-const UNITS = { size: 'mm', outerWidth: 'mm', innerWidth: 'mm', bumpSize: 'mm', letterSpacing: 'em', gradAngle: '°', opacity: '%' };
+const UNITS = { size: 'px', outerWidth: 'px', innerWidth: 'px', bumpSize: 'px', letterSpacing: 'em', opacity: '%' };
 function rangeText(k, v) {
   if (k === 'opacity') return Math.round(v * 100) + '%';
   if (k === 'letterSpacing') return (Math.round(v * 100) / 100) + 'em';
@@ -1061,10 +1023,7 @@ function bindInspector() {
   });
   box.querySelectorAll('input[type=color]').forEach(inp => {
     inp.oninput = () => {
-      if (inp.dataset.grad != null) {
-        const i = +inp.dataset.grad;
-        selectedEls().forEach(e => { e.style.grad[i] = inp.value; });
-      } else selectedEls().forEach(e => { e.style[inp.dataset.key] = inp.value; });
+      selectedEls().forEach(e => { e.style[inp.dataset.key] = inp.value; });
       renderAll(); commit('color' + inp.dataset.key);
     };
   });
@@ -1098,28 +1057,6 @@ function bindInspector() {
       renderAll(); commit('sw' + k); syncInspector();
     };
   });
-  box.querySelectorAll('[data-grad-add]').forEach(b => {
-    b.onclick = () => {
-      const sel = selectedEls();
-      if (!sel.length) return;
-      const g = sel[0].style.grad.slice();
-      if (g.length >= 6) return toast('最多 6 个渐变色');
-      g.splice(g.length - 1, 0, '#ffffff');
-      sel.forEach(e => { e.style.grad = g.slice(); });
-      commit('grad'); syncInspector(); renderAll();
-    };
-  });
-  box.querySelectorAll('[data-grad-del]').forEach(b => {
-    b.onclick = () => {
-      const sel = selectedEls();
-      if (!sel.length) return;
-      const g = sel[0].style.grad.slice();
-      if (g.length <= 2) return toast('至少保留 2 个渐变色');
-      g.splice(g.length - 2, 1);
-      sel.forEach(e => { e.style.grad = g.slice(); });
-      commit('grad'); syncInspector(); renderAll();
-    };
-  });
   box.querySelectorAll('[data-align]').forEach(b => { b.onclick = () => alignSel(b.dataset.align); });
   box.querySelectorAll('[data-dist]').forEach(b => { b.onclick = () => distribute(b.dataset.dist); });
   box.querySelectorAll('[data-act]').forEach(b => { b.onclick = () => action(b.dataset.act); });
@@ -1130,6 +1067,75 @@ function bindOrient(root) {
     b.onclick = () => setOrient(b.dataset.v);
   });
 }
+/* =========================================================
+   6.5 自绘下拉框（原生 select 只负责存值，界面用 div 渲染）
+   ========================================================= */
+let cselPop = null, cselCur = null;
+function ensureCselPop() {
+  if (cselPop) return cselPop;
+  cselPop = document.createElement('div');
+  cselPop.id = 'cselPop';
+  cselPop.hidden = true;
+  cselPop.addEventListener('click', e => {
+    const o = e.target.closest('.csel-opt');
+    if (!o || !cselCur) return;
+    const sel = cselCur.sel;
+    sel.value = o.dataset.v;
+    sel.dispatchEvent(new Event('change', { bubbles: true }));
+    closeCsel();
+    syncCsel(sel);
+  });
+  document.body.appendChild(cselPop);
+  return cselPop;
+}
+function closeCsel() {
+  if (cselPop) cselPop.hidden = true;
+  if (cselCur) cselCur.root.classList.remove('open');
+  cselCur = null;
+}
+function openCsel(sel, root) {
+  const pop = ensureCselPop();
+  pop.innerHTML = Array.prototype.map.call(sel.options, o =>
+    '<div class="csel-opt' + (o.value === sel.value ? ' on' : '') + '" data-v="' + o.value + '">' + o.textContent + '</div>').join('');
+  pop.hidden = false;
+  const r = root.getBoundingClientRect();
+  const ph = Math.min(pop.scrollHeight, 300);
+  const below = window.innerHeight - r.bottom;
+  pop.style.minWidth = Math.round(r.width) + 'px';
+  pop.style.left = Math.max(6, Math.min(r.left, window.innerWidth - r.width - 8)) + 'px';
+  pop.style.top = (below < ph + 14 && r.top > ph + 14 ? r.top - ph - 6 : r.bottom + 5) + 'px';
+  cselCur = { sel, root };
+  root.classList.add('open');
+}
+function syncCsel(sel) {
+  if (!sel || !sel._csel) return;
+  const o = sel.options[sel.selectedIndex];
+  sel._csel.querySelector('.csel-label').textContent = o ? o.textContent : '';
+}
+function enhanceSelect(sel, compact) {
+  if (!sel || sel._csel) return;
+  const root = document.createElement('div');
+  root.className = 'csel' + (compact ? ' compact' : '');
+  root.tabIndex = 0;
+  root.setAttribute('role', 'combobox');
+  root.setAttribute('aria-expanded', 'false');
+  root.setAttribute('aria-label', sel.getAttribute('aria-label') || '选择');
+  root.innerHTML = '<span class="csel-label"></span><span class="csel-caret">▾</span>';
+  sel.classList.add('csel-native');
+  sel.parentNode.insertBefore(root, sel.nextSibling);
+  sel._csel = root;
+  syncCsel(sel);
+  const toggle = () => { if (cselCur && cselCur.sel === sel) closeCsel(); else openCsel(sel, root); };
+  root.addEventListener('click', e => { e.stopPropagation(); toggle(); });
+  root.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); }
+    else if (e.key === 'Escape') closeCsel();
+  });
+}
+document.addEventListener('click', () => closeCsel());
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeCsel(); });
+window.addEventListener('scroll', () => closeCsel(), true);
+
 /* =========================================================
    7. 编辑操作：选择 / 拖拽 / 缩放 / 旋转 / 对齐 / 分布
    ========================================================= */
@@ -1199,7 +1205,7 @@ function action(act) {
     all.forEach((e, i) => {
       const c = i % cols, r = Math.floor(i / cols);
       const g = getGeo(e.style);
-      e.scale = n2(Math.min(1.5, (cellW - 8) / g.w, (cellH - 8) / g.h, 3));
+      e.scale = n2(Math.min(1.5, (cellW - 30) / g.w, (cellH - 30) / g.h, 3));
       e.x = m + cellW * (c + 0.5); e.y = m + cellH * (r + 0.5);
       e.rotation = 0;
     });
@@ -1252,7 +1258,7 @@ let drag = null;
 canvas.addEventListener('pointerdown', e => {
   if (e.button !== 0) return;
   const handle = e.target.getAttribute && e.target.getAttribute('data-handle');
-  const p = toMM(e);
+  const p = toSVG(e);
   if (handle) {
     const sel = selectedEls();
     if (!sel.length) return;
@@ -1260,6 +1266,9 @@ canvas.addEventListener('pointerdown', e => {
     const b = elBounds(el);
     drag = { mode: handle, start: p, els: sel.map(x => ({ el: x, x: x.x, y: x.y, scale: x.scale, rotation: x.rotation })),
       box: { w: b.w, h: b.h }, pivot: { x: el.x, y: el.y } };
+    canvas.classList.add('dragging');
+    canvas.classList.toggle('rot', handle === 'rotate');
+    canvas.classList.toggle('scl', handle === 'scale');
     try { canvas.setPointerCapture(e.pointerId); } catch (err) {}
     return;
   }
@@ -1270,11 +1279,12 @@ canvas.addEventListener('pointerdown', e => {
   else if (!state.selected.includes(id)) select(id);
   const sel = selectedEls();
   drag = { mode: 'move', start: p, els: sel.map(x => ({ el: x, x: x.x, y: x.y })) };
+  canvas.classList.add('dragging');
   try { canvas.setPointerCapture(e.pointerId); } catch (err) {}
 });
 canvas.addEventListener('pointermove', e => {
   if (!drag) return;
-  const p = toMM(e);
+  const p = toSVG(e);
   const dx = p.x - drag.start.x, dy = p.y - drag.start.y;
   const snapv = v => state.snap ? Math.round(v / state.grid) * state.grid : v;
   if (drag.mode === 'move') {
@@ -1307,7 +1317,12 @@ canvas.addEventListener('pointermove', e => {
     });
   }
 });
+function endDragCursor() {
+  canvas.classList.remove('dragging', 'rot', 'scl');
+}
+canvas.addEventListener('pointercancel', () => { drag = null; endDragCursor(); renderAll(); });
 canvas.addEventListener('pointerup', e => {
+  endDragCursor();
   if (!drag) return;
   const moved = drag;
   drag = null;
@@ -1320,7 +1335,7 @@ canvas.addEventListener('pointerup', e => {
 canvas.addEventListener('dblclick', e => {
   const g = e.target.closest ? e.target.closest('g[data-id]') : null;
   if (g) { const t = $('#txtInput'); if (t) { t.focus(); t.select(); } return; }
-  addTextAt(toMM(e));
+  addTextAt(toSVG(e));
 });
 /* 滚轮缩放 */
 $('#wrap').addEventListener('wheel', e => {
@@ -1336,7 +1351,7 @@ function addTextAt(p) {
   const tpl = TEMPLATES.find(t => t.id === state.tpl) || TEMPLATES[0];
   const el = makeElement(Object.assign({ text: 'Word' }, tpl.style), p ? p.x : pageDims().w / 2, p ? p.y : pageDims().h / 2);
   const geo = getGeo(el.style);
-  el.scale = n2(Math.min(1, (pageDims().w - 2 * state.page.margin - 10) / geo.w));
+  el.scale = n2(Math.min(1, (pageDims().w - 2 * state.page.margin - 38) / geo.w));
   state.elements.push(el);
   state.selected = [el.id];
   commit(); renderAll(); renderPanels(); syncInspector();
@@ -1361,21 +1376,20 @@ function setZoom(z) {
 function fitZoom() {
   const wrap = $('#wrap'), { w: W, h: H } = pageDims();
   const availW = wrap.clientWidth - 52, availH = wrap.clientHeight - 52;
-  const pxW = W * 3.7795, pxH = H * 3.7795;
+  const pxW = W, pxH = H;
   setZoom(Math.min(availW / pxW, availH / pxH));
 }
 /* =========================================================
    9. PDF 导出（纯矢量，零依赖）
    ========================================================= */
-const KMM = 72 / 25.4;
 const pn = v => { const r = Math.round(v * 1000) / 1000; return String(r === 0 ? 0 : r); };
 const hexToRgbF = hex => {
   const m = /^#?([0-9a-f]{6})$/i.exec(String(hex || '').trim());
   const h = m ? m[1] : '000000';
   return [0, 2, 4].map(i => Math.min(1, Math.max(0, parseInt(h.substr(i, 2), 16) / 255)));
 };
-/* 元素本地 mm -> pt（元素自身的位移/旋转/缩放交给 cm 矩阵） */
-const LPT = (x, y) => [x * KMM, y * KMM];
+/* 元素本地 px -> pt（元素自身的位移/旋转/缩放交给 cm 矩阵） */
+const LPT = (x, y) => [x * PX2PT, y * PX2PT];
 function pdfPath(pts, M) {
   const p0 = M(pts[0][0], pts[0][1]);
   let s = pn(p0[0]) + ' ' + pn(p0[1]) + ' m';
@@ -1385,28 +1399,17 @@ function pdfPath(pts, M) {
   }
   return s + ' h';
 }
-/* 多色渐变：Type2 轴向 + Type3 拼接函数 */
-function buildShading(g) {
-  const stops = g.stops.map(hexToRgbF), n = stops.length;
-  const head = '<< /ShadingType 2 /ColorSpace /DeviceRGB /Coords [' + g.axis.map(pn).join(' ') + '] /Extend [true true] /Function ';
-  const pair = (i) => '<< /FunctionType 2 /Domain [0 1] /C0 [' + stops[i].map(pn).join(' ') + '] /C1 [' + stops[i + 1].map(pn).join(' ') + '] /N 1 >>';
-  if (n === 2) return head + pair(0) + ' >>';
-  const subs = [], bounds = [], enc = [];
-  for (let i = 0; i < n - 1; i++) { subs.push(pair(i)); enc.push('0 1'); if (i > 0) bounds.push(pn(i / (n - 1))); }
-  return head + '<< /FunctionType 3 /Domain [0 1] /Functions [' + subs.join(' ') + '] /Bounds [' + bounds.join(' ') + '] /Encode [' + enc.join(' ') + '] >> >>';
-}
 function buildPDF() {
   const { w: PW, h: PH } = pageDims();
-  const grads = [];
   const pages = [];
   for (let p = 0; p < state.page.pages; p++) {
-    const L = ['q 0 0 ' + pn(PW * KMM) + ' ' + pn(PH * KMM) + ' re W n'];
+    const L = ['q 0 0 ' + pn(PW * PX2PT) + ' ' + pn(PH * PX2PT) + ' re W n'];
     state.elements.filter(e => e.page === p && !e.hidden).forEach(el => {
       const st = el.style, geo = getGeo(st), sc = el.scale || 1;
       const rad = (el.rotation || 0) * Math.PI / 180;
       const cos = Math.cos(rad), sin = Math.sin(rad);
       const a = cos * sc, b = -sin * sc, c = -sin * sc, d = -cos * sc;
-      const e0 = el.x * KMM, f0 = (PH - el.y) * KMM;
+      const e0 = el.x * PX2PT, f0 = (PH - el.y) * PX2PT;
       L.push('q');
       if (st.opacity != null && st.opacity < 1) L.push(pn(st.opacity) + ' gs');
       L.push([a, b, c, d, e0, f0].map(pn).join(' ') + ' cm');
@@ -1426,15 +1429,7 @@ function buildPDF() {
       }
       fill(geo.outerPts, st.outerColor);
       fill(geo.innerPts, st.innerColor);
-      if (st.fillMode === 'grad' && geo.textPts.length) {
-        const ax = gradAxis(st, geo.w, geo.h);
-        const name = 'Sh' + grads.length;
-        grads.push({ stops: gradStops(st), axis: [ax.x1 * KMM, ax.y1 * KMM, ax.x2 * KMM, ax.y2 * KMM] });
-        L.push('q');
-        L.push(geo.textPts.map(x => pdfPath(x, LPT)).join(' ') + ' W* n');
-        L.push('/' + name + ' sh');
-        L.push('Q');
-      } else fill(geo.textPts, st.fill);
+      fill(geo.textPts, st.fill);
       if (geo.deco.length) {
         const rgb = hexToRgbF(st.decoColor);
         L.push(rgb.map(pn).join(' ') + ' rg');
@@ -1450,14 +1445,11 @@ function buildPDF() {
   const catalogId = add(null), pagesId = add(null);
   const fontId = add('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>');
   const gsId = add('<< /Type /ExtGState /ca 1 /CA 1 >>');
-  const shStart = objs.length + 1;
-  grads.forEach(g => add(buildShading(g)));
-  const shDict = grads.length ? ' /Shading << ' + grads.map((_, i) => '/Sh' + i + ' ' + (shStart + i) + ' 0 R').join(' ') + ' >>' : '';
   const kids = [];
   pages.forEach(content => {
     const cId = add('<< /Length ' + content.length + ' >>\nstream\n' + content + 'endstream');
-    kids.push(add('<< /Type /Page /Parent ' + pagesId + ' 0 R /MediaBox [0 0 ' + pn(PW * KMM) + ' ' + pn(PH * KMM) + ']' +
-      ' /Resources << /ExtGState << /GS1 ' + gsId + ' 0 R >> /Font << /F1 ' + fontId + ' 0 R >>' + shDict + ' >>' +
+    kids.push(add('<< /Type /Page /Parent ' + pagesId + ' 0 R /MediaBox [0 0 ' + pn(PW * PX2PT) + ' ' + pn(PH * PX2PT) + ']' +
+      ' /Resources << /ExtGState << /GS1 ' + gsId + ' 0 R >> /Font << /F1 ' + fontId + ' 0 R >> >>' +
       ' /Contents ' + cId + ' 0 R >>'));
   });
   objs[catalogId - 1] = '<< /Type /Catalog /Pages ' + pagesId + ' 0 R >>';
@@ -1494,32 +1486,6 @@ function exportPDF() {
 }
 
 /* =========================================================
-   10. 打印预览（同一套矢量数据，浏览器直接输出矢量）
-   ========================================================= */
-function pageSvgMarkup(p) {
-  const { w: W, h: H } = pageDims();
-  let defs = '', body = '<rect width="' + W + '" height="' + H + '" fill="#fff"/>';
-  state.elements.filter(e => e.page === p && !e.hidden).forEach(el => {
-    const m = elementMarkup(el, getGeo(el.style), true);
-    defs += m.defs; body += m.body;
-  });
-  return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="xMidYMid meet" style="width:100%;height:100%">' +
-    '<defs>' + defs + '</defs>' + body + '</svg>';
-}
-function openPreview() {
-  const { w: W, h: H } = pageDims();
-  const area = $('#printArea');
-  area.innerHTML = '';
-  for (let p = 0; p < state.page.pages; p++) {
-    const d = document.createElement('div');
-    d.className = 'print-page';
-    d.style.width = W + 'mm'; d.style.height = H + 'mm';
-    d.innerHTML = pageSvgMarkup(p);
-    area.appendChild(d);
-  }
-  $('#modal').hidden = false;
-}
-/* =========================================================
    10.5 工程文件 JSON 导入 / 导出
    ========================================================= */
 const HEXRE = /^#[0-9a-f]{6}$/i;
@@ -1532,23 +1498,19 @@ function sanitizeElement(e, pages) {
   st.text = typeof st.text === 'string' ? st.text.slice(0, 300) : 'Word';
   st.font = pick(st.font, Object.keys(FONTS), 'round');
   st.outline = pick(st.outline, ['cloud', 'bubble', 'rounded', 'wave', 'irregular', 'none'], 'cloud');
-  st.fillMode = pick(st.fillMode, ['solid', 'grad'], 'solid');
   st.deco = pick(st.deco, ['none', 'dots', 'stars', 'hearts', 'confetti', 'flowers'], 'none');
   ['fill', 'outerColor', 'innerColor', 'decoColor', 'shadowColor'].forEach(k => { if (!HEXRE.test(st[k])) st[k] = DEFAULT_STYLE[k]; });
-  st.grad = (Array.isArray(st.grad) ? st.grad.filter(c => HEXRE.test(c)) : []).slice(0, 6);
-  if (st.grad.length < 2) st.grad = DEFAULT_STYLE.grad.slice();
   st.weight = pick(+st.weight, [400, 600, 700, 900], 900);
-  st.size = num(st.size, 30, 4, 200);
+  st.size = num(st.size, 113, 20, 600);
   st.letterSpacing = num(st.letterSpacing, 0.02, -0.2, 0.8);
-  st.outerWidth = num(st.outerWidth, 9, 0, 30);
-  st.innerWidth = num(st.innerWidth, 3.5, 0, 30);
-  st.bumpSize = num(st.bumpSize, 15, 2, 60);
+  st.outerWidth = num(st.outerWidth, 34, 0, 120);
+  st.innerWidth = num(st.innerWidth, 13, 0, 120);
+  st.bumpSize = num(st.bumpSize, 57, 8, 230);
   st.bumpAmp = num(st.bumpAmp, 0.2, 0, 1);
   st.opacity = num(st.opacity, 1, 0.05, 1);
-  st.shadowX = num(st.shadowX, 1, -10, 10);
-  st.shadowY = num(st.shadowY, 1.6, -10, 10);
+  st.shadowX = num(st.shadowX, 4, -40, 40);
+  st.shadowY = num(st.shadowY, 6, -40, 40);
   st.shadowAlpha = num(st.shadowAlpha, 0.18, 0, 1);
-  st.gradAngle = num(st.gradAngle, 90, 0, 360);
   st.shadow = !!st.shadow;
   return {
     id: typeof e.id === 'string' && e.id ? e.id : uid(),
@@ -1561,7 +1523,7 @@ function sanitizeElement(e, pages) {
   };
 }
 function exportJSON() {
-  const data = Object.assign({ app: 'cloud-letter', version: 1, savedAt: new Date().toISOString() }, JSON.parse(snapshot()));
+  const data = Object.assign({ app: 'cloud-letter', version: 2, savedAt: new Date().toISOString() }, JSON.parse(snapshot()));
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
@@ -1575,7 +1537,7 @@ function importJSON(file) {
   rd.onerror = () => toast('读取文件失败');
   rd.onload = () => {
     let d;
-    try { d = JSON.parse(String(rd.result)); } catch (err) { return toast('导入失败：不是有效的 JSON 文件'); }
+    try { d = migrateToPX(JSON.parse(String(rd.result))); } catch (err) { return toast('导入失败：不是有效的 JSON 文件'); }
     if (!d || typeof d !== 'object' || !Array.isArray(d.elements) || !d.page || typeof d.page !== 'object')
       return toast('导入失败：缺少 page / elements 字段');
     const pages = Math.round(num(d.page.pages, 1, 1, 50));
@@ -1584,7 +1546,7 @@ function importJSON(file) {
     els.forEach(e => { while (seen.has(e.id)) e.id = uid(); seen.add(e.id); });
     state.page = {
       orient: pick(d.page.orient, ['portrait', 'landscape'], 'landscape'),
-      margin: num(d.page.margin, 10, 0, 30),
+      margin: num(d.page.margin, 38, 0, 113),
       pages: Math.max(pages, 1 + els.reduce((m, e) => Math.max(m, e.page), -1))
     };
     state.elements = els;
@@ -1659,7 +1621,7 @@ $$('#panel-layers [data-z]').forEach(b => {
 $('#selOrient').onchange = e => setOrient(e.target.value);
 $('#rngMargin').oninput = e => {
   state.page.margin = +e.target.value;
-  $('#valMargin').textContent = state.page.margin + 'mm';
+  $('#valMargin').textContent = state.page.margin + 'px';
   renderAll(); saveSoon();
 };
 $('#rngMargin').onchange = () => commit('margin');
@@ -1702,14 +1664,6 @@ $('#btnGuides').onclick = () => { state.guides = !state.guides; renderAll(); ren
 $('#btnUndo').onclick = undo;
 $('#btnRedo').onclick = redo;
 $('#btnExport').onclick = exportPDF;
-$('#btnPreview').onclick = openPreview;
-$('#btnCloseModal').onclick = () => { $('#modal').hidden = true; };
-$('#btnDoPrint').onclick = () => {
-  let st = document.getElementById('pageRule');
-  if (!st) { st = document.createElement('style'); st.id = 'pageRule'; document.head.appendChild(st); }
-  st.textContent = '@page{size:A4 ' + (state.page.orient === 'portrait' ? 'portrait' : 'landscape') + ';margin:0}';
-  window.print();
-};
 $('#btnExportJson').onclick = exportJSON;
 $('#btnImportJson').onclick = () => $('#fileJson').click();
 $('#fileJson').onchange = e => {
@@ -1719,8 +1673,6 @@ $('#fileJson').onchange = e => {
   if (state.elements.length && !confirm('导入会替换当前全部内容（可撤销），继续？')) return;
   importJSON(f);
 };
-$('#btnAddText').onclick = () => addTextAt(null);
-$('#btnAddRow').onclick = addWordRow;
 $('#btnResetStyle').onclick = () => {
   const sel = selectedEls();
   if (!sel.length) return;
@@ -1729,23 +1681,6 @@ $('#btnResetStyle').onclick = () => {
   commit('resetstyle'); renderAll(); syncInspector();
   toast('已重置为模板「' + tpl.name + '」的样式');
 };
-function addWordRow() {
-  const tpl = TEMPLATES.find(t => t.id === 'wordcards') || TEMPLATES[0];
-  const words = ['apple', 'banana', 'orange', 'grape'];
-  const { w: W, h: H } = pageDims();
-  const n = words.length, cellW = (W - 2 * state.page.margin) / n;
-  const made = words.map((wd, i) => {
-    const el = makeElement(Object.assign({ text: wd }, tpl.style), state.page.margin + cellW * (i + 0.5), H * 0.5);
-    const g = getGeo(el.style);
-    el.scale = n2(Math.min(1, (cellW - 16) / g.w));
-    return el;
-  });
-  state.elements.push.apply(state.elements, made);
-  state.selected = made.map(m => m.id);
-  commit('wordrow'); renderAll(); renderPanels(); syncInspector();
-  toast('已添加 4 个单词卡，可继续修改文字');
-}
-
 /* 快捷键 */
 document.addEventListener('keydown', e => {
   const tag = (e.target.tagName || '').toLowerCase();
@@ -1757,7 +1692,7 @@ document.addEventListener('keydown', e => {
   if (meta && e.key.toLowerCase() === 'd') { e.preventDefault(); duplicateSel(); return; }
   if (meta && e.key.toLowerCase() === 'a') { e.preventDefault(); state.selected = curPageEls().map(x => x.id); renderAll(); renderPanels(); syncInspector(); return; }
   if (e.key === 'Delete' || e.key === 'Backspace') { e.preventDefault(); deleteSel(); return; }
-  if (e.key === 'Escape') { $('#modal').hidden = true; select(null); return; }
+  if (e.key === 'Escape') { closeCsel(); select(null); return; }
   if (e.key.indexOf('Arrow') === 0) {
     const sel = selectedEls();
     if (!sel.length) return;
@@ -1781,11 +1716,11 @@ function seedDemo(force) {
   const tpl = TEMPLATES[0];
   const el = makeElement(Object.assign({ text: 'Hello' }, tpl.style), W / 2, H * 0.34);
   const g = getGeo(el.style);
-  el.scale = n2(Math.min(1, (W - 2 * state.page.margin - 12) / g.w));
+  el.scale = n2(Math.min(1, (W - 2 * state.page.margin - 45) / g.w));
   state.elements.push(el);
   const el2 = makeElement(Object.assign({}, (TEMPLATES.find(t => t.id === 'classroom') || tpl).style, { text: 'Welcome!' }), W / 2, H * 0.62);
   const g2 = getGeo(el2.style);
-  el2.scale = n2(Math.min(1, (W - 2 * state.page.margin - 12) / g2.w));
+  el2.scale = n2(Math.min(1, (W - 2 * state.page.margin - 45) / g2.w));
   state.elements.push(el2);
   state.selected = [];
 }
@@ -1794,9 +1729,9 @@ function boot() {
   try {
     const raw = localStorage.getItem(LSKEY);
     if (raw) {
-      const d = JSON.parse(raw);
+      const d = migrateToPX(JSON.parse(raw));
       if (d && d.elements && d.page) {
-        state.page = Object.assign({ orient: 'landscape', margin: 10, pages: 1 }, d.page);
+        state.page = Object.assign({ orient: 'landscape', margin: 38, pages: 1 }, d.page);
         state.elements = d.elements;
         state.elements.forEach(e => pruneStyle(e.style));
         state.currentPage = d.currentPage || 0;
@@ -1808,6 +1743,7 @@ function boot() {
   if (!loaded) seedDemo();
   renderAll(); renderPanels(); syncInspector();
   setTimeout(renderTemplates, 30);   /* 缩略图较慢，先让画布出图 */
+  enhanceSelect($('#selOrient'), true);
   hist.undo = [snapshot()];
   updateUndoBtns();
   fitZoom();
