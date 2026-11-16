@@ -109,6 +109,7 @@ hr{border:0;border-top:1px solid #eef2f9;margin:14px 0}
   <div class="brand"><i>☁️</i><span>云朵字工坊<small>KT Board Cloud Letter Maker</small></span></div>
   <button class="btn ghost" id="btnUndo" title="撤销 Ctrl+Z">↶ 撤销</button>
   <button class="btn ghost" id="btnRedo" title="重做 Ctrl+Shift+Z">↷ 重做</button>
+  <button class="btn ghost" id="btnDelSel" title="删除选中元素 (Delete)" disabled>🗑 删除</button>
   <span class="tbsep"></span>
   <button class="btn" id="btnSnap" title="拖拽时吸附到 20px 网格">▦ 网格吸附</button>
   <button class="btn" id="btnGuides" title="显示可打印区域">▭ 边距线</button>
@@ -849,6 +850,7 @@ function renderPanels() {
   $$('#segOrient button').forEach(b => b.classList.toggle('on', b.dataset.v === state.page.orient));
   $('#rngMargin').value = state.page.margin;
   $('#valMargin').textContent = state.page.margin + 'px';
+  $('#btnDelSel').disabled = !state.selected.length;
   $('#btnSnap').classList.toggle('on', state.snap);
   $('#btnGuides').classList.toggle('on', state.guides);
   $('#inspTitle').textContent = state.selected.length ? (state.selected.length > 1 ? state.selected.length + ' 个元素' : '') : '未选中';
@@ -1663,6 +1665,7 @@ $('#btnSnap').onclick = () => { state.snap = !state.snap; renderAll(); renderPan
 $('#btnGuides').onclick = () => { state.guides = !state.guides; renderAll(); renderPanels(); };
 $('#btnUndo').onclick = undo;
 $('#btnRedo').onclick = redo;
+$('#btnDelSel').onclick = deleteSel;
 $('#btnExport').onclick = exportPDF;
 $('#btnExportJson').onclick = exportJSON;
 $('#btnImportJson').onclick = () => $('#fileJson').click();
