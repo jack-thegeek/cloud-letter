@@ -1,0 +1,1819 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>KT 板云朵字生成器 · Cloud Letter Maker</title>
+<style>
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{font-family:"PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;background:#eef2f9;color:#2b3a55;overflow:hidden;display:flex;flex-direction:column;font-size:13px;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font-family:inherit;font-size:13px;color:inherit}
+#topbar{height:56px;flex:0 0 56px;display:flex;align-items:center;gap:10px;padding:0 14px;background:#fff;border-bottom:1px solid #e3eaf5;box-shadow:0 1px 10px rgba(43,58,85,.06);z-index:20}
+.brand{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:700;letter-spacing:.5px;margin-right:6px;white-space:nowrap}
+.brand i{font-style:normal;font-size:19px}
+.brand small{display:block;font-size:10px;color:#93a2bd;font-weight:400;letter-spacing:0}
+.spacer{flex:1}
+.btn{border:1px solid #dbe4f2;background:#fff;border-radius:10px;padding:7px 11px;cursor:pointer;color:#3a4a68;display:inline-flex;align-items:center;gap:5px;transition:.15s;white-space:nowrap;line-height:1.2}
+.btn:hover{background:#f3f8ff;border-color:#b9d3f7;color:#2b6fd6}
+.btn:active{transform:translateY(1px)}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.btn.primary{background:linear-gradient(135deg,#7cc4f5,#6aa9ff);border:0;color:#fff;box-shadow:0 4px 14px rgba(106,169,255,.4);font-weight:600}
+.btn.primary:hover{filter:brightness(1.05);color:#fff}
+.btn.ghost{border-color:transparent;background:transparent}
+.btn.sm{padding:5px 8px;font-size:12px;border-radius:8px}
+.btn.on{background:#eaf3ff;border-color:#a9cdfb;color:#2b6fd6}
+main{flex:1;display:flex;min-height:0}
+aside{background:#fff;display:flex;flex-direction:column;min-height:0}
+#left{width:266px;flex:0 0 266px;border-right:1px solid #e3eaf5}
+#right{width:302px;flex:0 0 302px;border-left:1px solid #e3eaf5}
+.tabs{display:flex;gap:4px;padding:10px 10px 0;flex:0 0 auto}
+.tabs button{flex:1;border:0;background:#f2f6fc;border-radius:9px 9px 0 0;padding:8px 0;cursor:pointer;color:#7d8aa3;font-size:12.5px}
+.tabs button.on{background:#eaf3ff;color:#2b6fd6;font-weight:600}
+.panel{display:none;flex:1;overflow:auto;padding:12px 12px 30px;min-height:0}
+.panel.on{display:block}
+.sec{font-size:11px;color:#93a2bd;letter-spacing:1px;margin:14px 0 8px;font-weight:600}
+.sec:first-child{margin-top:2px}
+.tpl-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.tpl-card{border:2px solid #eef2f9;border-radius:12px;padding:5px;cursor:pointer;background:#fff;transition:.15s;text-align:center;position:relative;overflow:hidden}
+.tpl-card:hover{border-color:#bcd8fb;transform:translateY(-1px);box-shadow:0 6px 16px rgba(43,58,85,.09)}
+.tpl-card.on{border-color:#6aa9ff;box-shadow:0 0 0 3px rgba(106,169,255,.16)}
+.tpl-card .thumb{height:64px;display:flex;align-items:center;justify-content:center;background:#fafcff;border-radius:8px;overflow:hidden}
+.tpl-card .thumb svg{width:100%;height:100%;display:block}
+.tpl-card .nm{font-size:11px;margin-top:4px;color:#5c6b87;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.layer{display:flex;align-items:center;gap:6px;padding:6px 7px;border-radius:9px;cursor:pointer;margin-bottom:4px;border:1px solid transparent}
+.layer:hover{background:#f6f9ff}
+.layer.on{background:#eaf3ff;border-color:#c8defb}
+.layer .t{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px}
+.layer .dot{width:9px;height:9px;border-radius:50%;flex:0 0 auto}
+.layer .eye{opacity:.5;cursor:pointer;font-size:11px}
+.layer .eye:hover{opacity:1}
+.row{display:flex;align-items:center;gap:8px;margin-bottom:9px}
+.row>label{flex:0 0 76px;color:#6b7a96;font-size:12px}
+.row>label.w{flex:0 0 60px}
+.row .ctl{flex:1;display:flex;align-items:center;gap:6px;min-width:0}
+.row .val{flex:0 0 44px;text-align:right;color:#8b98b0;font-size:11.5px;font-variant-numeric:tabular-nums}
+select,input[type=text],textarea{width:100%;border:1px solid #dbe4f2;border-radius:8px;padding:6px 8px;background:#fff;outline:none}
+select:focus,textarea:focus,input[type=text]:focus{border-color:#8fbdf8;box-shadow:0 0 0 3px rgba(106,169,255,.13)}
+textarea{resize:vertical;min-height:52px;line-height:1.45}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:18px;background:transparent;cursor:pointer}
+input[type=range]::-webkit-slider-runnable-track{height:5px;border-radius:5px;background:#e4ecf8}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;margin-top:-5px;border-radius:50%;background:#fff;border:2px solid #6aa9ff;box-shadow:0 1px 4px rgba(43,58,85,.2)}
+input[type=range]::-moz-range-track{height:5px;border-radius:5px;background:#e4ecf8}
+input[type=range]::-moz-range-thumb{width:13px;height:13px;border-radius:50%;background:#fff;border:2px solid #6aa9ff}
+input[type=color]{width:36px;height:27px;padding:0;border:1px solid #dbe4f2;border-radius:8px;background:#fff;cursor:pointer;flex:0 0 auto}
+input[type=checkbox]{width:15px;height:15px;accent-color:#6aa9ff;cursor:pointer}
+.seg{display:flex;background:#f2f6fc;border-radius:9px;padding:2px;flex:1}
+.seg button{flex:1;border:0;background:transparent;border-radius:7px;padding:5px 0;cursor:pointer;color:#7d8aa3;font-size:12px}
+.seg button.on{background:#fff;color:#2b6fd6;font-weight:600;box-shadow:0 1px 4px rgba(43,58,85,.1)}
+.mini-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
+.mini-grid.two{grid-template-columns:repeat(2,1fr)}
+.mini-grid button{border:1px solid #e2e9f5;background:#fff;border-radius:8px;padding:6px 2px;cursor:pointer;font-size:11.5px;color:#5c6b87}
+.mini-grid button:hover{background:#f3f8ff;border-color:#bcd8fb;color:#2b6fd6}
+.swatches{display:flex;gap:5px;flex-wrap:wrap}
+.swatches i{width:17px;height:17px;border-radius:50%;cursor:pointer;border:2px solid #fff;box-shadow:0 0 0 1px #dbe4f2}
+.stops{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.stops input[type=color]{width:28px;height:24px;border-radius:6px}
+hr{border:0;border-top:1px solid #eef2f9;margin:14px 0}
+.hint{color:#93a2bd;font-size:12px;line-height:1.7;padding:20px 6px;text-align:center}
+#stage{flex:1;display:flex;flex-direction:column;min-width:0;background:#eef2f9}
+#stagebar{flex:0 0 42px;display:flex;align-items:center;gap:8px;padding:0 12px;background:rgba(255,255,255,.75);border-bottom:1px solid #e3eaf5;backdrop-filter:blur(6px)}
+#wrap{flex:1;overflow:auto;padding:26px;display:flex;min-height:0}
+#canvas{background:#fff;box-shadow:0 8px 30px rgba(43,58,85,.16);border-radius:2px;display:block;touch-action:none;flex:0 0 auto;margin:auto}
+#canvas text{user-select:none}
+.modal{position:fixed;inset:0;background:rgba(28,39,58,.5);display:flex;align-items:center;justify-content:center;z-index:100;padding:20px}
+.modal[hidden]{display:none}
+.modal-box{background:#fff;border-radius:16px;width:min(880px,96vw);max-height:94vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 60px rgba(20,30,50,.35)}
+.modal-head{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid #eef2f9}
+.modal-head .muted{color:#93a2bd;font-size:12px}
+.modal-body{overflow:auto;padding:18px;background:#f1f4fa;display:flex;flex-direction:column;align-items:center;gap:16px}
+.print-page{background:#fff;box-shadow:0 4px 18px rgba(43,58,85,.15)}
+.print-page svg{display:block;width:100%;height:100%}
+#toast{position:fixed;left:50%;bottom:28px;transform:translate(-50%,14px);background:rgba(43,58,85,.94);color:#fff;padding:9px 16px;border-radius:10px;font-size:12.5px;opacity:0;pointer-events:none;transition:.25s;z-index:200}
+#toast.on{opacity:1;transform:translate(-50%,0)}
+@media print{
+  @page{margin:0}
+  body{overflow:visible;display:block;background:#fff}
+  #topbar,#stage,#left,#right,#toast{display:none!important}
+  .modal{position:static;inset:auto;background:none;padding:0;display:block;overflow:visible}
+  .modal-box{box-shadow:none;border-radius:0;width:auto;max-height:none;display:block;overflow:visible}
+  .modal-head{display:none}
+  .modal-body{padding:0;background:#fff;display:block;overflow:visible}
+  .print-page{box-shadow:none;margin:0;break-after:page;page-break-after:always}
+  .print-page:last-child{break-after:auto;page-break-after:auto}
+}
+</style>
+</head>
+<body>
+<header id="topbar">
+  <div class="brand"><i>☁️</i><span>云朵字工坊<small>KT Board Cloud Letter Maker</small></span></div>
+  <button class="btn ghost" id="btnUndo" title="撤销 Ctrl+Z">↶ 撤销</button>
+  <button class="btn ghost" id="btnRedo" title="重做 Ctrl+Shift+Z">↷ 重做</button>
+  <div class="spacer"></div>
+  <select id="selOrient" aria-label="纸张方向" style="width:auto;padding:6px 10px;border-radius:10px">
+    <option value="portrait">A4 纵向 210×297</option>
+    <option value="landscape" selected>A4 横向 297×210</option>
+  </select>
+  <button class="btn" id="btnPreview">🖨 打印预览</button>
+  <button class="btn primary" id="btnExport">⬇ 导出 PDF</button>
+</header>
+<main>
+  <aside id="left">
+    <div class="tabs">
+      <button data-tab="tpl" class="on">模板库</button>
+      <button data-tab="layers">元素</button>
+      <button data-tab="page">页面</button>
+    </div>
+    <div class="panel on" id="panel-tpl">
+      <div class="sec">预设组合模板</div>
+      <div class="tpl-grid" id="tplGrid"></div>
+      <div class="sec">课堂常用短语</div>
+      <div class="mini-grid two" id="phraseGrid"></div>
+    </div>
+    <div class="panel" id="panel-layers">
+      <div class="sec">当前页元素</div>
+      <div id="layerList"></div>
+      <div class="sec">图层顺序</div>
+      <div class="mini-grid">
+        <button data-z="top">置顶</button>
+        <button data-z="up">上移</button>
+        <button data-z="down">下移</button>
+        <button data-z="bottom">置底</button>
+        <button data-z="dup">复制</button>
+        <button data-z="del">删除</button>
+      </div>
+    </div>
+    <div class="panel" id="panel-page">
+      <div class="sec">页面</div>
+      <div class="row"><label>方向</label><div class="ctl"><div class="seg" id="segOrient"><button data-v="portrait">纵向</button><button data-v="landscape" class="on">横向</button></div></div></div>
+      <div class="row"><label>页边距</label><div class="ctl"><input type="range" id="rngMargin" aria-label="页边距" min="0" max="25" step="1"><span class="val" id="valMargin">10mm</span></div></div>
+      <div class="row"><label>页数</label><div class="ctl"><button class="btn sm" id="btnPagePrev">◀</button><span id="pageLabel" style="flex:1;text-align:center">1 / 1</span><button class="btn sm" id="btnPageNext">▶</button></div></div>
+      <div class="mini-grid two">
+        <button id="btnAddPage">新增页</button>
+        <button id="btnDelPage">删除页</button>
+      </div>
+      <div class="sec">画布</div>
+      <div class="mini-grid two">
+        <button id="btnFit">适应窗口</button>
+        <button id="btnZoomReset">100%</button>
+      </div>
+      <div class="sec">工程文件</div>
+      <div class="mini-grid two">
+        <button id="btnExportJson">导出 JSON</button>
+        <button id="btnImportJson">导入 JSON</button>
+      </div>
+      <input type="file" id="fileJson" accept=".json,application/json" hidden>
+      <p class="hint" style="text-align:left;padding:8px 2px">JSON 可在别的电脑导入继续编辑。字体需对方已安装，缺失时自动回退。</p>
+      <hr>
+      <div class="sec">危险操作</div>
+      <div class="mini-grid two">
+        <button id="btnClearPage">清空本页</button>
+        <button id="btnReset">恢复默认</button>
+      </div>
+      <p class="hint" style="text-align:left;padding:12px 2px">所有编辑会自动保存在本机浏览器中，刷新不会丢失。</p>
+    </div>
+  </aside>
+  <section id="stage">
+    <div id="stagebar">
+      <button class="btn sm" id="btnAddText">＋ 添加文字</button>
+      <button class="btn sm" id="btnAddRow">＋ 一行单词</button>
+      <span style="width:8px"></span>
+      <button class="btn sm" id="btnSnap" title="拖拽时吸附到网格">▦ 网格吸附</button>
+      <button class="btn sm" id="btnGuides" title="显示可打印区域">▭ 边距线</button>
+      <div class="spacer"></div>
+      <span id="zoomLabel" style="color:#8b98b0;font-size:12px;min-width:42px;text-align:right">100%</span>
+      <button class="btn sm" id="btnZoomOut">－</button>
+      <button class="btn sm" id="btnZoomIn">＋</button>
+    </div>
+    <div id="wrap"><svg id="canvas" xmlns="http://www.w3.org/2000/svg"></svg></div>
+  </section>
+  <aside id="right">
+    <div style="padding:12px 14px 8px;border-bottom:1px solid #eef2f9;display:flex;align-items:center;gap:8px">
+      <b style="font-size:13px">属性</b>
+      <span id="inspTitle" style="color:#93a2bd;font-size:11.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
+      <div class="spacer"></div>
+      <button class="btn sm ghost" id="btnResetStyle" title="重置当前元素样式">重置样式</button>
+    </div>
+    <div class="panel on" id="inspector" style="display:block"></div>
+  </aside>
+</main>
+<div class="modal" id="modal" hidden>
+  <div class="modal-box">
+    <div class="modal-head">
+      <b>打印预览</b>
+      <span class="muted">按实际尺寸 1:1 输出，打印时请选择 A4、边距「无」</span>
+      <div class="spacer"></div>
+      <button class="btn" id="btnCloseModal">关闭</button>
+      <button class="btn primary" id="btnDoPrint">打印</button>
+    </div>
+    <div class="modal-body" id="printArea"></div>
+  </div>
+</div>
+<div id="toast"></div>
+<script>
+'use strict';
+/* =========================================================
+   Cloud Letter Maker — 单文件离线版
+   坐标单位：全部为 mm（A4 = 210×297），PDF 输出时换算为 pt
+   ========================================================= */
+const $ = s => document.querySelector(s);
+const $$ = s => Array.prototype.slice.call(document.querySelectorAll(s));
+const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
+const MM2PT = 72 / 25.4;
+const uid = () => 'e' + Math.random().toString(36).slice(2, 8);
+const n2 = v => Math.round(v * 100) / 100;
+const A4 = { w: 210, h: 297 };
+
+/* ---------------- 字体 ---------------- */
+const FONTS = {
+  round: { name: '圆体 Rounded', stack: '"Arial Rounded MT Bold","Varela Round",Nunito,"Trebuchet MS","Segoe UI",sans-serif' },
+  comic: { name: '漫画 Comic', stack: '"Comic Sans MS","Chalkboard SE","Comic Neue","Trebuchet MS",cursive' },
+  black: { name: '超粗 Impact', stack: 'Impact,"Arial Black","Haettenschweiler","Anton",sans-serif' },
+  sans: { name: '无衬线 Sans', stack: 'Helvetica,Arial,"Segoe UI",Roboto,sans-serif' },
+  serif: { name: '衬线 Serif', stack: 'Georgia,"Times New Roman",Times,serif' },
+  script: { name: '手写 Script', stack: '"Segoe Script","Bradley Hand","Brush Script MT","Comic Sans MS",cursive' },
+  mono: { name: '等宽 Mono', stack: '"Courier New",Courier,monospace' }
+};
+const fontStack = st => (FONTS[st.font] || FONTS.round).stack;
+const LINE_HEIGHT = 1.12;   /* 多行固定行距 */
+const fontCSS = (st, px) => (st.weight || 900) + ' ' + px + 'px ' + fontStack(st);
+
+/* =========================================================
+   1. 位图 -> 矢量：Canvas 渲染 -> 距离场 -> Marching Squares
+   ========================================================= */
+
+/* 渲染文字掩膜。返回 ink(1=墨迹) 与每 mm 的像素数 */
+function renderMask(st) {
+  const cv = document.createElement('canvas');
+  const ctx = cv.getContext('2d', { willReadFrequently: true });
+  const BASE = 100;
+  const lines = String(st.text == null ? '' : st.text).length ? String(st.text).split('\n') : [' '];
+  const lsEm = st.letterSpacing || 0;
+  const hasLS = 'letterSpacing' in ctx;      /* shortcut: 旧浏览器不支持字间距，会忽略该参数 */
+  const setLS = px => { if (hasLS) ctx.letterSpacing = (lsEm * px).toFixed(2) + 'px'; };
+
+  ctx.font = fontCSS(st, BASE);
+  setLS(BASE);
+  const m0 = ctx.measureText('Hxg');
+  const asc0 = m0.actualBoundingBoxAscent || BASE * 0.75;
+  const desc0 = m0.actualBoundingBoxDescent || BASE * 0.24;
+  const widths = lines.map(l => (l.trim() === '' ? BASE * 0.4 : ctx.measureText(l).width));
+  const lineH0 = BASE * LINE_HEIGHT;
+  const blockH0 = asc0 + desc0 + (lines.length - 1) * lineH0;
+
+  /* 目标字号：随 mm 字号放大，同时限制总像素量 */
+  let targetFont = clamp((st.size || 30) * 12, 90, 640);
+  let k = targetFont / BASE;
+  const tw0 = Math.max.apply(null, widths) * k, th0 = blockH0 * k;
+  const CAP = 1700;
+  k *= Math.min(1, CAP / Math.max(tw0, 1), CAP / Math.max(th0, 1));
+  let fontPx = BASE * k;
+  let pxPerMm = fontPx / (st.size || 30);
+
+  const outlineW = (st.outline || 'cloud') === 'none' ? 0 : Math.max(st.outerWidth || 0, st.innerWidth || 0);
+  const ampMM = (st.outline || 'cloud') === 'none' ? 0 : (st.bumpAmp || 0) * (st.bumpSize || 0);
+  let pad = Math.ceil((outlineW + ampMM * 1.4 + 2) * pxPerMm) + 8;
+  let W = Math.ceil(Math.max.apply(null, widths) * k + pad * 2);
+  let H = Math.ceil(blockH0 * k + pad * 2);
+  const MAXPX = 9e6;
+  if (W * H > MAXPX) {
+    const s = Math.sqrt(MAXPX / (W * H));
+    k *= s; fontPx = BASE * k; pxPerMm = fontPx / (st.size || 30);
+    pad = Math.ceil((outlineW + ampMM * 1.4 + 2) * pxPerMm) + 8;
+    W = Math.ceil(Math.max.apply(null, widths) * k + pad * 2);
+    H = Math.ceil(blockH0 * k + pad * 2);
+  }
+  cv.width = W; cv.height = H;
+
+  ctx.font = fontCSS(st, fontPx);
+  setLS(fontPx);
+  ctx.textBaseline = 'alphabetic';
+  ctx.textAlign = 'left';
+  ctx.fillStyle = '#000';
+  const asc = asc0 * k, desc = desc0 * k, lineH = lineH0 * k;
+  const blockH = asc + desc + (lines.length - 1) * lineH;
+  const top = (H - blockH) / 2;
+  const textW = Math.max.apply(null, widths) * k;
+  lines.forEach((ln, i) => {
+    /* 此处 ctx 已是 fontPx 字号，测量结果即为最终像素宽度 */
+    const w = ln.trim() === '' ? BASE * 0.4 : ctx.measureText(ln).width;
+    ctx.fillText(ln, pad + (textW - w) / 2, top + asc + i * lineH);
+  });
+
+  const data = ctx.getImageData(0, 0, W, H).data;
+  const ink = new Uint8Array(W * H);
+  for (let i = 0, j = 3; i < ink.length; i++, j += 4) ink[i] = data[j] > 110 ? 1 : 0;
+  return { ink, W, H, pxPerMm, pad };
+}
+
+/* 欧氏距离变换（Felzenszwalb & Huttenlocher），返回平方距离 */
+function edt(seed, w, h) {
+  const n = Math.max(w, h) + 2;
+  const f = new Float64Array(n), v = new Int32Array(n), z = new Float64Array(n + 1);
+  const d = new Float32Array(w * h), INF = 1e10;
+  for (let i = 0; i < w * h; i++) d[i] = seed[i] ? 0 : INF;
+  for (let y = 0; y < h; y++) {
+    const off = y * w;
+    for (let x = 0; x < w; x++) f[x] = d[off + x];
+    dt1d(f, w, d, off, 1, v, z);
+  }
+  for (let x = 0; x < w; x++) {
+    for (let y = 0; y < h; y++) f[y] = d[x + y * w];
+    dt1d(f, h, d, x, w, v, z);
+  }
+  return d;
+}
+function dt1d(f, n, out, off, stride, v, z) {
+  let k = 0; v[0] = 0; z[0] = -1e20; z[1] = 1e20;
+  for (let q = 1; q < n; q++) {
+    let s = ((f[q] + q * q) - (f[v[k]] + v[k] * v[k])) / (2 * q - 2 * v[k]);
+    while (s <= z[k]) { k--; s = ((f[q] + q * q) - (f[v[k]] + v[k] * v[k])) / (2 * q - 2 * v[k]); }
+    k++; v[k] = q; z[k] = s; z[k + 1] = 1e20;
+  }
+  k = 0;
+  for (let q = 0; q < n; q++) {
+    while (z[k + 1] < q) k++;
+    const dv = q - v[k];
+    out[off + q * stride] = dv * dv + f[v[k]];
+  }
+}
+
+/* 起伏函数：控制轮廓的云朵/波浪/气泡/不规则手感 */
+function makeBump(st, pxPerMm) {
+  const type = st.outline || 'cloud';
+  const size = Math.max(2, st.bumpSize || 8);
+  /* 起伏幅度不能超过文字到第一层边框的空隙，否则轮廓会啃到字 */
+  const gap = (st.innerWidth > 0.2 ? st.innerWidth : (st.outerWidth || 0)) * 0.8;
+  const A = Math.min((st.bumpAmp || 0) * size, gap) * pxPerMm;
+  const on = type !== 'rounded' && type !== 'none' && A > 0.01;
+  const k = 2 * Math.PI / (size * pxPerMm);
+  let f = () => 0;
+  if (type === 'cloud') f = (x, y) => A * (0.58 * Math.sin(x * k * 0.62 + 0.9) + 0.42 * Math.sin(y * k * 0.85 + 2.3));
+  else if (type === 'wave') f = (x, y) => A * (0.5 * Math.sin(x * k + 0.5) + 0.5 * Math.sin(y * k * 0.9 + 1.7));
+  else if (type === 'irregular') f = (x, y) => A * (0.4 * Math.sin(x * k * 0.47 + 1.1) + 0.33 * Math.sin(y * k * 0.61 + 2.7) + 0.27 * Math.sin((x + y) * k * 0.33 + 0.4));
+  else if (type === 'bubble') f = (x, y) => A * 0.22 * (Math.sin(x * k * 0.33 + 1.4) + Math.sin(y * k * 0.47 + 0.2));
+  return { on, f, amp: A };
+}
+
+/* 构建有符号距离场：内部为负，外部为正，并叠加起伏 */
+function buildField(st) {
+  const m = renderMask(st);
+  const { ink, W, H, pxPerMm } = m, N = W * H;
+  const notInk = new Uint8Array(N);
+  for (let i = 0; i < N; i++) notInk[i] = ink[i] ? 0 : 1;
+  const dInk = edt(ink, W, H), dEmpty = edt(notInk, W, H);
+  const fw = W + 2, fh = H + 2;
+  const F = new Float32Array(fw * fh);
+  const bump = makeBump(st, pxPerMm);
+  const soft = Math.max(2, ((st.innerWidth > 0.2 ? st.innerWidth : 2) * pxPerMm) * 0.85);
+  for (let y = 0; y < H; y++) {
+    for (let x = 0; x < W; x++) {
+      const i = y * W + x;
+      const sd = ink[i] ? -Math.sqrt(dEmpty[i]) : Math.sqrt(dInk[i]);
+      let v = sd;
+      if (bump.on && sd > -0.5) {
+        const t = sd <= 0 ? 0 : Math.min(1, sd / soft);
+        v = sd - bump.f(x, y) * (t * t * (3 - 2 * t));
+      }
+      F[(y + 1) * fw + x + 1] = v;
+    }
+  }
+  /* 边界复制填充：让等值线自然闭合，避免出现环绕整张画布的伪轮廓 */
+  for (let x = 0; x < fw; x++) { F[x] = F[fw + x]; F[(fh - 1) * fw + x] = F[(fh - 2) * fw + x]; }
+  for (let y = 0; y < fh; y++) { F[y * fw] = F[y * fw + 1]; F[y * fw + fw - 1] = F[y * fw + fw - 2]; }
+  return { F, fw, fh, pxPerMm, W, H };
+}
+
+/* Marching Squares：提取等值线闭合环 */
+function isoLoops(f, w, h, level) {
+  const pts = [], map = new Map(), segs = [];
+  for (let y = 0; y < h - 1; y++) {
+    const row = y * w;
+    for (let x = 0; x < w - 1; x++) {
+      const i0 = row + x;
+      const v0 = f[i0], v1 = f[i0 + 1], v2 = f[i0 + w + 1], v3 = f[i0 + w];
+      const b0 = v0 > level, b1 = v1 > level, b2 = v2 > level, b3 = v3 > level;
+      const idx = (b0 ? 1 : 0) | (b1 ? 2 : 0) | (b2 ? 4 : 0) | (b3 ? 8 : 0);
+      if (idx === 0 || idx === 15) continue;
+      const E = (key, ax, ay, av, bx, by, bv) => {
+        let p = map.get(key);
+        if (p === undefined) {
+          const dv = bv - av, t = dv === 0 ? 0.5 : (level - av) / dv;
+          pts.push([ax + (bx - ax) * t, ay + (by - ay) * t]);
+          p = pts.length - 1; map.set(key, p);
+        }
+        return p;
+      };
+      const e0 = () => E(i0 * 2, x, y, v0, x + 1, y, v1);
+      const e1 = () => E((i0 + 1) * 2 + 1, x + 1, y, v1, x + 1, y + 1, v2);
+      const e2 = () => E((i0 + w) * 2, x, y + 1, v3, x + 1, y + 1, v2);
+      const e3 = () => E(i0 * 2 + 1, x, y, v0, x, y + 1, v3);
+      const add = (a, b) => segs.push(a, b);
+      switch (idx) {
+        case 1: add(e3(), e0()); break;
+        case 2: add(e0(), e1()); break;
+        case 3: add(e3(), e1()); break;
+        case 4: add(e1(), e2()); break;
+        case 5: if ((v0 + v1 + v2 + v3) / 4 > level) { add(e3(), e2()); add(e0(), e1()); } else { add(e3(), e0()); add(e1(), e2()); } break;
+        case 6: add(e0(), e2()); break;
+        case 7: add(e3(), e2()); break;
+        case 8: add(e2(), e3()); break;
+        case 9: add(e0(), e2()); break;
+        case 10: if ((v0 + v1 + v2 + v3) / 4 > level) { add(e3(), e0()); add(e1(), e2()); } else { add(e3(), e2()); add(e0(), e1()); } break;
+        case 11: add(e1(), e2()); break;
+        case 12: add(e1(), e3()); break;
+        case 13: add(e0(), e1()); break;
+        case 14: add(e3(), e0()); break;
+      }
+    }
+  }
+  const nxt = new Map();
+  for (let s = 0; s < segs.length; s += 2) {
+    const a = segs[s], b = segs[s + 1];
+    if (!nxt.has(a)) nxt.set(a, []);
+    if (!nxt.has(b)) nxt.set(b, []);
+    nxt.get(a).push(b); nxt.get(b).push(a);
+  }
+  const seen = new Set(), loops = [];
+  nxt.forEach((_, start) => {
+    if (seen.has(start)) return;
+    const loop = []; let cur = start, prev = -1;
+    while (cur !== undefined && !seen.has(cur)) {
+      seen.add(cur); loop.push(pts[cur]);
+      const nb = nxt.get(cur) || [];
+      let nx = nb.find(p => p !== prev && !seen.has(p));
+      if (nx === undefined) nx = nb.find(p => p !== prev);
+      prev = cur; cur = nx;
+    }
+    if (loop.length > 7) loops.push(loop);
+  });
+  return loops;
+}
+
+function pointInPoly(p, poly) {
+  let inside = false;
+  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    const xi = poly[i][0], yi = poly[i][1], xj = poly[j][0], yj = poly[j][1];
+    if ((yi > p[1]) !== (yj > p[1]) && p[0] < (xj - xi) * (p[1] - yi) / (yj - yi) + xi) inside = !inside;
+  }
+  return inside;
+}
+function rdp(pts, tol) {
+  const n = pts.length;
+  if (n < 3) return pts.slice();
+  const keep = new Uint8Array(n); keep[0] = 1; keep[n - 1] = 1;
+  const stack = [[0, n - 1]];
+  while (stack.length) {
+    const [a, b] = stack.pop();
+    const ax = pts[a][0], ay = pts[a][1], dx = pts[b][0] - ax, dy = pts[b][1] - ay;
+    const len = Math.hypot(dx, dy) || 1;
+    let maxd = -1, idx = -1;
+    for (let i = a + 1; i < b; i++) {
+      const d = Math.abs((pts[i][0] - ax) * dy - (pts[i][1] - ay) * dx) / len;
+      if (d > maxd) { maxd = d; idx = i; }
+    }
+    if (maxd > tol && idx > 0) { keep[idx] = 1; stack.push([a, idx], [idx, b]); }
+  }
+  const out = [];
+  for (let i = 0; i < n; i++) if (keep[i]) out.push(pts[i]);
+  return out;
+}
+/* 闭合折线简化：从最远点切开分两段做 RDP */
+function simplifyLoop(pts, tol) {
+  const n = pts.length;
+  if (n < 12) return pts.slice();
+  let far = 0, maxd = -1;
+  for (let i = 1; i < n; i++) {
+    const d = (pts[i][0] - pts[0][0]) ** 2 + (pts[i][1] - pts[0][1]) ** 2;
+    if (d > maxd) { maxd = d; far = i; }
+  }
+  const a = rdp(pts.slice(0, far + 1), tol);
+  const b = rdp(pts.slice(far).concat([pts[0]]), tol);
+  return a.concat(b.slice(1, -1));
+}
+function chaikin(pts, iters) {
+  let p = pts;
+  for (let k = 0; k < iters; k++) {
+    const q = [];
+    for (let i = 0; i < p.length; i++) {
+      const a = p[i], b = p[(i + 1) % p.length];
+      q.push([a[0] * 0.75 + b[0] * 0.25, a[1] * 0.75 + b[1] * 0.25]);
+      q.push([a[0] * 0.25 + b[0] * 0.75, a[1] * 0.25 + b[1] * 0.75]);
+    }
+    p = q;
+  }
+  return p;
+}
+const smoothLoop = L => chaikin(simplifyLoop(L, 0.8), 1);
+
+/* 装饰小图形（全部为多边形，保证 PDF 可复用） */
+function shapePoly(kind, s, seed) {
+  const p = [];
+  if (kind === 'stars') {
+    for (let i = 0; i < 10; i++) {
+      const a = -Math.PI / 2 + i * Math.PI / 5, r = i % 2 ? s * 0.44 : s;
+      p.push([Math.cos(a) * r, Math.sin(a) * r]);
+    }
+  } else if (kind === 'hearts') {
+    for (let i = 0; i < 20; i++) {
+      const t = i / 20 * Math.PI * 2;
+      p.push([(16 * Math.pow(Math.sin(t), 3)) / 17 * s, -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t)) / 17 * s]);
+    }
+  } else if (kind === 'confetti') {
+    const a = seed * 1.9, c = Math.cos(a), si = Math.sin(a);
+    [[-0.35, -1], [0.35, -1], [0.35, 1], [-0.35, 1]].forEach(([u, v]) => {
+      p.push([(u * s * c - v * s * si), (u * s * si + v * s * c)]);
+    });
+  } else {
+    for (let i = 0; i < 14; i++) {
+      const a = i / 14 * Math.PI * 2;
+      p.push([Math.cos(a) * s, Math.sin(a) * s]);
+    }
+  }
+  return p;
+}
+
+/* 生成一个元素的完整几何（单位 mm，原点为轮廓包围盒中心） */
+function buildGeometry(st) {
+  const { F, fw, fh, pxPerMm } = buildField(st);
+  const hasOutline = (st.outline || 'cloud') !== 'none';
+  const L1 = hasOutline ? Math.max(st.outerWidth || 0, st.innerWidth || 0) : 0;
+  const L2 = hasOutline ? Math.min(st.innerWidth || 0, Math.max(0, L1 - 0.2)) : 0;
+
+  const rawText = isoLoops(F, fw, fh, 0);
+  const rawOuter = L1 > 0.05 ? isoLoops(F, fw, fh, L1 * pxPerMm) : [];
+  const rawInner = L2 > 0.05 ? isoLoops(F, fw, fh, L2 * pxPerMm) : [];
+  const depth = loops => loops.map((L, i) => loops.reduce((c, o, j) => (j !== i && pointInPoly(L[0], o) ? c + 1 : c), 0));
+
+  const textLoops = rawText.map(smoothLoop);
+  let outerLoops = [], innerLoops = [];
+  if (rawOuter.length) { const d = depth(rawOuter); outerLoops = rawOuter.filter((_, i) => d[i] % 2 === 0).map(smoothLoop); }
+  if (rawInner.length) { const d = depth(rawInner); innerLoops = rawInner.filter((_, i) => d[i] % 2 === 0).map(smoothLoop); }
+
+  const boxSrc = outerLoops.length ? outerLoops : textLoops;
+  let minx = 1e9, miny = 1e9, maxx = -1e9, maxy = -1e9;
+  boxSrc.forEach(L => L.forEach(p => {
+    if (p[0] < minx) minx = p[0]; if (p[0] > maxx) maxx = p[0];
+    if (p[1] < miny) miny = p[1]; if (p[1] > maxy) maxy = p[1];
+  }));
+  if (minx > maxx) { minx = miny = 0; maxx = maxy = 10; }
+  const cx = (minx + maxx) / 2, cy = (miny + maxy) / 2;
+  const toMM = L => L.map(p => [(p[0] - cx) / pxPerMm, (p[1] - cy) / pxPerMm]);
+  const o = outerLoops.map(toMM), iN = innerLoops.map(toMM), tx = textLoops.map(toMM);
+  const w = (maxx - minx) / pxPerMm, h = (maxy - miny) / pxPerMm;
+
+  /* 装饰：沿轮廓外侧均匀散布 */
+  let deco = [];
+  if (st.deco && st.deco !== 'none') {
+    const src = (o.length ? o : tx).slice().sort((a, b) => b.length - a.length)[0];
+    if (src && src.length > 10) {
+      const cen = src.reduce((a, p) => [a[0] + p[0], a[1] + p[1]], [0, 0]).map(v => v / src.length);
+      let per = 0;
+      const seg = [];
+      for (let i = 0; i < src.length; i++) {
+        const a = src[i], b = src[(i + 1) % src.length];
+        const d = Math.hypot(b[0] - a[0], b[1] - a[1]);
+        seg.push({ a, b, d, at: per }); per += d;
+      }
+      const N = Math.max(4, Math.min(9, Math.round(per / Math.max(14, w * 0.32))));
+      const base = st.deco === 'dots' ? 1.5 : st.deco === 'confetti' ? 1.8 : st.deco === 'hearts' ? 2.4 : 2.2;
+      for (let k = 0; k < N; k++) {
+        const target = per * (k + 0.5) / N;
+        let s0 = seg[0];
+        for (let j = 0; j < seg.length; j++) if (seg[j].at <= target) s0 = seg[j];
+        const t = s0.d ? (target - s0.at) / s0.d : 0;
+        const px = s0.a[0] + (s0.b[0] - s0.a[0]) * t, py = s0.a[1] + (s0.b[1] - s0.a[1]) * t;
+        let nx = px - cen[0], ny = py - cen[1];
+        const nl = Math.hypot(nx, ny) || 1; nx /= nl; ny /= nl;
+        const sc = base * (0.75 + 0.45 * Math.abs(Math.sin(k * 2.3 + 1.1)));
+        const off = 1.6 + sc * 0.85;
+        const pts = shapePoly(st.deco, sc, k + 1).map(p => [p[0] + px + nx * off, p[1] + py + ny * off]);
+        deco.push(pts);
+      }
+    }
+  }
+
+  const pathD = loops => loops.map(L => {
+    if (L.length < 3) return '';
+    let d = 'M' + n2(L[0][0]) + ' ' + n2(L[0][1]);
+    for (let i = 1; i < L.length; i++) d += 'L' + n2(L[i][0]) + ' ' + n2(L[i][1]);
+    return d + 'Z';
+  }).join('');
+
+  return {
+    outerPts: o, innerPts: iN, textPts: tx, deco,
+    outerD: pathD(o), innerD: pathD(iN), textD: pathD(tx),
+    w: Math.max(w, 0.1), h: Math.max(h, 0.1)
+  };
+}
+
+const GEOCACHE = new Map();
+function geoKey(st) {
+  return [st.text, st.font, st.weight, st.size, st.letterSpacing,
+    st.outline, st.outerWidth, st.innerWidth, st.bumpSize, st.bumpAmp, st.deco].join('¦');
+}
+function getGeo(st) {
+  const k = geoKey(st);
+  let g = GEOCACHE.get(k);
+  if (!g) {
+    g = buildGeometry(st);
+    GEOCACHE.set(k, g);
+    if (GEOCACHE.size > 60) GEOCACHE.delete(GEOCACHE.keys().next().value);
+  }
+  return g;
+}
+/* =========================================================
+   2. 状态 / 默认样式 / 模板
+   ========================================================= */
+const DEFAULT_STYLE = {
+  text: 'Hello',
+  font: 'round', weight: 900, size: 30, letterSpacing: 0.02,
+  fillMode: 'solid', fill: '#3aa0e8', grad: ['#ff5f6d', '#ffc371', '#47e0a0', '#4aa8e8', '#a97bff'], gradAngle: 90,
+  outline: 'cloud', outerColor: '#bfe4ff', outerWidth: 9, innerColor: '#ffffff', innerWidth: 3.5,
+  bumpSize: 15, bumpAmp: 0.22,
+  shadow: true, shadowColor: '#4a90c2', shadowX: 1, shadowY: 1.6, shadowAlpha: 0.18,
+  deco: 'none', decoColor: '#ffd93d', opacity: 1
+};
+
+const STYLE_KEYS = Object.keys(DEFAULT_STYLE);
+/* 丢掉已废弃/未知的样式字段（旧存档、旧 JSON 里可能还有） */
+function pruneStyle(st) {
+  if (!st || typeof st !== 'object') return st;
+  Object.keys(st).forEach(k => { if (STYLE_KEYS.indexOf(k) < 0) delete st[k]; });
+  return st;
+}
+const T = (id, name, text, style) => ({ id, name, text, style });
+const TEMPLATES = [
+  T('cloud', '云朵 Cloud', 'Hello', {
+    font: 'round', size: 32, outline: 'cloud', bumpSize: 15, bumpAmp: 0.22,
+    fill: '#3aa0e8', innerColor: '#ffffff', innerWidth: 3.5, outerColor: '#bfe4ff', outerWidth: 9,
+    shadow: true, shadowColor: '#4a90c2', shadowAlpha: 0.18
+  }),
+  T('bubble', '气泡 Bubble', 'POP', {
+    font: 'black', weight: 900, size: 34, outline: 'rounded', bumpSize: 16, bumpAmp: 0.08,
+    fill: '#ffd6e2', innerColor: '#ffffff', innerWidth: 3, outerColor: '#ff6f9c', outerWidth: 7,
+    shadow: true, shadowColor: '#ff6f9c', shadowAlpha: 0.3
+  }),
+  T('cute', '可爱 Cute', 'Sweet', {
+    font: 'round', size: 30, outline: 'cloud', bumpSize: 13, bumpAmp: 0.24,
+    fill: '#ff5c8a', innerColor: '#ffffff', innerWidth: 2.8, outerColor: '#ffe066', outerWidth: 7.5,
+    deco: 'hearts', decoColor: '#ff9ec4', shadow: true, shadowColor: '#d99ab0', shadowAlpha: 0.25
+  }),
+  T('cartoon', '卡通 Cartoon', 'WOW!', {
+    font: 'black', weight: 900, size: 34, outline: 'cloud', bumpSize: 20, bumpAmp: 0.26,
+    fill: '#ffd93d', innerColor: '#ffffff', innerWidth: 3.5, outerColor: '#1b1b1b', outerWidth: 5.5,
+    deco: 'stars', decoColor: '#ff6f9c', shadow: true, shadowColor: '#1b1b1b', shadowAlpha: 0.22
+  }),
+  T('classroom', '英语课堂', 'Welcome!', {
+    font: 'round', size: 30, outline: 'cloud', bumpSize: 14, bumpAmp: 0.24,
+    fill: '#ffffff', innerColor: '#4a90e2', innerWidth: 3, outerColor: '#ffef5c', outerWidth: 9.5,
+    deco: 'dots', decoColor: '#4a90e2', shadow: true, shadowColor: '#c9a227', shadowAlpha: 0.22
+  }),
+  T('sunny', '阳光 Sunny', 'Sunny', {
+    font: 'round', size: 32, outline: 'cloud', bumpSize: 13, bumpAmp: 0.24,
+    fill: '#fff3c4', innerColor: '#ffb020', innerWidth: 3, outerColor: '#ff8c42', outerWidth: 7,
+    deco: 'dots', decoColor: '#ffb020', shadow: true, shadowColor: '#d97b1a', shadowAlpha: 0.25
+  }),
+  T('navy', '星星 Star', 'Super', {
+    font: 'sans', weight: 900, size: 30, outline: 'irregular', bumpSize: 16, bumpAmp: 0.3,
+    fill: '#ffffff', innerColor: '#5b8def', innerWidth: 3, outerColor: '#1f3c88', outerWidth: 7,
+    deco: 'stars', decoColor: '#ffd93d', shadow: true, shadowColor: '#12224d', shadowAlpha: 0.3
+  }),
+  T('wordcards', '单词卡 Word Cards', 'Apple', {
+    font: 'round', size: 20, outline: 'rounded', bumpSize: 10, bumpAmp: 0,
+    fill: '#ffffff', innerColor: '#ffffff', innerWidth: 0, outerColor: '#ffb3c9', outerWidth: 4,
+    shadow: true, shadowColor: '#c98aa0', shadowAlpha: 0.2
+  })
+];
+const PHRASES = ['Welcome', 'Good Job', "Let's Learn", 'Happy English', 'Well Done', 'Try Again',
+  'Hello!', 'Thank You', 'Super Star', 'Class Rules', 'Good Morning', 'See You'];
+
+const state = {
+  page: { orient: 'landscape', margin: 10, pages: 1 },
+  elements: [],
+  selected: [],
+  currentPage: 0,
+  zoom: 1,
+  snap: true,
+  guides: true,
+  grid: 5,
+  tpl: 'cloud'
+};
+
+const pageDims = () => state.page.orient === 'portrait' ? { w: 210, h: 297 } : { w: 297, h: 210 };
+const selectedEls = () => state.elements.filter(e => state.selected.includes(e.id));
+const curPageEls = () => state.elements.filter(e => e.page === state.currentPage);
+
+function makeElement(patch, x, y) {
+  const st = Object.assign({}, DEFAULT_STYLE, patch || {});
+  return { id: uid(), x: x == null ? 0 : x, y: y == null ? 0 : y, scale: 1, rotation: 0, page: state.currentPage, hidden: false, style: st };
+}
+
+/* =========================================================
+   3. SVG 渲染
+   ========================================================= */
+const canvas = $('#canvas');
+const polyD = pts => {
+  if (!pts || !pts.length) return '';
+  let d = 'M' + n2(pts[0][0]) + ' ' + n2(pts[0][1]);
+  for (let i = 1; i < pts.length; i++) d += 'L' + n2(pts[i][0]) + ' ' + n2(pts[i][1]);
+  return d + 'Z';
+};
+const gradStops = st => (st.grad && st.grad.length ? st.grad : ['#ff9ec4', '#ffd93d']);
+function gradAxis(st, w, h) {
+  const a = (st.gradAngle || 0) * Math.PI / 180;
+  const L = (Math.abs(w * Math.cos(a)) + Math.abs(h * Math.sin(a))) / 2 || 1;
+  return { x1: -L * Math.cos(a), y1: -L * Math.sin(a), x2: L * Math.cos(a), y2: L * Math.sin(a) };
+}
+function elTransform(el) {
+  return 'translate(' + n2(el.x) + ' ' + n2(el.y) + ') rotate(' + n2(el.rotation || 0) + ') scale(' + n2(el.scale || 1) + ')';
+}
+function elementMarkup(el, geo, withDefs) {
+  const st = el.style, gid = 'gd_' + el.id, isGrad = st.fillMode === 'grad';
+  let defs = '';
+  if (isGrad && withDefs) {
+    const ax = gradAxis(st, geo.w, geo.h), stops = gradStops(st);
+    defs = '<linearGradient id="' + gid + '" gradientUnits="userSpaceOnUse" x1="' + n2(ax.x1) + '" y1="' + n2(ax.y1) +
+      '" x2="' + n2(ax.x2) + '" y2="' + n2(ax.y2) + '">' +
+      stops.map((c, i) => '<stop offset="' + n2(i / (stops.length - 1 || 1)) + '" stop-color="' + c + '"/>').join('') +
+      '</linearGradient>';
+  }
+  const fill = isGrad ? 'url(#' + gid + ')' : (st.fill || '#fff');
+  let s = '<g data-id="' + el.id + '" transform="' + elTransform(el) + '" opacity="' + (st.opacity == null ? 1 : st.opacity) + '">';
+  const base = geo.outerD || geo.textD;
+  if (st.shadow) s += '<path d="' + base + '" fill="' + st.shadowColor + '" fill-rule="evenodd" opacity="' + (st.shadowAlpha == null ? 0.18 : st.shadowAlpha) +
+    '" transform="translate(' + n2(st.shadowX || 0) + ' ' + n2(st.shadowY || 0) + ')"/>';
+  if (geo.outerD) s += '<path d="' + geo.outerD + '" fill="' + st.outerColor + '" fill-rule="evenodd"/>';
+  if (geo.innerD) s += '<path d="' + geo.innerD + '" fill="' + st.innerColor + '" fill-rule="evenodd"/>';
+  s += '<path d="' + geo.textD + '" fill="' + fill + '" fill-rule="evenodd"/>';
+  geo.deco.forEach(p => { s += '<path d="' + polyD(p) + '" fill="' + (st.decoColor || '#ffd93d') + '"/>'; });
+  return { defs, body: s + '</g>' };
+}
+function selectionMarkup() {
+  const z = state.zoom || 1;
+  let s = '';
+  selectedEls().filter(e => e.page === state.currentPage && !e.hidden).forEach(el => {
+    const geo = getGeo(el.style), sc = el.scale || 1;
+    const w = geo.w / 2, h = geo.h / 2;
+    const hs = 3.4 / z / sc, sw = 1.1 / z / sc, dash = 4 / z / sc;
+    s += '<g transform="' + elTransform(el) + '" class="sel" data-sel="' + el.id + '">';
+    s += '<rect x="' + n2(-w) + '" y="' + n2(-h) + '" width="' + n2(2 * w) + '" height="' + n2(2 * h) +
+      '" fill="none" stroke="#6aa9ff" stroke-width="' + n2(sw) + '" stroke-dasharray="' + n2(dash) + ' ' + n2(dash * 0.7) + '" pointer-events="none"/>';
+    s += '<rect data-handle="scale" x="' + n2(w - hs) + '" y="' + n2(h - hs) + '" width="' + n2(hs * 2) + '" height="' + n2(hs * 2) +
+      '" rx="' + n2(hs * 0.4) + '" fill="#fff" stroke="#6aa9ff" stroke-width="' + n2(sw) + '" style="cursor:nwse-resize"/>';
+    s += '<circle data-handle="rotate" cx="0" cy="' + n2(-h - hs * 1.8) + '" r="' + n2(hs) + '" fill="#fff" stroke="#6aa9ff" stroke-width="' + n2(sw) + '" style="cursor:grab"/>';
+    s += '</g>';
+  });
+  return s;
+}
+function renderAll() {
+  const { w: W, h: H } = pageDims();
+  canvas.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+  canvas.style.width = (W * state.zoom) + 'mm';
+  canvas.style.height = (H * state.zoom) + 'mm';
+  let defs = '', body = '';
+  if (state.snap) {
+    defs += '<pattern id="gridp" width="' + state.grid + '" height="' + state.grid + '" patternUnits="userSpaceOnUse">' +
+      '<circle cx="0" cy="0" r="0.22" fill="#dfe8f6"/></pattern>';
+  }
+  body += '<rect x="0" y="0" width="' + W + '" height="' + H + '" fill="#ffffff"/>';
+  if (state.snap) body += '<rect x="0" y="0" width="' + W + '" height="' + H + '" fill="url(#gridp)" pointer-events="none"/>';
+  if (state.guides) {
+    const m = state.page.margin || 0;
+    body += '<rect x="' + m + '" y="' + m + '" width="' + (W - 2 * m) + '" height="' + (H - 2 * m) +
+      '" fill="none" stroke="#c9dcf5" stroke-width="0.3" stroke-dasharray="2 2" pointer-events="none"/>';
+  }
+  curPageEls().filter(e => !e.hidden).forEach(el => {
+    const m = elementMarkup(el, getGeo(el.style), true);
+    defs += m.defs; body += m.body;
+  });
+  body += selectionMarkup();
+  canvas.innerHTML = (defs ? '<defs>' + defs + '</defs>' : '') + body;
+  $('#zoomLabel').textContent = Math.round(state.zoom * 100) + '%';
+}
+function toMM(e) {
+  const pt = canvas.createSVGPoint();
+  pt.x = e.clientX; pt.y = e.clientY;
+  const p = pt.matrixTransform(canvas.getScreenCTM().inverse());
+  return { x: p.x, y: p.y };
+}
+
+/* =========================================================
+   4. 持久化 / 撤销
+   ========================================================= */
+const LSKEY = 'cloudletter.v1';
+const hist = { undo: [], redo: [], key: '', t: 0 };
+let saveTimer = 0;
+const snapshot = () => JSON.stringify({ page: state.page, elements: state.elements, currentPage: state.currentPage });
+function saveSoon() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => {
+    try { localStorage.setItem(LSKEY, snapshot()); } catch (err) { /* 隐私模式忽略 */ }
+  }, 400);
+}
+function commit(key) {
+  const snap = snapshot(), now = Date.now();
+  if (key && key === hist.key && now - hist.t < 900) hist.undo[hist.undo.length - 1] = snap;
+  else { hist.undo.push(snap); if (hist.undo.length > 100) hist.undo.shift(); hist.key = key || ''; }
+  hist.t = now; hist.redo.length = 0;
+  saveSoon(); updateUndoBtns();
+}
+function updateUndoBtns() {
+  $('#btnUndo').disabled = hist.undo.length < 2;
+  $('#btnRedo').disabled = !hist.redo.length;
+}
+function restore(snap) {
+  const d = JSON.parse(snap);
+  state.page = d.page; state.elements = d.elements; state.currentPage = d.currentPage;
+  state.selected = state.selected.filter(id => state.elements.some(e => e.id === id));
+  if (state.currentPage >= state.page.pages) state.currentPage = Math.max(0, state.page.pages - 1);
+  renderAll(); renderPanels(); syncInspector(); saveSoon();
+}
+function undo() { if (hist.undo.length < 2) return; hist.redo.push(hist.undo.pop()); restore(hist.undo[hist.undo.length - 1]); }
+function redo() { if (!hist.redo.length) return; const s = hist.redo.pop(); hist.undo.push(s); restore(s); }
+/* =========================================================
+   5. 左侧面板：模板 / 图层 / 页面
+   ========================================================= */
+function tplThumbSvg(tpl) {
+  const st = Object.assign({}, DEFAULT_STYLE, tpl.style, { text: tpl.text, size: Math.min(tpl.style.size || 30, 22) });
+  let geo;
+  try { geo = getGeo(st); } catch (e) { geo = null; }
+  const pad = Math.max(geo ? geo.w : 30, geo ? geo.h : 20);
+  const vb = (-pad * 0.62) + ' ' + (-pad * 0.48) + ' ' + (pad * 1.24) + ' ' + (pad * 0.96);
+  if (!geo) return '<svg viewBox="0 0 100 60"></svg>';
+  const gid = 'tg_' + tpl.id;
+  const ax = gradAxis(st, geo.w, geo.h);
+  const stops = gradStops(st);
+  let s = '<svg viewBox="' + vb + '" preserveAspectRatio="xMidYMid meet">';
+  s += '<defs><linearGradient id="' + gid + '" gradientUnits="userSpaceOnUse" x1="' + n2(ax.x1) + '" y1="' + n2(ax.y1) + '" x2="' + n2(ax.x2) + '" y2="' + n2(ax.y2) + '">' +
+    stops.map((c, i) => '<stop offset="' + n2(i / (stops.length - 1 || 1)) + '" stop-color="' + c + '"/>').join('') + '</linearGradient></defs>';
+  if (geo.outerD) s += '<path d="' + geo.outerD + '" fill="' + st.outerColor + '" fill-rule="evenodd"/>';
+  if (geo.innerD) s += '<path d="' + geo.innerD + '" fill="' + st.innerColor + '" fill-rule="evenodd"/>';
+  s += '<path d="' + geo.textD + '" fill="' + (st.fillMode === 'grad' ? 'url(#' + gid + ')' : st.fill) + '" fill-rule="evenodd"/>';
+  geo.deco.forEach(p => { s += '<path d="' + polyD(p) + '" fill="' + st.decoColor + '"/>'; });
+  return s + '</svg>';
+}
+function renderTemplates() {
+  $('#tplGrid').innerHTML = TEMPLATES.map(t =>
+    '<div class="tpl-card' + (state.tpl === t.id ? ' on' : '') + '" data-tpl="' + t.id + '" title="套用模板：' + t.name + '">' +
+    '<div class="thumb">' + tplThumbSvg(t) + '</div><div class="nm">' + t.name + '</div></div>').join('');
+  $('#phraseGrid').innerHTML = PHRASES.map(p => '<button data-phrase="' + p.replace(/"/g, '&quot;') + '">' + p + '</button>').join('');
+}
+function renderPanels() {
+  const els = curPageEls().slice().reverse();
+  $('#layerList').innerHTML = els.length ? els.map(e =>
+    '<div class="layer' + (state.selected.includes(e.id) ? ' on' : '') + '" data-el="' + e.id + '">' +
+    '<span class="dot" style="background:' + (e.style.fillMode === 'grad' ? e.style.grad[0] : e.style.fill) + '"></span>' +
+    '<span class="t">' + (e.style.text.replace(/\n/g, ' ↵ ') || '（空）') + '</span>' +
+    '<span class="eye" data-eye="' + e.id + '" title="显示/隐藏">' + (e.hidden ? '🚫' : '👁') + '</span></div>').join('')
+    : '<p class="hint">还没有元素，点击「＋ 添加文字」开始。</p>';
+  $('#pageLabel').textContent = (state.currentPage + 1) + ' / ' + state.page.pages;
+  $('#selOrient').value = state.page.orient;
+  $$('#segOrient button').forEach(b => b.classList.toggle('on', b.dataset.v === state.page.orient));
+  $('#rngMargin').value = state.page.margin;
+  $('#valMargin').textContent = state.page.margin + 'mm';
+  $('#btnSnap').classList.toggle('on', state.snap);
+  $('#btnGuides').classList.toggle('on', state.guides);
+  $('#inspTitle').textContent = state.selected.length ? (state.selected.length > 1 ? state.selected.length + ' 个元素' : '') : '未选中';
+}
+/* 元素超出可打印宽度时按比例缩小（只缩不放，保留用户主动放大的意图） */
+function fitWidth(el) {
+  const g = getGeo(el.style);
+  const maxW = pageDims().w - 2 * (state.page.margin || 0);
+  if (g.w > 0 && g.w * (el.scale || 1) > maxW) el.scale = n2(maxW / g.w);
+}
+function applyTemplate(id, single) {
+  const tpl = TEMPLATES.find(t => t.id === id);
+  if (!tpl) return;
+  state.tpl = id;
+  const sel = selectedEls();
+  if (single && sel.length === 1) {
+    sel[0].style = Object.assign({}, sel[0].style, tpl.style);
+    fitWidth(sel[0]);
+  } else if (sel.length > 1) {
+    sel.forEach(e => { e.style = Object.assign({}, e.style, tpl.style); fitWidth(e); });
+  } else {
+    const { w: W, h: H } = pageDims();
+    const el = makeElement(Object.assign({ text: tpl.text }, tpl.style), W / 2, H * 0.36);
+    const geo = getGeo(el.style);
+    const sc = Math.min(1, (W - 2 * state.page.margin - 10) / geo.w);
+    el.scale = n2(sc);
+    if (id === 'wordcards') {
+      const words = ('apple, banana, orange, grape, peach, lemon').split(/[,，\n]/).map(x => x.trim()).filter(Boolean).slice(0, 12);
+      const cols = W > H ? 4 : 3;
+      words.forEach((wd, i) => {
+        const c = i % cols, r = Math.floor(i / cols);
+        const e2 = makeElement(Object.assign({ text: wd }, tpl.style), 0, 0);
+        e2.scale = n2(Math.min(1, (W - 2 * state.page.margin) / cols / (getGeo(e2.style).w + 8)));
+        e2.x = state.page.margin + (c + 0.5) * (W - 2 * state.page.margin) / cols;
+        e2.y = state.page.margin + 18 + r * 26;
+        state.elements.push(e2);
+      });
+    } else state.elements.push(el);
+    state.selected = [el.id];
+  }
+  commit('tpl-' + id);
+  renderTemplates(); renderAll(); renderPanels(); syncInspector();
+  toast('已套用模板：' + tpl.name);
+}
+function phraseToNew(text) {
+  const { w: W, h: H } = pageDims();
+  const tpl = TEMPLATES.find(t => t.id === state.tpl) || TEMPLATES[0];
+  const el = makeElement(Object.assign({ text }, tpl.style), W / 2, H / 2);
+  const geo = getGeo(el.style);
+  el.scale = n2(Math.min(1, (W - 2 * state.page.margin - 8) / geo.w));
+  state.elements.push(el);
+  state.selected = [el.id];
+  commit('phrase'); renderAll(); renderPanels(); syncInspector();
+}
+
+/* =========================================================
+   6. 属性面板
+   ========================================================= */
+function getVal(key) {
+  const sel = selectedEls();
+  if (!sel.length) return undefined;
+  const v = sel[0].style[key];
+  return sel.every(e => JSON.stringify(e.style[key]) === JSON.stringify(v)) ? v : undefined;
+}
+const row = (label, inner, wide) => '<div class="row"><label class="' + (wide ? 'w' : '') + '">' + label + '</label><div class="ctl">' + inner + '</div></div>';
+const range = (key, min, max, step, unit, extra) =>
+  '<input type="range" data-key="' + key + '" min="' + min + '" max="' + max + '" step="' + step + '" value="' + (getVal(key) ?? 0) + '"><span class="val" data-val="' + key + '">' + fmt(getVal(key), unit) + '</span>';
+const fmt = (v, unit) => (v == null ? '—' : (typeof v === 'number' ? Math.round(v * 100) / 100 : v) + (unit || ''));
+const SWATCHES = ['#ffffff', '#fff3c4', '#ffd6e2', '#bfe4ff', '#d9f5e1', '#e6ddff', '#ffd93d', '#ff8c42', '#ff6f9c', '#6aa9ff', '#47e0a0', '#1b1b1b'];
+
+function syncInspector() {
+  const box = $('#inspector');
+  const el = selectedEls()[0];
+  if (!el) {
+    box.innerHTML = '<p class="hint">在画布上点选一个云朵字元素，或点击「＋ 添加文字」。<br><br>双击画布空白处也可新建。</p>' +
+      '<hr><div class="sec">页面</div>' + row('方向', '<div class="seg" id="segOrient2"><button data-v="portrait" class="' + (state.page.orient === 'portrait' ? 'on' : '') + '">纵向</button><button data-v="landscape" class="' + (state.page.orient === 'landscape' ? 'on' : '') + '">横向</button></div>', true);
+    bindInspector(); return;
+  }
+  const st = el.style;
+  const multi = state.selected.length > 1;
+  let h = '';
+  h += '<div class="sec">文字</div>';
+  if (multi) h += '<p class="hint" style="padding:2px 2px 10px;text-align:left">已选中 ' + state.selected.length + ' 个元素，参数会一起修改；文字内容请逐个编辑。</p>';
+  else h += '<textarea id="txtInput" aria-label="文字内容" placeholder="输入英文单词、短语或句子">' + st.text + '</textarea>';
+  h += row('字体', '<select data-key="font">' + Object.keys(FONTS).map(k => '<option value="' + k + '"' + (getVal('font') === k ? ' selected' : '') + '>' + FONTS[k].name + '</option>').join('') + '</select>', true);
+  h += row('字号', range('size', 8, 120, 0.5, 'mm'), true);
+  h += row('字重', '<div class="seg" data-key="weight">' + [[400, '常规'], [700, '粗'], [900, '超粗']].map(([v, t]) => '<button data-val="' + v + '" class="' + (getVal('weight') === v ? 'on' : '') + '">' + t + '</button>').join('') + '</div>', true);
+  h += row('字间距', range('letterSpacing', -0.05, 0.4, 0.01, 'em'), true);
+
+  h += '<div class="sec">文字颜色</div>';
+  h += row('填充', '<div class="seg" data-key="fillMode">' + [['solid', '纯色'], ['grad', '渐变']].map(([v, t]) => '<button data-val="' + v + '" class="' + (getVal('fillMode') === v ? 'on' : '') + '">' + t + '</button>').join('') + '</div>', true);
+  h += row('颜色', '<input type="color" data-key="fill" value="' + st.fill + '">' + '<div class="swatches">' + SWATCHES.map(c => '<i data-swatch="fill" data-c="' + c + '" style="background:' + c + '"></i>').join('') + '</div>');
+  if (getVal('fillMode') === 'grad') {
+    h += row('渐变色', '<div class="stops">' + (st.grad || []).map((c, i) => '<input type="color" data-grad="' + i + '" value="' + c + '">').join('') +
+      '<button class="btn sm" data-grad-add="1">＋</button><button class="btn sm" data-grad-del="1">－</button></div>');
+    h += row('渐变角', range('gradAngle', 0, 360, 5, '°'), true);
+  }
+
+  h += '<div class="sec">轮廓（云朵边）</div>';
+  h += row('类型', '<select data-key="outline">' + [['cloud', '☁ 云朵 Cloud'], ['bubble', '● 气泡 Bubble'], ['rounded', '⬭ 圆角 Rounded'], ['wave', '〰 波浪 Wave'], ['irregular', '✳ 不规则 Irregular'], ['none', '无轮廓 None']].map(([v, t]) => '<option value="' + v + '"' + (getVal('outline') === v ? ' selected' : '') + '>' + t + '</option>').join('') + '</select>', true);
+  h += row('外框颜色', '<input type="color" data-key="outerColor" value="' + st.outerColor + '">' + '<div class="swatches">' + SWATCHES.map(c => '<i data-swatch="outerColor" data-c="' + c + '" style="background:' + c + '"></i>').join('') + '</div>');
+  h += row('外框粗细', range('outerWidth', 0, 20, 0.5, 'mm'), true);
+  h += row('内框颜色', '<input type="color" data-key="innerColor" value="' + st.innerColor + '"><div class="swatches">' + SWATCHES.map(c => '<i data-swatch="innerColor" data-c="' + c + '" style="background:' + c + '"></i>').join('') + '</div>');
+  h += row('内框粗细', range('innerWidth', 0, 14, 0.5, 'mm'), true);
+  h += row('起伏大小', range('bumpSize', 3, 30, 0.5, 'mm'), true);
+  h += row('起伏强度', range('bumpAmp', 0, 0.8, 0.02, ''), true);
+
+  h += '<div class="sec">装饰 / 阴影</div>';
+  h += row('装饰', '<select data-key="deco">' + [['none', '无'], ['dots', '圆点'], ['stars', '星星'], ['hearts', '爱心'], ['confetti', '彩纸'], ['flowers', '小花']].map(([v, t]) => '<option value="' + v + '"' + (getVal('deco') === v ? ' selected' : '') + '>' + t + '</option>').join('') + '</select>', true);
+  h += row('装饰色', '<input type="color" data-key="decoColor" value="' + st.decoColor + '">');
+  h += row('阴影', '<label style="display:flex;align-items:center;gap:6px;color:#6b7a96"><input type="checkbox" data-key="shadow"' + (getVal('shadow') ? ' checked' : '') + '> 开启立体阴影</label>');
+  h += row('阴影色', '<input type="color" data-key="shadowColor" value="' + st.shadowColor + '"><div class="swatches">' + SWATCHES.map(c => '<i data-swatch="shadowColor" data-c="' + c + '" style="background:' + c + '"></i>').join('') + '</div>');
+  h += row('阴影偏移', '<input type="range" data-key="shadowX" min="-4" max="4" step="0.2" value="' + st.shadowX + '"><span class="val">' + n2(st.shadowX) + '</span><input type="range" data-key="shadowY" min="-4" max="6" step="0.2" value="' + st.shadowY + '"><span class="val">' + n2(st.shadowY) + '</span>');
+
+  h += '<div class="sec">位置与变换</div>';
+  h += row('X 位置', '<input type="range" data-prop="x" min="-50" max="' + pageDims().w + '" step="0.5" value="' + el.x + '"><span class="val">' + n2(el.x) + '</span>');
+  h += row('Y 位置', '<input type="range" data-prop="y" min="-50" max="' + pageDims().h + '" step="0.5" value="' + el.y + '"><span class="val">' + n2(el.y) + '</span>');
+  h += row('缩放', '<input type="range" data-prop="scale" min="0.1" max="3" step="0.01" value="' + el.scale + '"><span class="val">' + Math.round(el.scale * 100) + '%</span>');
+  h += row('旋转', '<input type="range" data-prop="rotation" min="-180" max="180" step="1" value="' + el.rotation + '"><span class="val">' + Math.round(el.rotation) + '°</span>');
+  h += row('透明度', '<input type="range" data-key="opacity" min="0.1" max="1" step="0.01" value="' + st.opacity + '"><span class="val">' + Math.round(st.opacity * 100) + '%</span>');
+
+  h += '<div class="sec">排列</div><div class="mini-grid">' +
+    '<button data-align="left">左对齐</button><button data-align="hcenter">水平居中</button><button data-align="right">右对齐</button>' +
+    '<button data-align="top">顶部对齐</button><button data-align="vcenter">垂直居中</button><button data-align="bottom">底部对齐</button>' +
+    '<button data-dist="h">水平等距</button><button data-dist="v">垂直等距</button><button data-act="centerPage">页面居中</button>' +
+    '<button data-act="fitPage">适应页面</button><button data-act="autoArr">自动排列</button><button data-act="dup">复制</button>' +
+    '<button data-act="del">删除</button>' +
+    '</div>';
+  box.innerHTML = h;
+  /* 无障碍：把行标签关联到控件 */
+  box.querySelectorAll('.row').forEach(r => {
+    const lb = r.querySelector('label');
+    if (!lb) return;
+    const txt = lb.textContent.trim();
+    r.querySelectorAll('input,select,textarea').forEach((ctl, i) => {
+      if (!ctl.getAttribute('aria-label')) ctl.setAttribute('aria-label', i ? txt + ' ' + (i + 1) : txt);
+    });
+  });
+  bindInspector();
+}
+
+const UNITS = { size: 'mm', outerWidth: 'mm', innerWidth: 'mm', bumpSize: 'mm', letterSpacing: 'em', gradAngle: '°', opacity: '%' };
+function rangeText(k, v) {
+  if (k === 'opacity') return Math.round(v * 100) + '%';
+  if (k === 'letterSpacing') return (Math.round(v * 100) / 100) + 'em';
+  return (Math.round(v * 10) / 10) + (UNITS[k] || '');
+}
+function bindInspector() {
+  const box = $('#inspector');
+  const txt = $('#txtInput');
+  if (txt) {
+    const flush = () => {
+      clearTimeout(txt._t);
+      selectedEls().forEach(fitWidth);
+      renderAll();
+      const sc = document.querySelector('#inspector input[data-prop="scale"]');
+      const first = selectedEls()[0];
+      if (sc && first) sc.value = first.scale;
+    };
+    txt.oninput = () => {
+      const v = txt.value;
+      selectedEls().forEach(e => { e.style.text = v; });
+      renderPanels();
+      clearTimeout(txt._t);
+      txt._t = setTimeout(flush, 300);   /* 描边重算约 200ms，输入时防抖 */
+      commit('text-' + (state.selected[0] || ''));
+    };
+    txt.onblur = flush;
+  }
+  box.querySelectorAll('input[type=range][data-key],input[type=range][data-prop]').forEach(inp => {
+    inp.oninput = () => {
+      const v = parseFloat(inp.value);
+      if (inp.dataset.prop) {
+        selectedEls().forEach(e => { e[inp.dataset.prop] = v; });
+        const val = inp.parentNode.querySelector('.val');
+        if (val) val.textContent = inp.dataset.prop === 'scale' ? Math.round(v * 100) + '%' : inp.dataset.prop === 'rotation' ? Math.round(v) + '°' : n2(v);
+        updateTransforms();
+      } else {
+        const k = inp.dataset.key;
+        selectedEls().forEach(e => { e.style[k] = v; });
+        const val = box.querySelector('.val[data-val="' + k + '"]');
+        if (val) val.textContent = rangeText(k, v);
+        renderAll();
+      }
+      commit(inp.dataset.prop || inp.dataset.key);
+    };
+  });
+  box.querySelectorAll('input[type=color]').forEach(inp => {
+    inp.oninput = () => {
+      if (inp.dataset.grad != null) {
+        const i = +inp.dataset.grad;
+        selectedEls().forEach(e => { e.style.grad[i] = inp.value; });
+      } else selectedEls().forEach(e => { e.style[inp.dataset.key] = inp.value; });
+      renderAll(); commit('color' + inp.dataset.key);
+    };
+  });
+  box.querySelectorAll('input[type=checkbox][data-key]').forEach(inp => {
+    inp.onchange = () => {
+      selectedEls().forEach(e => { e.style[inp.dataset.key] = inp.checked; });
+      renderAll(); commit('chk' + inp.dataset.key);
+    };
+  });
+  box.querySelectorAll('select[data-key]').forEach(sel => {
+    sel.onchange = () => {
+      const k = sel.dataset.key;
+      selectedEls().forEach(e => { e.style[k] = sel.value; });
+      renderAll(); commit('sel' + k); syncInspector();
+    };
+  });
+  box.querySelectorAll('.seg[data-key]').forEach(seg => {
+    seg.querySelectorAll('button').forEach(b => {
+      b.onclick = () => {
+        const k = seg.dataset.key;
+        const v = k === 'weight' ? +b.dataset.val : b.dataset.val;
+        selectedEls().forEach(e => { e.style[k] = v; });
+        renderAll(); commit('seg' + k); syncInspector();
+      };
+    });
+  });
+  box.querySelectorAll('[data-swatch]').forEach(i => {
+    i.onclick = () => {
+      const k = i.dataset.swatch;
+      selectedEls().forEach(e => { e.style[k] = i.dataset.c; });
+      renderAll(); commit('sw' + k); syncInspector();
+    };
+  });
+  box.querySelectorAll('[data-grad-add]').forEach(b => {
+    b.onclick = () => {
+      const sel = selectedEls();
+      if (!sel.length) return;
+      const g = sel[0].style.grad.slice();
+      if (g.length >= 6) return toast('最多 6 个渐变色');
+      g.splice(g.length - 1, 0, '#ffffff');
+      sel.forEach(e => { e.style.grad = g.slice(); });
+      commit('grad'); syncInspector(); renderAll();
+    };
+  });
+  box.querySelectorAll('[data-grad-del]').forEach(b => {
+    b.onclick = () => {
+      const sel = selectedEls();
+      if (!sel.length) return;
+      const g = sel[0].style.grad.slice();
+      if (g.length <= 2) return toast('至少保留 2 个渐变色');
+      g.splice(g.length - 2, 1);
+      sel.forEach(e => { e.style.grad = g.slice(); });
+      commit('grad'); syncInspector(); renderAll();
+    };
+  });
+  box.querySelectorAll('[data-align]').forEach(b => { b.onclick = () => alignSel(b.dataset.align); });
+  box.querySelectorAll('[data-dist]').forEach(b => { b.onclick = () => distribute(b.dataset.dist); });
+  box.querySelectorAll('[data-act]').forEach(b => { b.onclick = () => action(b.dataset.act); });
+  if (box.querySelector('#segOrient2')) bindOrient(box);
+}
+function bindOrient(root) {
+  root.querySelectorAll('#segOrient2 button').forEach(b => {
+    b.onclick = () => setOrient(b.dataset.v);
+  });
+}
+/* =========================================================
+   7. 编辑操作：选择 / 拖拽 / 缩放 / 旋转 / 对齐 / 分布
+   ========================================================= */
+function select(id, additive) {
+  if (!id) state.selected = [];
+  else if (additive) {
+    const i = state.selected.indexOf(id);
+    if (i >= 0) state.selected.splice(i, 1); else state.selected.push(id);
+  } else state.selected = [id];
+  renderAll(); renderPanels(); syncInspector();
+}
+function elBounds(el) {
+  const geo = getGeo(el.style), sc = el.scale || 1;
+  return { x: el.x - geo.w * sc / 2, y: el.y - geo.h * sc / 2, w: geo.w * sc, h: geo.h * sc };
+}
+function alignSel(mode) {
+  const sel = selectedEls();
+  if (sel.length < 2) return toast('请先多选（Shift+点击）至少 2 个元素');
+  const bs = sel.map(elBounds);
+  const minx = Math.min.apply(null, bs.map(b => b.x)), maxx = Math.max.apply(null, bs.map(b => b.x + b.w));
+  const miny = Math.min.apply(null, bs.map(b => b.y)), maxy = Math.max.apply(null, bs.map(b => b.y + b.h));
+  const cx = (minx + maxx) / 2, cy = (miny + maxy) / 2;
+  sel.forEach((el, i) => {
+    const b = bs[i];
+    if (mode === 'left') el.x += minx - b.x;
+    if (mode === 'right') el.x += maxx - (b.x + b.w);
+    if (mode === 'hcenter') el.x += cx - (b.x + b.w / 2);
+    if (mode === 'top') el.y += miny - b.y;
+    if (mode === 'bottom') el.y += maxy - (b.y + b.h);
+    if (mode === 'vcenter') el.y += cy - (b.y + b.h / 2);
+  });
+  commit(); renderAll(); syncInspector();
+}
+function distribute(dir) {
+  const sel = selectedEls();
+  if (sel.length < 3) return toast('等间距分布需要至少 3 个元素');
+  const bs = sel.map(elBounds);
+  const idx = sel.map((e, i) => i).sort((a, b) => dir === 'h' ? bs[a].x - bs[b].x : bs[a].y - bs[b].y);
+  const first = bs[idx[0]], last = bs[idx[idx.length - 1]];
+  const total = dir === 'h' ? (last.x + last.w) - first.x : (last.y + last.h) - first.y;
+  const sum = bs.reduce((a, b) => a + (dir === 'h' ? b.w : b.h), 0);
+  const gap = (total - sum) / (sel.length - 1);
+  let cur = dir === 'h' ? first.x : first.y;
+  idx.forEach(i => {
+    if (dir === 'h') { sel[i].x = cur + bs[i].w / 2; cur += bs[i].w + gap; }
+    else { sel[i].y = cur + bs[i].h / 2; cur += bs[i].h + gap; }
+  });
+  commit(); renderAll(); syncInspector();
+  if (gap < 0) toast('元素总宽超过可用空间，已重叠排列');
+}
+function action(act) {
+  const sel = selectedEls(), { w: W, h: H } = pageDims(), m = state.page.margin;
+  if (act === 'centerPage') {
+    sel.forEach(e => { e.x = W / 2; e.y = H / 2; });
+  } else if (act === 'fitPage') {
+    sel.forEach(e => {
+      const g = getGeo(e.style);
+      e.scale = n2(Math.min(1.6, (W - 2 * m) / g.w, (H - 2 * m) / g.h));
+    });
+  } else if (act === 'autoArr') {
+    const all = curPageEls().filter(e => !e.hidden);
+    if (!all.length) return;
+    all.sort((a, b) => a.y - b.y);
+    const areaW = W - 2 * m, cols = all.length <= 3 ? 1 : (W > H ? Math.ceil(Math.sqrt(all.length * 1.4)) : Math.ceil(Math.sqrt(all.length)));
+    const rows = Math.ceil(all.length / cols);
+    const cellW = areaW / cols, cellH = (H - 2 * m) / Math.max(rows, 1);
+    all.forEach((e, i) => {
+      const c = i % cols, r = Math.floor(i / cols);
+      const g = getGeo(e.style);
+      e.scale = n2(Math.min(1.5, (cellW - 8) / g.w, (cellH - 8) / g.h, 3));
+      e.x = m + cellW * (c + 0.5); e.y = m + cellH * (r + 0.5);
+      e.rotation = 0;
+    });
+    state.selected = all.map(e => e.id);
+    toast('已自动排列 ' + all.length + ' 个元素');
+  } else if (act === 'dup') {
+    duplicateSel();
+    return;
+  } else if (act === 'del') {
+    deleteSel();
+    return;
+  }
+  commit(); renderAll(); renderPanels(); syncInspector();
+}
+function duplicateSel() {
+  const sel = selectedEls();
+  if (!sel.length) return;
+  const copies = sel.map(e => {
+    const c = JSON.parse(JSON.stringify(e));
+    c.id = uid(); c.x = e.x + 6; c.y = e.y + 6;
+    return c;
+  });
+  state.elements.push.apply(state.elements, copies);
+  state.selected = copies.map(c => c.id);
+  commit(); renderAll(); renderPanels(); syncInspector();
+}
+function deleteSel() {
+  if (!state.selected.length) return;
+  state.elements = state.elements.filter(e => !state.selected.includes(e.id));
+  state.selected = [];
+  commit(); renderAll(); renderPanels(); syncInspector();
+}
+function layerOrder(z) {
+  const id = state.selected[0];
+  if (!id) return;
+  const els = state.elements;
+  const pageIdx = [];
+  els.forEach((e, i) => { if (e.page === state.currentPage) pageIdx.push(i); });
+  const pos = pageIdx.findIndex(i => els[i].id === id);
+  if (pos < 0) return;
+  const target = z === 'top' ? pageIdx.length - 1 : z === 'bottom' ? 0 : z === 'up' ? pos + 1 : pos - 1;
+  if (target < 0 || target >= pageIdx.length || target === pos) return;
+  const a = pageIdx[pos], b = pageIdx[target];
+  const tmp = els[a]; els[a] = els[b]; els[b] = tmp;
+  commit('layer'); renderAll(); renderPanels();
+}
+
+/* 拖拽 / 缩放 / 旋转 */
+let drag = null;
+canvas.addEventListener('pointerdown', e => {
+  if (e.button !== 0) return;
+  const handle = e.target.getAttribute && e.target.getAttribute('data-handle');
+  const p = toMM(e);
+  if (handle) {
+    const sel = selectedEls();
+    if (!sel.length) return;
+    const el = sel[sel.length - 1];
+    const b = elBounds(el);
+    drag = { mode: handle, start: p, els: sel.map(x => ({ el: x, x: x.x, y: x.y, scale: x.scale, rotation: x.rotation })),
+      box: { w: b.w, h: b.h }, pivot: { x: el.x, y: el.y } };
+    try { canvas.setPointerCapture(e.pointerId); } catch (err) {}
+    return;
+  }
+  const g = e.target.closest ? e.target.closest('g[data-id]') : null;
+  if (!g) { select(null); drag = null; return; }
+  const id = g.getAttribute('data-id');
+  if (e.shiftKey) select(id, true);
+  else if (!state.selected.includes(id)) select(id);
+  const sel = selectedEls();
+  drag = { mode: 'move', start: p, els: sel.map(x => ({ el: x, x: x.x, y: x.y })) };
+  try { canvas.setPointerCapture(e.pointerId); } catch (err) {}
+});
+canvas.addEventListener('pointermove', e => {
+  if (!drag) return;
+  const p = toMM(e);
+  const dx = p.x - drag.start.x, dy = p.y - drag.start.y;
+  const snapv = v => state.snap ? Math.round(v / state.grid) * state.grid : v;
+  if (drag.mode === 'move') {
+    drag.els.forEach(o => {
+      o.el.x = n2(snapv(o.x + dx)); o.el.y = n2(snapv(o.y + dy));
+    });
+  } else if (drag.mode === 'scale') {
+    const base = drag.els[0];
+    const dist0 = Math.hypot(drag.start.x - drag.pivot.x, drag.start.y - drag.pivot.y) || 1;
+    const dist1 = Math.hypot(p.x - drag.pivot.x, p.y - drag.pivot.y);
+    const f = dist1 / dist0;
+    drag.els.forEach(o => { o.el.scale = clamp(n2(o.scale * f), 0.05, 6); });
+  } else if (drag.mode === 'rotate') {
+    const base = drag.els[0];
+    const a0 = Math.atan2(drag.start.y - drag.pivot.y, drag.start.x - drag.pivot.x);
+    const a1 = Math.atan2(p.y - drag.pivot.y, p.x - drag.pivot.x);
+    let deg = base.rotation + (a1 - a0) * 180 / Math.PI;
+    deg = Math.round(deg);
+    if (e.shiftKey) deg = Math.round(deg / 15) * 15;
+    drag.els.forEach(o => { o.el.rotation = ((deg % 360) + 540) % 360 - 180; });
+  }
+  updateTransforms();
+  if (drag.mode !== 'move' || drag.els.length === 1) {
+    const vals = $('#inspector').querySelectorAll('input[data-prop]');
+    vals.forEach(inp => {
+      const el = drag.els[0].el, k = inp.dataset.prop;
+      inp.value = el[k];
+      const sp = inp.parentNode.querySelector('.val');
+      if (sp) sp.textContent = k === 'scale' ? Math.round(el.scale * 100) + '%' : k === 'rotation' ? Math.round(el.rotation) + '°' : n2(el[k]);
+    });
+  }
+});
+canvas.addEventListener('pointerup', e => {
+  if (!drag) return;
+  const moved = drag;
+  drag = null;
+  try { canvas.releasePointerCapture(e.pointerId); } catch (err) {}
+  const same = moved.mode === 'move' ? moved.els.every(o => o.el.x === o.x && o.el.y === o.y)
+    : moved.els.every(o => o.el.scale === o.scale && o.el.rotation === o.rotation);
+  if (!same) commit();
+  renderAll(); renderPanels(); syncInspector();
+});
+canvas.addEventListener('dblclick', e => {
+  const g = e.target.closest ? e.target.closest('g[data-id]') : null;
+  if (g) { const t = $('#txtInput'); if (t) { t.focus(); t.select(); } return; }
+  addTextAt(toMM(e));
+});
+/* 滚轮缩放 */
+$('#wrap').addEventListener('wheel', e => {
+  if (!e.ctrlKey && !e.metaKey) return;
+  e.preventDefault();
+  setZoom(state.zoom * (e.deltaY < 0 ? 1.1 : 1 / 1.1));
+}, { passive: false });
+
+/* =========================================================
+   8. 新增 / 页面设置
+   ========================================================= */
+function addTextAt(p) {
+  const tpl = TEMPLATES.find(t => t.id === state.tpl) || TEMPLATES[0];
+  const el = makeElement(Object.assign({ text: 'Word' }, tpl.style), p ? p.x : pageDims().w / 2, p ? p.y : pageDims().h / 2);
+  const geo = getGeo(el.style);
+  el.scale = n2(Math.min(1, (pageDims().w - 2 * state.page.margin - 10) / geo.w));
+  state.elements.push(el);
+  state.selected = [el.id];
+  commit(); renderAll(); renderPanels(); syncInspector();
+  const t = $('#txtInput'); if (t) { t.focus(); t.select(); }
+}
+function setOrient(v) {
+  if (state.page.orient === v) return;
+  const old = pageDims();
+  state.page.orient = v;
+  const nw = pageDims();
+  curPageEls().forEach(e => {
+    e.x = n2(e.x - old.w / 2 + nw.w / 2);
+    e.y = n2(e.y - old.h / 2 + nw.h / 2);
+  });
+  $('#selOrient').value = v;
+  commit('orient'); renderAll(); renderPanels(); syncInspector(); fitZoom();
+}
+function setZoom(z) {
+  state.zoom = clamp(Math.round(z * 100) / 100, 0.1, 4);
+  renderAll();
+}
+function fitZoom() {
+  const wrap = $('#wrap'), { w: W, h: H } = pageDims();
+  const availW = wrap.clientWidth - 52, availH = wrap.clientHeight - 52;
+  const pxW = W * 3.7795, pxH = H * 3.7795;
+  setZoom(Math.min(availW / pxW, availH / pxH));
+}
+/* =========================================================
+   9. PDF 导出（纯矢量，零依赖）
+   ========================================================= */
+const KMM = 72 / 25.4;
+const pn = v => { const r = Math.round(v * 1000) / 1000; return String(r === 0 ? 0 : r); };
+const hexToRgbF = hex => {
+  const m = /^#?([0-9a-f]{6})$/i.exec(String(hex || '').trim());
+  const h = m ? m[1] : '000000';
+  return [0, 2, 4].map(i => Math.min(1, Math.max(0, parseInt(h.substr(i, 2), 16) / 255)));
+};
+/* 元素本地 mm -> pt（元素自身的位移/旋转/缩放交给 cm 矩阵） */
+const LPT = (x, y) => [x * KMM, y * KMM];
+function pdfPath(pts, M) {
+  const p0 = M(pts[0][0], pts[0][1]);
+  let s = pn(p0[0]) + ' ' + pn(p0[1]) + ' m';
+  for (let i = 1; i < pts.length; i++) {
+    const p = M(pts[i][0], pts[i][1]);
+    s += ' ' + pn(p[0]) + ' ' + pn(p[1]) + ' l';
+  }
+  return s + ' h';
+}
+/* 多色渐变：Type2 轴向 + Type3 拼接函数 */
+function buildShading(g) {
+  const stops = g.stops.map(hexToRgbF), n = stops.length;
+  const head = '<< /ShadingType 2 /ColorSpace /DeviceRGB /Coords [' + g.axis.map(pn).join(' ') + '] /Extend [true true] /Function ';
+  const pair = (i) => '<< /FunctionType 2 /Domain [0 1] /C0 [' + stops[i].map(pn).join(' ') + '] /C1 [' + stops[i + 1].map(pn).join(' ') + '] /N 1 >>';
+  if (n === 2) return head + pair(0) + ' >>';
+  const subs = [], bounds = [], enc = [];
+  for (let i = 0; i < n - 1; i++) { subs.push(pair(i)); enc.push('0 1'); if (i > 0) bounds.push(pn(i / (n - 1))); }
+  return head + '<< /FunctionType 3 /Domain [0 1] /Functions [' + subs.join(' ') + '] /Bounds [' + bounds.join(' ') + '] /Encode [' + enc.join(' ') + '] >> >>';
+}
+function buildPDF() {
+  const { w: PW, h: PH } = pageDims();
+  const grads = [];
+  const pages = [];
+  for (let p = 0; p < state.page.pages; p++) {
+    const L = ['q 0 0 ' + pn(PW * KMM) + ' ' + pn(PH * KMM) + ' re W n'];
+    state.elements.filter(e => e.page === p && !e.hidden).forEach(el => {
+      const st = el.style, geo = getGeo(st), sc = el.scale || 1;
+      const rad = (el.rotation || 0) * Math.PI / 180;
+      const cos = Math.cos(rad), sin = Math.sin(rad);
+      const a = cos * sc, b = -sin * sc, c = -sin * sc, d = -cos * sc;
+      const e0 = el.x * KMM, f0 = (PH - el.y) * KMM;
+      L.push('q');
+      if (st.opacity != null && st.opacity < 1) L.push(pn(st.opacity) + ' gs');
+      L.push([a, b, c, d, e0, f0].map(pn).join(' ') + ' cm');
+      const fill = (loops, hex) => {
+        if (!loops || !loops.length) return;
+        const rgb = hexToRgbF(hex);
+        L.push(rgb.map(pn).join(' ') + ' rg');
+        L.push(loops.map(x => pdfPath(x, LPT)).join(' ') + ' f*');
+      };
+      const base = geo.outerPts.length ? geo.outerPts : geo.textPts;
+      if (st.shadow && base.length) {
+        const rgb = hexToRgbF(st.shadowColor);
+        const al = st.shadowAlpha == null ? 0.18 : st.shadowAlpha;
+        L.push(al + ' ' + rgb.map(pn).join(' ') + ' rg');
+        const MS = (x, y) => LPT(x + (st.shadowX || 0), y + (st.shadowY || 0));
+        L.push(base.map(x => pdfPath(x, MS)).join(' ') + ' f*');
+      }
+      fill(geo.outerPts, st.outerColor);
+      fill(geo.innerPts, st.innerColor);
+      if (st.fillMode === 'grad' && geo.textPts.length) {
+        const ax = gradAxis(st, geo.w, geo.h);
+        const name = 'Sh' + grads.length;
+        grads.push({ stops: gradStops(st), axis: [ax.x1 * KMM, ax.y1 * KMM, ax.x2 * KMM, ax.y2 * KMM] });
+        L.push('q');
+        L.push(geo.textPts.map(x => pdfPath(x, LPT)).join(' ') + ' W* n');
+        L.push('/' + name + ' sh');
+        L.push('Q');
+      } else fill(geo.textPts, st.fill);
+      if (geo.deco.length) {
+        const rgb = hexToRgbF(st.decoColor);
+        L.push(rgb.map(pn).join(' ') + ' rg');
+        L.push(geo.deco.map(x => pdfPath(x, LPT)).join(' ') + ' f');
+      }
+      L.push('Q');
+    });
+    pages.push(L.join('\n') + '\nQ\n');
+  }
+
+  const objs = [];
+  const add = x => { objs.push(x); return objs.length; };
+  const catalogId = add(null), pagesId = add(null);
+  const fontId = add('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>');
+  const gsId = add('<< /Type /ExtGState /ca 1 /CA 1 >>');
+  const shStart = objs.length + 1;
+  grads.forEach(g => add(buildShading(g)));
+  const shDict = grads.length ? ' /Shading << ' + grads.map((_, i) => '/Sh' + i + ' ' + (shStart + i) + ' 0 R').join(' ') + ' >>' : '';
+  const kids = [];
+  pages.forEach(content => {
+    const cId = add('<< /Length ' + content.length + ' >>\nstream\n' + content + 'endstream');
+    kids.push(add('<< /Type /Page /Parent ' + pagesId + ' 0 R /MediaBox [0 0 ' + pn(PW * KMM) + ' ' + pn(PH * KMM) + ']' +
+      ' /Resources << /ExtGState << /GS1 ' + gsId + ' 0 R >> /Font << /F1 ' + fontId + ' 0 R >>' + shDict + ' >>' +
+      ' /Contents ' + cId + ' 0 R >>'));
+  });
+  objs[catalogId - 1] = '<< /Type /Catalog /Pages ' + pagesId + ' 0 R >>';
+  objs[pagesId - 1] = '<< /Type /Pages /Count ' + kids.length + ' /Kids [' + kids.map(i => i + ' 0 R').join(' ') + '] >>';
+
+  let pdf = '%PDF-1.4\n';
+  const offsets = [];
+  objs.forEach((x, i) => {
+    offsets.push(pdf.length);
+    pdf += (i + 1) + ' 0 obj\n' + x + '\nendobj\n';
+  });
+  const xref = pdf.length;
+  pdf += 'xref\n0 ' + (objs.length + 1) + '\n0000000000 65535 f \n';
+  offsets.forEach(o => { pdf += String(o).padStart(10, '0') + ' 00000 n \n'; });
+  pdf += 'trailer\n<< /Size ' + (objs.length + 1) + ' /Root ' + catalogId + ' 0 R >>\nstartxref\n' + xref + '\n%%EOF\n';
+  const bytes = new Uint8Array(pdf.length);
+  for (let i = 0; i < pdf.length; i++) bytes[i] = pdf.charCodeAt(i) & 255;
+  return bytes;
+}
+function exportPDF() {
+  try {
+    const bytes = buildPDF();
+    const blob = new Blob([bytes], { type: 'application/pdf' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'cloud-letter-A4-' + new Date().toISOString().slice(0, 10) + '.pdf';
+    document.body.appendChild(a); a.click();
+    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 4000);
+    toast('PDF 已生成：A4 ' + (state.page.orient === 'portrait' ? '纵向' : '横向') + ' · ' + Math.round(bytes.length / 1024) + ' KB');
+  } catch (err) {
+    console.error(err);
+    toast('导出失败：' + err.message);
+  }
+}
+
+/* =========================================================
+   10. 打印预览（同一套矢量数据，浏览器直接输出矢量）
+   ========================================================= */
+function pageSvgMarkup(p) {
+  const { w: W, h: H } = pageDims();
+  let defs = '', body = '<rect width="' + W + '" height="' + H + '" fill="#fff"/>';
+  state.elements.filter(e => e.page === p && !e.hidden).forEach(el => {
+    const m = elementMarkup(el, getGeo(el.style), true);
+    defs += m.defs; body += m.body;
+  });
+  return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="xMidYMid meet" style="width:100%;height:100%">' +
+    '<defs>' + defs + '</defs>' + body + '</svg>';
+}
+function openPreview() {
+  const { w: W, h: H } = pageDims();
+  const area = $('#printArea');
+  area.innerHTML = '';
+  for (let p = 0; p < state.page.pages; p++) {
+    const d = document.createElement('div');
+    d.className = 'print-page';
+    d.style.width = W + 'mm'; d.style.height = H + 'mm';
+    d.innerHTML = pageSvgMarkup(p);
+    area.appendChild(d);
+  }
+  $('#modal').hidden = false;
+}
+/* =========================================================
+   10.5 工程文件 JSON 导入 / 导出
+   ========================================================= */
+const HEXRE = /^#[0-9a-f]{6}$/i;
+const num = (v, d, lo, hi) => (typeof v === 'number' && isFinite(v)) ? clamp(v, lo, hi) : d;
+const pick = (v, list, d) => list.indexOf(v) >= 0 ? v : d;
+/* 导入文件来自外部，按信任边界处理：逐字段校验并回落到安全默认值 */
+function sanitizeElement(e, pages) {
+  if (!e || typeof e !== 'object') return null;
+  const st = Object.assign({}, DEFAULT_STYLE, e.style && typeof e.style === 'object' ? e.style : {});
+  st.text = typeof st.text === 'string' ? st.text.slice(0, 300) : 'Word';
+  st.font = pick(st.font, Object.keys(FONTS), 'round');
+  st.outline = pick(st.outline, ['cloud', 'bubble', 'rounded', 'wave', 'irregular', 'none'], 'cloud');
+  st.fillMode = pick(st.fillMode, ['solid', 'grad'], 'solid');
+  st.deco = pick(st.deco, ['none', 'dots', 'stars', 'hearts', 'confetti', 'flowers'], 'none');
+  ['fill', 'outerColor', 'innerColor', 'decoColor', 'shadowColor'].forEach(k => { if (!HEXRE.test(st[k])) st[k] = DEFAULT_STYLE[k]; });
+  st.grad = (Array.isArray(st.grad) ? st.grad.filter(c => HEXRE.test(c)) : []).slice(0, 6);
+  if (st.grad.length < 2) st.grad = DEFAULT_STYLE.grad.slice();
+  st.weight = pick(+st.weight, [400, 600, 700, 900], 900);
+  st.size = num(st.size, 30, 4, 200);
+  st.letterSpacing = num(st.letterSpacing, 0.02, -0.2, 0.8);
+  st.outerWidth = num(st.outerWidth, 9, 0, 30);
+  st.innerWidth = num(st.innerWidth, 3.5, 0, 30);
+  st.bumpSize = num(st.bumpSize, 15, 2, 60);
+  st.bumpAmp = num(st.bumpAmp, 0.2, 0, 1);
+  st.opacity = num(st.opacity, 1, 0.05, 1);
+  st.shadowX = num(st.shadowX, 1, -10, 10);
+  st.shadowY = num(st.shadowY, 1.6, -10, 10);
+  st.shadowAlpha = num(st.shadowAlpha, 0.18, 0, 1);
+  st.gradAngle = num(st.gradAngle, 90, 0, 360);
+  st.shadow = !!st.shadow;
+  return {
+    id: typeof e.id === 'string' && e.id ? e.id : uid(),
+    x: num(e.x, 100, -2000, 2000), y: num(e.y, 100, -2000, 2000),
+    scale: num(e.scale, 1, 0.05, 8),
+    rotation: num(e.rotation, 0, -360, 360),
+    page: Math.round(num(e.page, 0, 0, Math.max(0, pages - 1))),
+    hidden: !!e.hidden,
+    style: pruneStyle(st)
+  };
+}
+function exportJSON() {
+  const data = Object.assign({ app: 'cloud-letter', version: 1, savedAt: new Date().toISOString() }, JSON.parse(snapshot()));
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'cloud-letter-' + new Date().toISOString().slice(0, 10) + '.json';
+  document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 4000);
+  toast('已导出 JSON（' + state.elements.length + ' 个元素）');
+}
+function importJSON(file) {
+  const rd = new FileReader();
+  rd.onerror = () => toast('读取文件失败');
+  rd.onload = () => {
+    let d;
+    try { d = JSON.parse(String(rd.result)); } catch (err) { return toast('导入失败：不是有效的 JSON 文件'); }
+    if (!d || typeof d !== 'object' || !Array.isArray(d.elements) || !d.page || typeof d.page !== 'object')
+      return toast('导入失败：缺少 page / elements 字段');
+    const pages = Math.round(num(d.page.pages, 1, 1, 50));
+    const els = d.elements.map(e => sanitizeElement(e, pages)).filter(Boolean);
+    const seen = new Set();
+    els.forEach(e => { while (seen.has(e.id)) e.id = uid(); seen.add(e.id); });
+    state.page = {
+      orient: pick(d.page.orient, ['portrait', 'landscape'], 'landscape'),
+      margin: num(d.page.margin, 10, 0, 30),
+      pages: Math.max(pages, 1 + els.reduce((m, e) => Math.max(m, e.page), -1))
+    };
+    state.elements = els;
+    state.currentPage = Math.round(num(d.currentPage, 0, 0, state.page.pages - 1));
+    state.selected = [];
+    commit('import');
+    renderAll(); renderPanels(); syncInspector(); fitZoom();
+    toast('已导入 ' + els.length + ' 个元素');
+  };
+  rd.readAsText(file);
+}
+
+/* =========================================================
+   11. 事件绑定 / 启动
+   ========================================================= */
+function toast(msg) {
+  const t = $('#toast');
+  t.textContent = msg;
+  t.classList.add('on');
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => t.classList.remove('on'), 2400);
+}
+function updateTransforms() {
+  selectedEls().forEach(el => {
+    const tf = elTransform(el);
+    const g = canvas.querySelector('[data-id="' + el.id + '"]');
+    if (g) g.setAttribute('transform', tf);
+    const s = canvas.querySelector('[data-sel="' + el.id + '"]');
+    if (s) s.setAttribute('transform', tf);
+  });
+}
+
+/* 左侧 tabs */
+$$('#left .tabs button').forEach(b => {
+  b.onclick = () => {
+    $$('#left .tabs button').forEach(x => x.classList.toggle('on', x === b));
+    $$('#left .panel').forEach(p => p.classList.toggle('on', p.id === 'panel-' + b.dataset.tab));
+  };
+});
+$('#tplGrid').addEventListener('click', e => {
+  const c = e.target.closest('[data-tpl]');
+  if (!c) return;
+  applyTemplate(c.dataset.tpl, state.selected.length === 1);
+});
+$('#phraseGrid').addEventListener('click', e => {
+  const b = e.target.closest('[data-phrase]');
+  if (!b) return;
+  const sel = selectedEls();
+  if (sel.length) {
+    sel.forEach(el => { el.style.text = b.dataset.phrase; fitWidth(el); });
+    commit('phrase'); renderAll(); renderPanels(); syncInspector();
+  } else phraseToNew(b.dataset.phrase);
+});
+$('#layerList').addEventListener('click', e => {
+  const eye = e.target.closest('[data-eye]');
+  if (eye) {
+    const el = state.elements.find(x => x.id === eye.dataset.eye);
+    if (el) { el.hidden = !el.hidden; commit('hide'); renderAll(); renderPanels(); }
+    return;
+  }
+  const it = e.target.closest('[data-el]');
+  if (it) select(it.dataset.el, e.shiftKey);
+});
+$$('#panel-layers [data-z]').forEach(b => {
+  b.onclick = () => {
+    const z = b.dataset.z;
+    if (z === 'dup') duplicateSel();
+    else if (z === 'del') deleteSel();
+    else layerOrder(z);
+  };
+});
+$('#selOrient').onchange = e => setOrient(e.target.value);
+$('#rngMargin').oninput = e => {
+  state.page.margin = +e.target.value;
+  $('#valMargin').textContent = state.page.margin + 'mm';
+  renderAll(); saveSoon();
+};
+$('#rngMargin').onchange = () => commit('margin');
+$('#btnPagePrev').onclick = () => { if (state.currentPage > 0) { state.currentPage--; state.selected = []; renderAll(); renderPanels(); syncInspector(); } };
+$('#btnPageNext').onclick = () => { if (state.currentPage < state.page.pages - 1) { state.currentPage++; state.selected = []; renderAll(); renderPanels(); syncInspector(); } };
+$('#btnAddPage').onclick = () => {
+  state.page.pages++; state.currentPage = state.page.pages - 1; state.selected = [];
+  commit('addpage'); renderAll(); renderPanels(); syncInspector();
+  toast('已新增第 ' + state.page.pages + ' 页');
+};
+$('#btnDelPage').onclick = () => {
+  if (state.page.pages <= 1) return toast('至少保留 1 页');
+  if (!confirm('删除第 ' + (state.currentPage + 1) + ' 页及其中的元素？')) return;
+  state.elements = state.elements.filter(e => e.page !== state.currentPage);
+  state.elements.forEach(e => { if (e.page > state.currentPage) e.page--; });
+  state.page.pages--; state.currentPage = Math.min(state.currentPage, state.page.pages - 1);
+  state.selected = [];
+  commit('delpage'); renderAll(); renderPanels(); syncInspector();
+};
+$('#btnClearPage').onclick = () => {
+  if (!curPageEls().length) return toast('本页已经是空的');
+  if (!confirm('清空本页全部元素？此操作可以撤销。')) return;
+  state.elements = state.elements.filter(e => e.page !== state.currentPage);
+  state.selected = [];
+  commit('clear'); renderAll(); renderPanels(); syncInspector();
+  toast('已清空本页');
+};
+$('#btnReset').onclick = () => {
+  if (!confirm('恢复默认模板？当前所有内容将被替换（可撤销）。')) return;
+  seedDemo(true);
+  commit('reset'); renderAll(); renderPanels(); syncInspector();
+  toast('已恢复默认');
+};
+$('#btnFit').onclick = fitZoom;
+$('#btnZoomReset').onclick = () => setZoom(1);
+$('#btnZoomIn').onclick = () => setZoom(state.zoom + 0.1);
+$('#btnZoomOut').onclick = () => setZoom(state.zoom - 0.1);
+$('#btnSnap').onclick = () => { state.snap = !state.snap; renderAll(); renderPanels(); };
+$('#btnGuides').onclick = () => { state.guides = !state.guides; renderAll(); renderPanels(); };
+$('#btnUndo').onclick = undo;
+$('#btnRedo').onclick = redo;
+$('#btnExport').onclick = exportPDF;
+$('#btnPreview').onclick = openPreview;
+$('#btnCloseModal').onclick = () => { $('#modal').hidden = true; };
+$('#btnDoPrint').onclick = () => {
+  let st = document.getElementById('pageRule');
+  if (!st) { st = document.createElement('style'); st.id = 'pageRule'; document.head.appendChild(st); }
+  st.textContent = '@page{size:A4 ' + (state.page.orient === 'portrait' ? 'portrait' : 'landscape') + ';margin:0}';
+  window.print();
+};
+$('#btnExportJson').onclick = exportJSON;
+$('#btnImportJson').onclick = () => $('#fileJson').click();
+$('#fileJson').onchange = e => {
+  const f = e.target.files && e.target.files[0];
+  e.target.value = '';
+  if (!f) return;
+  if (state.elements.length && !confirm('导入会替换当前全部内容（可撤销），继续？')) return;
+  importJSON(f);
+};
+$('#btnAddText').onclick = () => addTextAt(null);
+$('#btnAddRow').onclick = addWordRow;
+$('#btnResetStyle').onclick = () => {
+  const sel = selectedEls();
+  if (!sel.length) return;
+  const tpl = TEMPLATES.find(t => t.id === state.tpl) || TEMPLATES[0];
+  sel.forEach(el => { el.style = Object.assign({}, DEFAULT_STYLE, tpl.style, { text: el.style.text }); });
+  commit('resetstyle'); renderAll(); syncInspector();
+  toast('已重置为模板「' + tpl.name + '」的样式');
+};
+function addWordRow() {
+  const tpl = TEMPLATES.find(t => t.id === 'wordcards') || TEMPLATES[0];
+  const words = ['apple', 'banana', 'orange', 'grape'];
+  const { w: W, h: H } = pageDims();
+  const n = words.length, cellW = (W - 2 * state.page.margin) / n;
+  const made = words.map((wd, i) => {
+    const el = makeElement(Object.assign({ text: wd }, tpl.style), state.page.margin + cellW * (i + 0.5), H * 0.5);
+    const g = getGeo(el.style);
+    el.scale = n2(Math.min(1, (cellW - 16) / g.w));
+    return el;
+  });
+  state.elements.push.apply(state.elements, made);
+  state.selected = made.map(m => m.id);
+  commit('wordrow'); renderAll(); renderPanels(); syncInspector();
+  toast('已添加 4 个单词卡，可继续修改文字');
+}
+
+/* 快捷键 */
+document.addEventListener('keydown', e => {
+  const tag = (e.target.tagName || '').toLowerCase();
+  const inField = tag === 'input' || tag === 'textarea' || tag === 'select';
+  const meta = e.ctrlKey || e.metaKey;
+  if (meta && e.key.toLowerCase() === 'z') { e.preventDefault(); if (e.shiftKey) redo(); else undo(); return; }
+  if (meta && e.key.toLowerCase() === 'y') { e.preventDefault(); redo(); return; }
+  if (inField) return;
+  if (meta && e.key.toLowerCase() === 'd') { e.preventDefault(); duplicateSel(); return; }
+  if (meta && e.key.toLowerCase() === 'a') { e.preventDefault(); state.selected = curPageEls().map(x => x.id); renderAll(); renderPanels(); syncInspector(); return; }
+  if (e.key === 'Delete' || e.key === 'Backspace') { e.preventDefault(); deleteSel(); return; }
+  if (e.key === 'Escape') { $('#modal').hidden = true; select(null); return; }
+  if (e.key.indexOf('Arrow') === 0) {
+    const sel = selectedEls();
+    if (!sel.length) return;
+    e.preventDefault();
+    const step = e.shiftKey ? 5 : 1;
+    const dx = e.key === 'ArrowLeft' ? -step : e.key === 'ArrowRight' ? step : 0;
+    const dy = e.key === 'ArrowUp' ? -step : e.key === 'ArrowDown' ? step : 0;
+    sel.forEach(el => { el.x = n2(el.x + dx); el.y = n2(el.y + dy); });
+    updateTransforms(); commit('nudge'); syncInspector();
+  }
+});
+
+/* =========================================================
+   12. 启动
+   ========================================================= */
+function seedDemo(force) {
+  state.elements = [];
+  state.page.pages = 1;
+  state.currentPage = 0;
+  const { w: W, h: H } = pageDims();
+  const tpl = TEMPLATES[0];
+  const el = makeElement(Object.assign({ text: 'Hello' }, tpl.style), W / 2, H * 0.34);
+  const g = getGeo(el.style);
+  el.scale = n2(Math.min(1, (W - 2 * state.page.margin - 12) / g.w));
+  state.elements.push(el);
+  const el2 = makeElement(Object.assign({}, (TEMPLATES.find(t => t.id === 'classroom') || tpl).style, { text: 'Welcome!' }), W / 2, H * 0.62);
+  const g2 = getGeo(el2.style);
+  el2.scale = n2(Math.min(1, (W - 2 * state.page.margin - 12) / g2.w));
+  state.elements.push(el2);
+  state.selected = [];
+}
+function boot() {
+  let loaded = false;
+  try {
+    const raw = localStorage.getItem(LSKEY);
+    if (raw) {
+      const d = JSON.parse(raw);
+      if (d && d.elements && d.page) {
+        state.page = Object.assign({ orient: 'landscape', margin: 10, pages: 1 }, d.page);
+        state.elements = d.elements;
+        state.elements.forEach(e => pruneStyle(e.style));
+        state.currentPage = d.currentPage || 0;
+        if (state.currentPage >= state.page.pages) state.currentPage = 0;
+        loaded = true;
+      }
+    }
+  } catch (err) { console.warn('读取本地数据失败', err); }
+  if (!loaded) seedDemo();
+  renderAll(); renderPanels(); syncInspector();
+  setTimeout(renderTemplates, 30);   /* 缩略图较慢，先让画布出图 */
+  hist.undo = [snapshot()];
+  updateUndoBtns();
+  fitZoom();
+}
+boot();
+
+</script>
+</body>
+</html>
