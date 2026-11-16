@@ -82,10 +82,25 @@
 - 阴影是硬偏移色块（为了屏幕与 PDF 完全一致），不是高斯模糊
 - 轮廓是折线矢量，放大到 1000% 以上能看到多边形顶点，正常 A4 打印尺寸不可见
 
+## 构建
+
+日常直接用 `index.html`，不需要构建。想发一份体积更小的单文件版本：
+
+```bash
+./build.sh            # 生成 index.min.html，自动写入版本号
+./build.sh v1.2.0     # 自定义版本号
+```
+
+`build.sh` 用 `html-minifier-terser` 压缩 HTML/CSS/JS，然后校验内嵌字体、关键入口还在，并用 `node --check` 确认压缩后的 JS 仍能解析。约 122 KB → 98 KB（其中 60 KB 是内嵌字体，压不动）。
+
+`index.min.html` 是构建产物，别直接改它，改 `index.html` 再重新构建。
+
 ## 目录
 
 ```
 index.html      完整应用（唯一运行文件）
+index.min.html  压缩版（由 build.sh 生成）
+build.sh        构建脚本
 todo.md         开发任务清单与进度记录
 screenshot.png  界面截图
 ```
