@@ -115,6 +115,8 @@ hr{border:0;border-top:1px solid #eef2f9;margin:14px 0}
   <button class="btn ghost" id="btnRedo" title="重做 Ctrl+Shift+Z">↷ 重做</button>
   <button class="btn danger" id="btnDelSel" title="删除选中元素 (Delete)" disabled>删除</button>
   <span class="tbsep"></span>
+  <button class="btn" id="btnFillW" title="缩放到占满页面宽度（位置不变）" disabled>↔ 横向铺满</button>
+  <button class="btn" id="btnFillH" title="缩放到占满页面高度（位置不变）" disabled>↕ 纵向铺满</button>
   <button class="btn" id="btnSnap" title="拖拽时吸附到 20px 网格">▦ 网格吸附</button>
   <button class="btn" id="btnGuides" title="显示可打印区域">▭ 边距线</button>
   <span class="tbsep"></span>
@@ -214,7 +216,8 @@ const A4 = { w: 210 * PXMM, h: 297 * PXMM };
 /* ---------------- 字体 ---------------- */
 const FONTS = {
   round: { name: '圆体 Rounded', stack: '"Arial Rounded MT Bold","Varela Round",Nunito,"Trebuchet MS","Segoe UI",sans-serif' },
-  hand: { name: '手写体 Hand', stack: "'CLHand',cursive" }
+  hand: { name: '手写体 Hand', stack: "'CLHand',cursive" },
+  sys: { name: '系统默认 System', stack: 'system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif' }
 };
 const fontStack = st => (FONTS[st.font] || FONTS.round).stack;
 const LINE_HEIGHT = 1.12;   /* 多行固定行距 */
@@ -851,7 +854,10 @@ function renderPanels() {
   $$('#segOrient button').forEach(b => b.classList.toggle('on', b.dataset.v === state.page.orient));
   $('#rngMargin').value = state.page.margin;
   $('#valMargin').textContent = state.page.margin + 'px';
-  $('#btnDelSel').disabled = !state.selected.length;
+  const hasSel = !!state.selected.length;
+  $('#btnDelSel').disabled = !hasSel;
+  $('#btnFillW').disabled = !hasSel;
+  $('#btnFillH').disabled = !hasSel;
   $('#btnSnap').classList.toggle('on', state.snap);
   $('#btnGuides').classList.toggle('on', state.guides);
   $('#inspTitle').textContent = state.selected.length ? (state.selected.length > 1 ? state.selected.length + ' 个元素' : '') : '未选中';
@@ -867,11 +873,12 @@ function applyTemplate(id, single) {
   if (!tpl) return;
   state.tpl = id;
   const sel = selectedEls();
+  /* 以默认样式为底重建，模板没写的字段不会继承上一个模板（如装饰、阴影） */
+  const rebuild = (e) => { e.style = Object.assign({}, DEFAULT_STYLE, tpl.style, { text: e.style.text }); fitWidth(e); };
   if (single && sel.length === 1) {
-    sel[0].style = Object.assign({}, sel[0].style, tpl.style);
-    fitWidth(sel[0]);
+    rebuild(sel[0]);
   } else if (sel.length > 1) {
-    sel.forEach(e => { e.style = Object.assign({}, e.style, tpl.style); fitWidth(e); });
+    sel.forEach(rebuild);
   } else {
     const { w: W, h: H } = pageDims();
     const el = makeElement(Object.assign({ text: tpl.text }, tpl.style), W / 2, H * 0.36);
@@ -961,7 +968,6 @@ function syncInspector() {
     '<button data-align="top">顶部对齐</button><button data-align="vcenter">垂直居中</button><button data-align="bottom">底部对齐</button>' +
     '<button data-dist="h">水平等距</button><button data-dist="v">垂直等距</button><button data-act="centerPage">页面居中</button>' +
     '<button data-act="fitPage">适应页面</button><button data-act="autoArr">自动排列</button><button data-act="dup">复制</button>' +
-    '<button data-act="del">删除</button>' +
     '</div>';
   box.innerHTML = h;
   /* 无障碍：把行标签关联到控件 */
@@ -1150,9 +1156,13 @@ function select(id, additive) {
   } else state.selected = [id];
   renderAll(); renderPanels(); syncInspector();
 }
+/* 旋转后的轴对齐包围盒（对齐 / 分布 / 铺满都按这个算） */
 function elBounds(el) {
   const geo = getGeo(el.style), sc = el.scale || 1;
-  return { x: el.x - geo.w * sc / 2, y: el.y - geo.h * sc / 2, w: geo.w * sc, h: geo.h * sc };
+  const a = (el.rotation || 0) * Math.PI / 180;
+  const c = Math.abs(Math.cos(a)), s = Math.abs(Math.sin(a));
+  const w = (geo.w * c + geo.h * s) * sc, h = (geo.w * s + geo.h * c) * sc;
+  return { x: el.x - w / 2, y: el.y - h / 2, w: w, h: h };
 }
 function alignSel(mode) {
   const sel = selectedEls();
@@ -1196,7 +1206,7 @@ function action(act) {
   } else if (act === 'fitPage') {
     sel.forEach(e => {
       const g = getGeo(e.style);
-      e.scale = n2(Math.min(1.6, (W - 2 * m) / g.w, (H - 2 * m) / g.h));
+      e.scale = n2(Math.min(6, (W - 2 * m) / g.w, (H - 2 * m) / g.h));
     });
   } else if (act === 'autoArr') {
     const all = curPageEls().filter(e => !e.hidden);
@@ -1208,7 +1218,7 @@ function action(act) {
     all.forEach((e, i) => {
       const c = i % cols, r = Math.floor(i / cols);
       const g = getGeo(e.style);
-      e.scale = n2(Math.min(1.5, (cellW - 30) / g.w, (cellH - 30) / g.h, 3));
+      e.scale = n2(Math.min(6, (cellW - 30) / g.w, (cellH - 30) / g.h));
       e.x = m + cellW * (c + 0.5); e.y = m + cellH * (r + 0.5);
       e.rotation = 0;
     });
@@ -1217,11 +1227,22 @@ function action(act) {
   } else if (act === 'dup') {
     duplicateSel();
     return;
-  } else if (act === 'del') {
-    deleteSel();
-    return;
   }
   commit(); renderAll(); renderPanels(); syncInspector();
+}
+/* 自适应缩放：把选中元素缩放到占满页面可用宽度 / 高度（不改位置） */
+function fillPage(axis) {
+  const sel = selectedEls();
+  if (!sel.length) return toast('请先选中元素');
+  const { w: W, h: H } = pageDims(), m = state.page.margin;
+  const availW = W - 2 * m, availH = H - 2 * m;
+  sel.forEach(el => {
+    const b = elBounds(el);   /* 已含旋转与当前缩放 */
+    const k = axis === 'h' ? availW / b.w : availH / b.h;
+    el.scale = n2(clamp((el.scale || 1) * k, 0.05, 6));   /* 只改缩放，位置保持不变 */
+  });
+  commit('fill' + axis); renderAll(); renderPanels(); syncInspector();
+  toast(axis === 'h' ? '已铺满页面宽度' : '已铺满页面高度');
 }
 function duplicateSel() {
   const sel = selectedEls();
@@ -1667,6 +1688,8 @@ $('#btnGuides').onclick = () => { state.guides = !state.guides; renderAll(); ren
 $('#btnUndo').onclick = undo;
 $('#btnRedo').onclick = redo;
 $('#btnDelSel').onclick = deleteSel;
+$('#btnFillW').onclick = () => fillPage('h');
+$('#btnFillH').onclick = () => fillPage('v');
 $('#btnExport').onclick = exportPDF;
 $('#btnExportJson').onclick = exportJSON;
 $('#btnImportJson').onclick = () => $('#fileJson').click();
