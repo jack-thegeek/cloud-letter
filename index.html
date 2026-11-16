@@ -126,6 +126,8 @@ input[type=color]{width:36px;height:27px;padding:0;border:1px solid #dbe4f2;bord
 .swatches{display:flex;gap:5px;flex-wrap:wrap}
 .swatches i{width:17px;height:17px;border-radius:50%;cursor:pointer;border:2px solid #fff;box-shadow:0 0 0 1px #dbe4f2}
 hr{border:0;border-top:1px solid #eef2f9;margin:14px 0}
+#toast{position:fixed;left:50%;bottom:28px;transform:translate(-50%,14px);background:rgba(43,58,85,.94);color:#fff;padding:9px 16px;border-radius:10px;font-size:12.5px;opacity:0;pointer-events:none;transition:.25s;z-index:200;max-width:80vw;text-align:center}
+#toast.on{opacity:1;transform:translate(-50%,0)}
 .hint{color:#93a2bd;font-size:12px;line-height:1.7;padding:20px 6px;text-align:center}
 #stage{flex:1;display:flex;flex-direction:column;min-width:0;background:#eef2f9}
 .tbgroup{display:flex;align-items:center;gap:4px}
@@ -138,6 +140,67 @@ hr{border:0;border-top:1px solid #eef2f9;margin:14px 0}
 #canvas g[data-id]{cursor:move}
 #canvas [data-handle="scale"]{cursor:nwse-resize}
 #canvas [data-handle="rotate"]{cursor:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath fill='%232b3a55' d='M17.65 6.35A7.95 7.95 0 0 0 12 4a8 8 0 1 0 7.73 10h-2.08A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z'/%3E%3C/svg%3E") 12 12, grab}
+/* ============ 移动端（≤900px）：单栏画布 + 底部抽屉 ============ */
+#mbar{display:none}
+.mob{display:none}
+@media (max-width:900px){
+  #topbar{height:auto;min-height:52px;flex-wrap:wrap;gap:5px;padding:6px 8px}
+  .brand span{display:none}
+  .desk{display:none!important}
+  #topbar .btn{font-size:11.5px;padding:5px 8px;white-space:nowrap;flex:0 0 auto}
+  #topbar .spacer{display:none}
+  #topbar .lbl{display:none}
+  .mob{display:flex}
+  #btnExportPng{font-size:0;width:38px;padding:5px 0}
+  #btnExportPng::before{content:'🖼';font-size:15px}
+  #topbar .btn.primary{margin-left:0}
+  main{flex-direction:column;padding-bottom:calc(52px + env(safe-area-inset-bottom))}
+  #wrap{padding:10px}
+  #left,#right{position:fixed;left:0;right:0;bottom:calc(52px + env(safe-area-inset-bottom));width:auto;flex:0 0 auto;
+    max-height:min(60vh,560px);border:0;border-radius:16px 16px 0 0;box-shadow:0 -10px 34px rgba(43,58,85,.22);
+    transform:translateY(120%);transition:transform .22s ease;z-index:60}
+  #left.open,#right.open{transform:none}
+  #left .tabs{display:none}
+  #left .panel,#inspector{max-height:min(60vh,560px);overflow:auto;padding:14px 14px 20px}
+  #mbar{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:61;background:#fff;border-top:1px solid #e3eaf5;
+    height:calc(52px + env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom)}
+  #mbar button{flex:1;border:0;background:transparent;color:#7d8aa3;font-size:11.5px;cursor:pointer;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}
+  #mbar button i{font-size:16px;font-style:normal;line-height:1}
+  #mbar button.on{color:#2b6fd6;font-weight:600}
+  /* 触摸尺寸 */
+  .stepper{height:38px}
+  .stepper button{width:40px;font-size:17px}
+  .stepper input{width:62px;font-size:14px}
+  .row>label{flex-basis:66px;font-size:12.5px}
+  .mini-grid button{padding:10px 2px;font-size:12px}
+  .seg button{padding:8px 0;font-size:12.5px}
+  .swatches i{width:22px;height:22px}
+  .layer{padding:9px 8px;font-size:13px}
+  .csel{padding:9px 10px;font-size:13.5px}
+  .cp-box{width:min(300px,calc(100vw - 24px))}
+  .cp-sv{height:170px}
+  #toast{bottom:calc(64px + env(safe-area-inset-bottom))}
+}
+/* 横屏手机：底部抽屉会吃掉画布，改成左右侧滑 */
+@media (max-width:900px) and (orientation:landscape){
+  #left,#right{top:52px;bottom:calc(52px + env(safe-area-inset-bottom));width:min(360px,52vw);max-height:none;
+    border-radius:0;box-shadow:0 0 34px rgba(43,58,85,.22)}
+  #left{left:0;right:auto;transform:translateX(-105%)}
+  #right{left:auto;right:0;transform:translateX(105%)}
+  #left.open,#right.open{transform:none}
+  #left .panel,#inspector{max-height:none}
+}
+/* 矮视口：取色器压缩，保证整块可见 */
+@media (max-height:520px){
+  .cp-box{width:min(272px,calc(100vw - 20px));padding:10px}
+  .cp-sv{height:110px}
+  .cp-hue{height:12px;margin-top:8px}
+  .cp-row{margin-top:8px}
+  .cp-swatches{margin-top:8px}
+  .cp-swatches i{width:16px;height:16px}
+  .cp-actions{margin-top:8px}
+}
 #canvas.dragging{cursor:move}
 #canvas.dragging.scl{cursor:nwse-resize}
 #canvas.dragging.rot{cursor:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath fill='%232b3a55' d='M17.65 6.35A7.95 7.95 0 0 0 12 4a8 8 0 1 0 7.73 10h-2.08A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z'/%3E%3C/svg%3E") 12 12, grab}
@@ -147,27 +210,27 @@ hr{border:0;border-top:1px solid #eef2f9;margin:14px 0}
 <body>
 <header id="topbar">
   <div class="brand"><i>☁️</i><span>云朵字工坊<small>KT Board Cloud Letter Maker</small></span></div>
-  <button class="btn ghost" id="btnUndo" title="撤销 Ctrl+Z">↶ 撤销</button>
-  <button class="btn ghost" id="btnRedo" title="重做 Ctrl+Shift+Z">↷ 重做</button>
+  <button class="btn ghost" id="btnUndo" title="撤销 Ctrl+Z">↶ <span class="lbl">撤销</span></button>
+  <button class="btn ghost" id="btnRedo" title="重做 Ctrl+Shift+Z">↷ <span class="lbl">重做</span></button>
   <button class="btn danger" id="btnDelSel" title="删除选中元素 (Delete)" disabled>删除</button>
   <span class="tbsep"></span>
-  <button class="btn" id="btnFillW" title="缩放到占满页面宽度（位置不变）" disabled>↔ 横向铺满</button>
-  <button class="btn" id="btnFillH" title="缩放到占满页面高度（位置不变）" disabled>↕ 纵向铺满</button>
-  <button class="btn" id="btnGuides" title="显示可打印区域">▭ 边距线</button>
-  <span class="tbsep"></span>
-  <div class="tbgroup">
+  <button class="btn desk" id="btnFillW" title="缩放到占满页面宽度（位置不变）" disabled>↔ 横向铺满</button>
+  <button class="btn desk" id="btnFillH" title="缩放到占满页面高度（位置不变）" disabled>↕ 纵向铺满</button>
+  <button class="btn desk" id="btnGuides" title="显示可打印区域">▭ 边距线</button>
+  <span class="tbsep desk"></span>
+  <div class="tbgroup desk">
     <button class="btn sm" id="btnZoomOut" title="缩小">－</button>
     <span id="zoomLabel" title="点击恢复 100%">100%</span>
     <button class="btn sm" id="btnZoomIn" title="放大">＋</button>
     <button class="btn sm" id="btnFit" title="缩放到适应窗口">适应窗口</button>
   </div>
   <div class="spacer"></div>
-  <select id="selOrient" aria-label="纸张方向" style="width:auto;padding:6px 10px;border-radius:10px">
+  <select class="desk" id="selOrient" aria-label="纸张方向" style="width:auto;padding:6px 10px;border-radius:10px">
     <option value="portrait">A4 纵向 794×1123</option>
     <option value="landscape" selected>A4 横向 1123×794</option>
   </select>
-  <button class="btn" id="btnImportJson" title="导入 JSON 工程文件（可换电脑继续编辑）">⬆ 导入 JSON</button>
-  <button class="btn" id="btnExportJson" title="导出 JSON 工程文件">⬇ 导出 JSON</button>
+  <button class="btn desk" id="btnImportJson" title="导入 JSON 工程文件（可换电脑继续编辑）">⬆ 导入 JSON</button>
+  <button class="btn desk" id="btnExportJson" title="导出 JSON 工程文件">⬇ 导出 JSON</button>
   <button class="btn" id="btnExportPng" title="导出当前页 PNG 图片（3 倍图，约 288 dpi）">🖼 导出图片</button>
   <button class="btn primary" id="btnExport">⬇ 导出 PDF</button>
 </header>
@@ -197,6 +260,7 @@ hr{border:0;border-top:1px solid #eef2f9;margin:14px 0}
     </div>
     <div class="panel" id="panel-page">
       <div class="sec">页面</div>
+      <div class="row mob"><label>方向</label><div class="ctl"><div class="seg" id="segOrient"><button data-v="portrait">纵向</button><button data-v="landscape">横向</button></div></div></div>
       <div class="row"><label>页边距</label><div class="ctl"><span class="stepper" id="stpMargin" data-min="0" data-max="94" data-step="1" data-dec="0"><button type="button" data-d="-1" aria-label="减少页边距">−</button><input type="number" id="rngMargin" aria-label="页边距"><span class="unit">px</span><button type="button" data-d="1" aria-label="增加页边距">+</button></span></div></div>
       <div class="row"><label>页数</label><div class="ctl"><button class="btn sm" id="btnPagePrev">◀</button><span id="pageLabel" style="flex:1;text-align:center">1 / 1</span><button class="btn sm" id="btnPageNext">▶</button></div></div>
       <div class="mini-grid two">
@@ -219,6 +283,12 @@ hr{border:0;border-top:1px solid #eef2f9;margin:14px 0}
     <div class="panel on" id="inspector" style="display:block"></div>
   </aside>
 </main>
+<nav id="mbar" aria-label="移动端面板">
+  <button data-mtab="tpl"><i>🎨</i>模板</button>
+  <button data-mtab="layers"><i>📑</i>元素</button>
+  <button data-mtab="page"><i>📐</i>页面</button>
+  <button data-mtab="insp"><i>🎛</i>属性</button>
+</nav>
 <input type="file" id="fileJson" accept=".json,application/json" hidden>
 <div id="toast"></div>
 <script>
@@ -746,8 +816,8 @@ function selectionMarkup() {
   selectedEls().filter(e => e.page === state.currentPage && !e.hidden).forEach(el => {
     const geo = getGeo(el.style), sc = el.scale || 1;
     const w = geo.w / 2, h = geo.h / 2;
-    /* 手柄按屏幕像素恒定：13px 方块 / 4px 描边 / 15px 虚线（单位已随画布改为 px） */
-    const hs = 13 / z / sc, sw = 4 / z / sc, dash = 15 / z / sc;
+    /* 手柄按屏幕像素恒定：13px 方块 / 4px 描边 / 15px 虚线（触摸屏放大到 19px） */
+    const hs = (isMobile() ? 19 : 13) / z / sc, sw = 4 / z / sc, dash = 15 / z / sc;
     s += '<g transform="' + elTransform(el) + '" class="sel" data-sel="' + el.id + '">';
     s += '<rect x="' + n2(-w) + '" y="' + n2(-h) + '" width="' + n2(2 * w) + '" height="' + n2(2 * h) +
       '" fill="none" stroke="#6aa9ff" stroke-width="' + n2(sw) + '" stroke-dasharray="' + n2(dash) + ' ' + n2(dash * 0.7) + '" pointer-events="none"/>';
@@ -863,6 +933,7 @@ function renderPanels() {
   $('#pageLabel').textContent = (state.currentPage + 1) + ' / ' + state.page.pages;
   $('#selOrient').value = state.page.orient;
   syncCsel($('#selOrient'));
+  $$('#segOrient button').forEach(b => b.classList.toggle('on', b.dataset.v === state.page.orient));
   $('#rngMargin').value = state.page.margin;
   const hasSel = !!state.selected.length;
   $('#btnDelSel').disabled = !hasSel;
@@ -896,6 +967,7 @@ function applyTemplate(id, single) {
     el.scale = n2(sc);
     state.elements.push(el);
     state.selected = [el.id];
+    if (isMobile()) showSheet('insp');   /* 手机上套完模板直接改文字 */
   }
   commit('tpl-' + id);
   renderTemplates(); renderAll(); renderPanels(); syncInspector();
@@ -996,12 +1068,12 @@ function syncInspector() {
   h += row('旋转', stepper({ prop: 'rotation', value: el.rotation, min: -180, max: 180, step: 1, unit: '°' }), true);
   h += row('透明度', stepper({ key: 'opacity', value: getVal('opacity'), min: 10, max: 100, step: 1, factor: 100, unit: '%' }), true);
 
-  h += '<div class="sec">排列</div><div class="mini-grid">' +
+  h += '<div class="desk"><div class="sec">排列</div><div class="mini-grid">' +
     '<button data-align="left">左对齐</button><button data-align="hcenter">水平居中</button><button data-align="right">右对齐</button>' +
     '<button data-align="top">顶部对齐</button><button data-align="vcenter">垂直居中</button><button data-align="bottom">底部对齐</button>' +
     '<button data-dist="h">水平等距</button><button data-dist="v">垂直等距</button><button data-act="centerPage">页面居中</button>' +
     '<button data-act="fitPage">适应页面</button><button data-act="autoArr">自动排列</button><button data-act="dup">复制</button>' +
-    '</div>';
+    '</div></div>';
   box.innerHTML = h;
   /* 无障碍：把行标签关联到控件 */
   box.querySelectorAll('.row').forEach(r => {
@@ -1152,7 +1224,7 @@ function syncCsel(sel) {
 function enhanceSelect(sel, compact) {
   if (!sel || sel._csel) return;
   const root = document.createElement('div');
-  root.className = 'csel' + (compact ? ' compact' : '');
+  root.className = 'csel' + (compact ? ' compact' : '') + (sel.classList.contains('desk') ? ' desk' : '');
   root.tabIndex = 0;
   root.setAttribute('role', 'combobox');
   root.setAttribute('aria-expanded', 'false');
@@ -1278,11 +1350,10 @@ function cpOpen(input) {
   const r = input.getBoundingClientRect();
   const bw = box.offsetWidth, bh = box.offsetHeight, gap = 8, pad = 10;
   let left = r.right - bw;
-  if (left + bw > window.innerWidth - pad) left = window.innerWidth - bw - pad;
-  if (left < pad) left = pad;
+  left = clamp(left, pad, Math.max(pad, window.innerWidth - bw - pad));
   let top = r.bottom + gap;
   if (top + bh > window.innerHeight - pad) top = r.top - bh - gap;
-  if (top < pad) top = pad;
+  top = clamp(top, pad, Math.max(pad, window.innerHeight - bh - pad));
   box.style.left = Math.round(left) + 'px';
   box.style.top = Math.round(top) + 'px';
 }
@@ -1301,7 +1372,27 @@ function select(id, additive) {
     if (i >= 0) state.selected.splice(i, 1); else state.selected.push(id);
   } else state.selected = [id];
   renderAll(); renderPanels(); syncInspector();
+  if (isMobile()) {
+    if (state.selected.length) showSheet('insp');
+    else if ($('#mbar').dataset.open === 'insp') openSheet('insp');   /* 点空白处收起属性抽屉 */
+  }
 }
+/* =========================================================
+   移动端底部抽屉：模板 / 元素 / 页面 共用左栏，属性用右栏
+   ========================================================= */
+const isMobile = () => window.matchMedia('(max-width:900px)').matches;
+function openSheet(k) {
+  const bar = $('#mbar'), next = bar.dataset.open === k ? '' : k;
+  bar.dataset.open = next;
+  bar.querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.mtab === next));
+  $('#left').classList.toggle('open', !!next && next !== 'insp');
+  $('#right').classList.toggle('open', next === 'insp');
+  if (next && next !== 'insp') {
+    $$('#left .tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === next));
+    $$('#left .panel').forEach(p => p.classList.toggle('on', p.id === 'panel-' + next));
+  }
+}
+const showSheet = k => { if ($('#mbar').dataset.open !== k) openSheet(k); };
 /* 旋转后的轴对齐包围盒（对齐 / 分布 / 铺满都按这个算） */
 function elBounds(el) {
   const geo = getGeo(el.style), sc = el.scale || 1;
@@ -1425,8 +1516,38 @@ function layerOrder(z) {
 
 /* 拖拽 / 缩放 / 旋转 */
 let drag = null;
+/* 双指手势（触摸）：捏合缩放 + 双指拖动平移画布 */
+let pts = new Map(), gest = null;
+function gestStart() {
+  const [a, b] = Array.from(pts.values());
+  drag = null; endDragCursor();
+  gest = { d: Math.hypot(a.x - b.x, a.y - b.y) || 1, mid: { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 },
+    zoom: state.zoom, sl: $('#wrap').scrollLeft, st: $('#wrap').scrollTop };
+}
+function gestMove() {
+  const [a, b] = Array.from(pts.values());
+  const d = Math.hypot(a.x - b.x, a.y - b.y) || 1;
+  const mid = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+  const wrap = $('#wrap'), rect = wrap.getBoundingClientRect();
+  const z = clamp(gest.zoom * d / gest.d, 0.1, 4);
+  /* 手势开始时手指下的页面点，缩放后仍停在手指下（画布居中留白未计入，够用） */
+  const px = (gest.mid.x - rect.left + gest.sl) / gest.zoom;
+  const py = (gest.mid.y - rect.top + gest.st) / gest.zoom;
+  state.zoom = Math.round(z * 100) / 100;
+  const { w: W, h: H } = pageDims();
+  canvas.style.width = (W * state.zoom) + 'px';
+  canvas.style.height = (H * state.zoom) + 'px';
+  $('#zoomLabel').textContent = Math.round(state.zoom * 100) + '%';
+  wrap.scrollLeft = px * state.zoom - (mid.x - rect.left);
+  wrap.scrollTop = py * state.zoom - (mid.y - rect.top);
+}
 canvas.addEventListener('pointerdown', e => {
   if (e.button !== 0) return;
+  if (e.pointerType === 'touch') {
+    pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (pts.size === 2) { gestStart(); return; }
+    if (pts.size > 2) return;
+  }
   const handle = e.target.getAttribute && e.target.getAttribute('data-handle');
   const p = toSVG(e);
   if (handle) {
@@ -1453,6 +1574,10 @@ canvas.addEventListener('pointerdown', e => {
   try { canvas.setPointerCapture(e.pointerId); } catch (err) {}
 });
 canvas.addEventListener('pointermove', e => {
+  if (e.pointerType === 'touch' && pts.has(e.pointerId)) {
+    pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (gest) { gestMove(); return; }
+  }
   if (!drag) return;
   const p = toSVG(e);
   const dx = p.x - drag.start.x, dy = p.y - drag.start.y;
@@ -1477,20 +1602,26 @@ canvas.addEventListener('pointermove', e => {
   }
   updateTransforms();
   if (drag.mode !== 'move' || drag.els.length === 1) {
-    const vals = $('#inspector').querySelectorAll('input[data-prop]');
-    vals.forEach(inp => {
-      const el = drag.els[0].el, k = inp.dataset.prop;
-      inp.value = el[k];
-      const sp = inp.parentNode.querySelector('.val');
-      if (sp) sp.textContent = k === 'scale' ? Math.round(el.scale * 100) + '%' : k === 'rotation' ? Math.round(el.rotation) + '°' : n2(el[k]);
+    const el = drag.els[0].el;
+    $('#inspector').querySelectorAll('.stepper[data-prop]').forEach(node => {
+      const k = node.dataset.prop, f = +node.dataset.factor || 1;
+      node.querySelector('input').value = +(el[k] * f).toFixed(+(node.dataset.dec || 0));
     });
   }
 });
 function endDragCursor() {
   canvas.classList.remove('dragging', 'rot', 'scl');
 }
-canvas.addEventListener('pointercancel', () => { drag = null; endDragCursor(); renderAll(); });
+canvas.addEventListener('pointercancel', e => {
+  pts.delete(e.pointerId);
+  if (gest) { gest = null; renderAll(); return; }
+  drag = null; endDragCursor(); renderAll();
+});
 canvas.addEventListener('pointerup', e => {
+  if (pts.delete(e.pointerId) && gest) {
+    if (pts.size < 2) { gest = null; renderAll(); }   /* 手势结束，重绘一次修正手柄尺寸 */
+    return;
+  }
   endDragCursor();
   if (!drag) return;
   const moved = drag;
@@ -1524,6 +1655,7 @@ function addTextAt(p) {
   state.elements.push(el);
   state.selected = [el.id];
   commit(); renderAll(); renderPanels(); syncInspector();
+  if (isMobile()) { showSheet('insp'); return; }   /* 手机上不自动聚焦，避免键盘盖住画布 */
   const t = $('#txtInput'); if (t) { t.focus(); t.select(); }
 }
 function setOrient(v) {
@@ -1544,7 +1676,8 @@ function setZoom(z) {
 }
 function fitZoom() {
   const wrap = $('#wrap'), { w: W, h: H } = pageDims();
-  const availW = wrap.clientWidth - 52, availH = wrap.clientHeight - 52;
+  const pad = isMobile() ? 26 : 52;
+  const availW = wrap.clientWidth - pad, availH = wrap.clientHeight - pad;
   const pxW = W, pxH = H;
   setZoom(Math.min(availW / pxW, availH / pxH));
 }
@@ -1820,6 +1953,7 @@ $$('#panel-layers [data-z]').forEach(b => {
   };
 });
 $('#selOrient').onchange = e => setOrient(e.target.value);
+$$('#segOrient button').forEach(b => { b.onclick = () => setOrient(b.dataset.v); });
 bindStepper($('#stpMargin'), v => {
   state.page.margin = v;
   renderAll(); commit('margin');
@@ -1840,6 +1974,12 @@ $('#btnDelPage').onclick = () => {
   state.selected = [];
   commit('delpage'); renderAll(); renderPanels(); syncInspector();
 };
+$$('#mbar button').forEach(b => { b.onclick = () => openSheet(b.dataset.mtab); });
+let rzT = null;
+window.addEventListener('resize', () => {
+  clearTimeout(rzT);
+  rzT = setTimeout(() => { if (isMobile()) fitZoom(); }, 200);   /* 转屏后重新适应窗口 */
+});
 $('#btnFit').onclick = fitZoom;
 $('#zoomLabel').onclick = () => setZoom(1);
 $('#btnZoomIn').onclick = () => setZoom(state.zoom + 0.1);
