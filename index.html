@@ -191,6 +191,7 @@ hr{border:0;border-top:1px solid #eef2f9;margin:14px 0}
   .mini-grid button{padding:10px 2px;font-size:12px}
   .seg button{padding:8px 0;font-size:12.5px}
   .swatches i{width:22px;height:22px}
+  input[type=color]{width:30px;height:30px}   /* 当前色比候选色大，避免移动端两者看起来一样 */
   .csel{padding:9px 10px;font-size:13.5px}
   .cp-box{width:min(300px,calc(100vw - 24px))}
   .cp-sv{height:170px}
@@ -836,8 +837,9 @@ function selMarkupFor(el) {
   const z = state.zoom || 1;
   const geo = getGeo(el.style), sc = el.scale || 1;
   const w = geo.w / 2, h = geo.h / 2;
-  /* 手柄按屏幕像素恒定：13px 方块 / 4px 描边 / 15px 虚线（触摸屏放大到 14px） */
-  const hs = (isMobile() ? 14 : 13) / z / sc, sw = 4 / z / sc, dash = 15 / z / sc;
+  /* 手柄按屏幕像素恒定：桌面 13px 方块 / 4px 描边 / 15px 虚线，移动端整体缩小 */
+  const mob = isMobile();
+  const hs = (mob ? 11 : 13) / z / sc, sw = (mob ? 3 : 4) / z / sc, dash = (mob ? 11 : 15) / z / sc;
   let s = '<g transform="' + elTransform(el) + '" class="sel" data-sel="' + el.id + '" data-sc="' + sc + '" data-z="' + z + '">';
   s += '<rect x="' + n2(-w) + '" y="' + n2(-h) + '" width="' + n2(2 * w) + '" height="' + n2(2 * h) +
     '" fill="none" stroke="#6aa9ff" stroke-width="' + n2(sw) + '" stroke-dasharray="' + n2(dash) + ' ' + n2(dash * 0.7) + '" pointer-events="none"/>';
