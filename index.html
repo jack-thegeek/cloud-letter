@@ -874,6 +874,7 @@ function renderAll() {
     body += elementMarkup(el, getGeo(el.style));
   });
   body += selectionMarkup();
+  body += '<g id="rotGuide" pointer-events="none"></g>';
   canvas.innerHTML = body;
   $('#zoomLabel').textContent = Math.round(state.zoom * 100) + '%';
 }
@@ -1783,7 +1784,7 @@ let drag = null;
 let pts = new Map(), gest = null;
 function gestStart() {
   const [a, b] = Array.from(pts.values());
-  drag = null; endDragCursor();
+  drag = null; endDragCursor(); updateRotGuide(null);
   gest = { d: Math.hypot(a.x - b.x, a.y - b.y) || 1, mid: { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 },
     zoom: state.zoom, sl: $('#wrap').scrollLeft, st: $('#wrap').scrollTop };
 }
@@ -1862,8 +1863,13 @@ canvas.addEventListener('pointermove', e => {
     const a1 = Math.atan2(p.y - drag.pivot.y, p.x - drag.pivot.x);
     let deg = base.rotation + (a1 - a0) * 180 / Math.PI;
     deg = Math.round(deg);
-    if (e.shiftKey) deg = Math.round(deg / 15) * 15;
+    /* 接近 90° 整点时优先吸附并显示辅助线，否则 shift 仍按 15° 吸附 */
+    const snap = Math.round(deg / 90) * 90;
+    const snapped = Math.abs(deg - snap) <= ROT_SNAP;
+    if (snapped) deg = snap;
+    else if (e.shiftKey) deg = Math.round(deg / 15) * 15;
     drag.els.forEach(o => { o.el.rotation = ((deg % 360) + 540) % 360 - 180; });
+    updateRotGuide(snapped ? snap : null);
   }
   updateTransforms();
   if (drag.mode !== 'move' || drag.els.length === 1) {
@@ -2195,6 +2201,24 @@ function toast(msg) {
   t.classList.add('on');
   clearTimeout(toast._t);
   toast._t = setTimeout(() => t.classList.remove('on'), 2400);
+}
+const ROT_SNAP = 5;   /* 距 90° 整点多少度内吸附 */
+/* 旋转吸附辅助线：过旋转轴心、沿吸附角度画虚线，并标出角度；snap 为 null 时清空 */
+function updateRotGuide(snap) {
+  const g = $('#rotGuide');
+  if (!g) return;
+  const pivot = drag && drag.pivot;
+  if (snap == null || !pivot) { g.innerHTML = ''; return; }
+  const { w: W, h: H } = pageDims(), z = state.zoom || 1;
+  const rad = snap * Math.PI / 180, L = Math.hypot(W, H);
+  const dx = Math.cos(rad) * L, dy = Math.sin(rad) * L;
+  const x = n2(pivot.x), y = n2(pivot.y);
+  const sw = n2(1 / z), da = n2(6 / z) + ' ' + n2(5 / z), fs = n2(12 / z);
+  const ang = ((snap % 360) + 360) % 360;
+  g.innerHTML = '<line x1="' + n2(x - dx) + '" y1="' + n2(y - dy) + '" x2="' + n2(x + dx) + '" y2="' + n2(y + dy) +
+    '" stroke="#ff3d8b" stroke-width="' + sw + '" stroke-dasharray="' + da + '"/>' +
+    '<circle cx="' + x + '" cy="' + y + '" r="' + n2(3 / z) + '" fill="#ff3d8b"/>' +
+    '<text x="' + n2(x + 10 / z) + '" y="' + n2(y - 10 / z) + '" fill="#ff3d8b" font-size="' + fs + '" font-weight="600">' + ang + '°</text>';
 }
 function updateTransforms() {
   selectedEls().forEach(el => {
