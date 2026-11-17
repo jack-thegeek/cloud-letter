@@ -799,33 +799,32 @@ function elementMarkup(el, geo) {
   geo.deco.forEach(p => { s += '<path d="' + polyD(p) + '" fill="' + (st.decoColor || '#ffd93d') + '"/>'; });
   return s + '</g>';
 }
-function selectionMarkup() {
+function selMarkupFor(el) {
   const z = state.zoom || 1;
-  let s = '';
-  selectedEls().filter(e => e.page === state.currentPage && !e.hidden).forEach(el => {
-    const geo = getGeo(el.style), sc = el.scale || 1;
-    const w = geo.w / 2, h = geo.h / 2;
-    /* 手柄按屏幕像素恒定：13px 方块 / 4px 描边 / 15px 虚线（触摸屏放大到 19px） */
-    const hs = (isMobile() ? 19 : 13) / z / sc, sw = 4 / z / sc, dash = 15 / z / sc;
-    s += '<g transform="' + elTransform(el) + '" class="sel" data-sel="' + el.id + '">';
-    s += '<rect x="' + n2(-w) + '" y="' + n2(-h) + '" width="' + n2(2 * w) + '" height="' + n2(2 * h) +
-      '" fill="none" stroke="#6aa9ff" stroke-width="' + n2(sw) + '" stroke-dasharray="' + n2(dash) + ' ' + n2(dash * 0.7) + '" pointer-events="none"/>';
-    /* 抓手内画图标：方块=斜向双箭头（缩放），圆点=环形箭头（旋转），图标不接管点击 */
-    const sx = w, sy = h, k = hs * 0.46, dk = hs * 0.3;
-    s += '<rect data-handle="scale" x="' + n2(w - hs) + '" y="' + n2(h - hs) + '" width="' + n2(hs * 2) + '" height="' + n2(hs * 2) +
-      '" rx="' + n2(hs * 0.4) + '" fill="#fff" stroke="#6aa9ff" stroke-width="' + n2(sw * 0.6) + '"/>';
-    s += '<path pointer-events="none" fill="none" stroke="#6aa9ff" stroke-width="' + n2(sw * 0.5) + '" stroke-linecap="round" stroke-linejoin="round" d="' +
-      'M' + n2(sx - k) + ' ' + n2(sy - k) + 'L' + n2(sx + k) + ' ' + n2(sy + k) +
-      'M' + n2(sx - k + dk) + ' ' + n2(sy - k) + 'H' + n2(sx - k) + 'V' + n2(sy - k + dk) +
-      'M' + n2(sx + k - dk) + ' ' + n2(sy + k) + 'H' + n2(sx + k) + 'V' + n2(sy + k - dk) + '"/>';
-    /* 旋转抓手只留图标，圆只做透明点击区（pointer-events=all 保证无填充也能点） */
-    const rc = -h - hs * 1.8, gs = hs * 2.2 / 24;
-    s += '<circle data-handle="rotate" cx="0" cy="' + n2(rc) + '" r="' + n2(hs) + '" fill="none" pointer-events="all"/>';
-    s += '<g pointer-events="none" transform="translate(0 ' + n2(rc) + ') scale(' + n2(gs) + ') translate(-12 -12)">' +
-      '<path fill="#6aa9ff" d="M17.65 6.35A7.95 7.95 0 0 0 12 4a8 8 0 1 0 7.73 10h-2.08A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></g>';
-    s += '</g>';
-  });
-  return s;
+  const geo = getGeo(el.style), sc = el.scale || 1;
+  const w = geo.w / 2, h = geo.h / 2;
+  /* 手柄按屏幕像素恒定：13px 方块 / 4px 描边 / 15px 虚线（触摸屏放大到 19px） */
+  const hs = (isMobile() ? 19 : 13) / z / sc, sw = 4 / z / sc, dash = 15 / z / sc;
+  let s = '<g transform="' + elTransform(el) + '" class="sel" data-sel="' + el.id + '" data-sc="' + sc + '" data-z="' + z + '">';
+  s += '<rect x="' + n2(-w) + '" y="' + n2(-h) + '" width="' + n2(2 * w) + '" height="' + n2(2 * h) +
+    '" fill="none" stroke="#6aa9ff" stroke-width="' + n2(sw) + '" stroke-dasharray="' + n2(dash) + ' ' + n2(dash * 0.7) + '" pointer-events="none"/>';
+  /* 抓手内画图标：方块=斜向双箭头（缩放），圆点=环形箭头（旋转），图标不接管点击 */
+  const sx = w, sy = h, k = hs * 0.46, dk = hs * 0.3;
+  s += '<rect data-handle="scale" x="' + n2(w - hs) + '" y="' + n2(h - hs) + '" width="' + n2(hs * 2) + '" height="' + n2(hs * 2) +
+    '" rx="' + n2(hs * 0.4) + '" fill="#fff" stroke="#6aa9ff" stroke-width="' + n2(sw * 0.6) + '"/>';
+  s += '<path pointer-events="none" fill="none" stroke="#6aa9ff" stroke-width="' + n2(sw * 0.5) + '" stroke-linecap="round" stroke-linejoin="round" d="' +
+    'M' + n2(sx - k) + ' ' + n2(sy - k) + 'L' + n2(sx + k) + ' ' + n2(sy + k) +
+    'M' + n2(sx - k + dk) + ' ' + n2(sy - k) + 'H' + n2(sx - k) + 'V' + n2(sy - k + dk) +
+    'M' + n2(sx + k - dk) + ' ' + n2(sy + k) + 'H' + n2(sx + k) + 'V' + n2(sy + k - dk) + '"/>';
+  /* 旋转抓手只留图标，圆只做透明点击区（pointer-events=all 保证无填充也能点） */
+  const rc = -h - hs * 1.8, gs = hs * 2.2 / 24;
+  s += '<circle data-handle="rotate" cx="0" cy="' + n2(rc) + '" r="' + n2(hs) + '" fill="none" pointer-events="all"/>';
+  s += '<g pointer-events="none" transform="translate(0 ' + n2(rc) + ') scale(' + n2(gs) + ') translate(-12 -12)">' +
+    '<path fill="#6aa9ff" d="M17.65 6.35A7.95 7.95 0 0 0 12 4a8 8 0 1 0 7.73 10h-2.08A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></g>';
+  return s + '</g>';
+}
+function selectionMarkup() {
+  return selectedEls().filter(e => e.page === state.currentPage && !e.hidden).map(selMarkupFor).join('');
 }
 function renderAll() {
   const { w: W, h: H } = pageDims();
@@ -1603,6 +1602,7 @@ function gestMove() {
   $('#zoomLabel').textContent = Math.round(state.zoom * 100) + '%';
   wrap.scrollLeft = px * state.zoom - (mid.x - rect.left);
   wrap.scrollTop = py * state.zoom - (mid.y - rect.top);
+  updateTransforms();   /* 画布缩放变了，选中抓手要按新缩放重画才不变形 */
 }
 canvas.addEventListener('pointerdown', e => {
   if (e.button !== 0) return;
@@ -1984,7 +1984,10 @@ function updateTransforms() {
     const g = canvas.querySelector('[data-id="' + el.id + '"]');
     if (g) g.setAttribute('transform', tf);
     const s = canvas.querySelector('[data-sel="' + el.id + '"]');
-    if (s) s.setAttribute('transform', tf);
+    if (!s) return;
+    /* 手柄尺寸按屏幕像素恒定，缩放/画布缩放变化后要按新值重画，否则会跟着一起放大缩小 */
+    if (s.getAttribute('data-sc') !== String(el.scale || 1) || s.getAttribute('data-z') !== String(state.zoom || 1)) s.outerHTML = selMarkupFor(el);
+    else s.setAttribute('transform', tf);
   });
 }
 
