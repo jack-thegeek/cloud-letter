@@ -46,13 +46,6 @@ aside{background:#fff;display:flex;flex-direction:column;min-height:0}
 .tpl-card .thumb{height:64px;display:flex;align-items:center;justify-content:center;background:#fafcff;border-radius:8px;overflow:hidden}
 .tpl-card .thumb svg{width:100%;height:100%;display:block}
 .tpl-card .nm{font-size:11px;margin-top:4px;color:#5c6b87;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.layer{display:flex;align-items:center;gap:6px;padding:6px 7px;border-radius:9px;cursor:pointer;margin-bottom:4px;border:1px solid transparent}
-.layer:hover{background:#f6f9ff}
-.layer.on{background:#eaf3ff;border-color:#c8defb}
-.layer .t{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px}
-.layer .dot{width:9px;height:9px;border-radius:50%;flex:0 0 auto}
-.layer .eye{opacity:.5;cursor:pointer;font-size:11px}
-.layer .eye:hover{opacity:1}
 .row{display:flex;align-items:center;gap:8px;margin-bottom:9px}
 .row>label{flex:0 0 76px;color:#6b7a96;font-size:12px}
 .row>label.w{flex:0 0 60px}
@@ -176,7 +169,6 @@ hr{border:0;border-top:1px solid #eef2f9;margin:14px 0}
   .mini-grid button{padding:10px 2px;font-size:12px}
   .seg button{padding:8px 0;font-size:12.5px}
   .swatches i{width:22px;height:22px}
-  .layer{padding:9px 8px;font-size:13px}
   .csel{padding:9px 10px;font-size:13.5px}
   .cp-box{width:min(300px,calc(100vw - 24px))}
   .cp-sv{height:170px}
@@ -906,19 +898,7 @@ function renderTemplates() {
     '<div class="tpl-card' + (state.tpl === t.id ? ' on' : '') + '" data-tpl="' + t.id + '" title="套用模板：' + t.name + '">' +
     '<div class="thumb">' + tplThumbSvg(t) + '</div><div class="nm">' + t.name + '</div></div>').join('');
 }
-function renderLayers() {
-  const box = $('#layerList');
-  if (!box) return;
-  const els = curPageEls().slice().reverse();
-  box.innerHTML = els.length ? els.map(e =>
-    '<div class="layer' + (state.selected.includes(e.id) ? ' on' : '') + '" data-el="' + e.id + '">' +
-    '<span class="dot" style="background:' + e.style.fill + '"></span>' +
-    '<span class="t">' + (e.style.text.replace(/\n/g, ' ↵ ') || '（空）') + '</span>' +
-    '<span class="eye" data-eye="' + e.id + '" title="显示/隐藏">' + (e.hidden ? '🚫' : '👁') + '</span></div>').join('')
-    : '<p class="hint">还没有元素：双击画布空白处新建，或点左侧模板。</p>';
-}
 function renderPanels() {
-  renderLayers();
   $('#pageLabel').textContent = (state.currentPage + 1) + ' / ' + state.page.pages;
   $('#selOrient').value = state.page.orient;
   syncCsel($('#selOrient'));
@@ -1017,13 +997,12 @@ function syncInspector() {
   const box = $('#inspector');
   const el = selectedEls()[0];
   if (!el) {
-    box.innerHTML = '<div class="sec">当前页元素</div><div id="layerList"></div><p class="hint">在画布上点选一个云朵字元素。</p>';
-    bindInspector(); renderLayers(); return;
+    box.innerHTML = '<p class="hint">在画布上点选一个云朵字元素。</p>';
+    bindInspector(); return;
   }
   const st = el.style;
   const multi = state.selected.length > 1;
   let h = '';
-  h += '<div class="sec">当前页元素</div><div id="layerList"></div>';
   h += '<div class="sec">文字</div>';
   if (multi) h += '<p class="hint" style="padding:2px 2px 10px;text-align:left">已选中 ' + state.selected.length + ' 个元素，参数会一起修改；文字内容请逐个编辑。</p>';
   else h += '<textarea id="txtInput" aria-label="文字内容" placeholder="输入英文单词、短语或句子">' + st.text + '</textarea>';
@@ -1082,7 +1061,6 @@ function syncInspector() {
   closeCsel();
   cpClose();
   box.querySelectorAll('select').forEach(sel => enhanceSelect(sel));
-  renderLayers();
 }
 
 function bindInspector() {
@@ -1643,7 +1621,7 @@ canvas.addEventListener('dblclick', e => {
 $('#wrap').addEventListener('wheel', e => {
   if (!e.ctrlKey && !e.metaKey) return;
   e.preventDefault();
-  setZoom(state.zoom * (e.deltaY < 0 ? 1.1 : 1 / 1.1));
+  setZoom(state.zoom * (e.deltaY < 0 ? 1.05 : 1 / 1.05));
 }, { passive: false });
 
 /* =========================================================
@@ -1939,16 +1917,6 @@ $('#tplGrid').addEventListener('click', e => {
   if (!c) return;
   applyTemplate(c.dataset.tpl, state.selected.length === 1);
 });
-$('#inspector').addEventListener('click', e => {
-  const eye = e.target.closest('[data-eye]');
-  if (eye) {
-    const el = state.elements.find(x => x.id === eye.dataset.eye);
-    if (el) { el.hidden = !el.hidden; commit('hide'); renderAll(); renderLayers(); }
-    return;
-  }
-  const it = e.target.closest('[data-el]');
-  if (it) select(it.dataset.el, e.shiftKey);
-});
 $('#selOrient').onchange = e => setOrient(e.target.value);
 $$('#segOrient button').forEach(b => { b.onclick = () => setOrient(b.dataset.v); });
 bindStepper($('#stpMargin'), v => {
@@ -1979,8 +1947,8 @@ window.addEventListener('resize', () => {
 });
 $('#btnFit').onclick = fitZoom;
 $('#zoomLabel').onclick = () => setZoom(1);
-$('#btnZoomIn').onclick = () => setZoom(state.zoom + 0.1);
-$('#btnZoomOut').onclick = () => setZoom(state.zoom - 0.1);
+$('#btnZoomIn').onclick = () => setZoom(state.zoom + 0.05);
+$('#btnZoomOut').onclick = () => setZoom(state.zoom - 0.05);
 $('#btnGuides').onclick = () => { state.guides = !state.guides; renderAll(); renderPanels(); };
 $('#btnUndo').onclick = undo;
 $('#btnRedo').onclick = redo;
