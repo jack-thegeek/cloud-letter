@@ -63,11 +63,16 @@ textarea{resize:vertical;min-height:52px;line-height:1.45}
 .stepper input::-webkit-outer-spin-button,.stepper input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 .stepper:focus-within{border-color:#8fbdf8;box-shadow:0 0 0 3px rgba(106,169,255,.13)}
 .stepper .unit{padding-right:6px;color:#93a2bd;font-size:11px;white-space:nowrap}
-input[type=color]{width:36px;height:27px;padding:0;border:1px solid #dbe4f2;border-radius:8px;background:#fff;cursor:pointer;flex:0 0 auto}
-/* 颜色选择器 */
-.chip-wrap{position:relative;display:inline-flex;flex:0 0 auto}
+input[type=color]{width:22px;height:22px;padding:0;border:0;border-radius:50%;background:none;cursor:pointer;flex:0 0 auto}
+input[type=color]::-webkit-color-swatch-wrapper{padding:0}
+input[type=color]::-webkit-color-swatch{border:0;border-radius:50%}
+input[type=color]::-moz-color-swatch{border:0;border-radius:50%}
+/* 颜色选择器：实心圆色点 + 自绘面板 */
+.chip-wrap{position:relative;display:inline-flex;flex:0 0 auto;border-radius:50%;box-shadow:0 0 0 1px rgba(43,58,85,.16)}
+.chip-wrap:hover{box-shadow:0 0 0 1px rgba(43,58,85,.16),0 0 0 4px rgba(106,169,255,.16)}
+.chip-wrap:focus-within{box-shadow:0 0 0 1px rgba(43,58,85,.16),0 0 0 4px rgba(106,169,255,.28)}
 .chip-wrap input[type=color]{pointer-events:none}
-.chip-open{position:absolute;inset:0;border-radius:8px;cursor:pointer}
+.chip-open{position:absolute;inset:-4px;border-radius:50%;cursor:pointer}
 .cp{position:fixed;inset:0;z-index:500;display:block}
 .cp[hidden]{display:none}
 .cp-box{position:absolute;background:#fff;border-radius:14px;padding:14px;width:272px;box-shadow:0 18px 48px rgba(20,30,50,.28);border:1px solid #e6ecf5}
@@ -80,12 +85,20 @@ input[type=color]{width:36px;height:27px;padding:0;border:1px solid #dbe4f2;bord
 .cp-hue{position:relative;height:14px;border-radius:7px;margin-top:14px;cursor:pointer;touch-action:none;background:linear-gradient(to right,#f00,#ff0,#0f0,#0ff,#00f,#f0f,#f00)}
 .cp-hdot{position:absolute;top:50%;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,.25),0 2px 6px rgba(0,0,0,.25);transform:translate(-50%,-50%);pointer-events:none}
 .cp-row{display:flex;align-items:center;gap:8px;margin-top:14px}
-.cp-prev{width:30px;height:30px;border-radius:9px;box-shadow:inset 0 0 0 1px rgba(43,58,85,.12);flex:0 0 auto}
-.cp-hex{flex:1;border:1px solid #dbe4f2;border-radius:8px;padding:6px 9px;font-size:12.5px;text-transform:uppercase;outline:none}
+.cp-prev{width:30px;height:30px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(43,58,85,.12);flex:0 0 auto}
+.cp-hex{flex:1;border:1px solid #dbe4f2;border-radius:8px;padding:6px 9px;font-size:12.5px;text-transform:uppercase;outline:none;min-width:0}
 .cp-hex:focus{border-color:#8fbdf8;box-shadow:0 0 0 3px rgba(106,169,255,.13)}
 .cp-swatches{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
 .cp-swatches i{width:20px;height:20px;border-radius:50%;cursor:pointer;border:2px solid #fff;box-shadow:0 0 0 1px #dbe4f2}
-.cp-actions{display:flex;justify-content:flex-end;margin-top:14px}
+.cp-actions{display:flex;justify-content:flex-end;gap:6px;margin-top:14px}
+/* 吸管 + RGB 数字输入（对齐系统原生取色器） */
+.cp-eye{width:30px;height:30px;padding:0;border:1px solid #dbe4f2;border-radius:50%;background:#fff;color:#5b7095;cursor:pointer;display:flex;align-items:center;justify-content:center;flex:0 0 auto;transition:.15s}
+.cp-eye:hover{background:#f3f8ff;border-color:#b9d3f7;color:#2b6fd6}
+.cp-eye:active{transform:scale(.94)}
+.cp-rgb{display:flex;gap:6px;margin-top:8px}
+.cp-num{flex:1;display:flex;align-items:center;gap:4px;border:1px solid #dbe4f2;border-radius:8px;padding:4px 7px;background:#fff;font-size:11px;color:#93a2bd;min-width:0}
+.cp-num:focus-within{border-color:#8fbdf8;box-shadow:0 0 0 3px rgba(106,169,255,.13)}
+.cp-num input{width:100%;min-width:0;border:0;padding:0;background:none;outline:none;text-align:right;font-size:12.5px;color:#2b3a55;font-variant-numeric:tabular-nums}
 /* 自绘勾选框 */
 .cbx{display:inline-flex;align-items:center;gap:8px;cursor:pointer;color:#6b7a96;user-select:none;font-size:12.5px}
 .cbx input{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
@@ -130,7 +143,7 @@ hr{border:0;border-top:1px solid #eef2f9;margin:14px 0}
 #wrap{flex:1;overflow:auto;padding:26px;display:flex;min-height:0}
 #canvas{background:#fff;box-shadow:0 8px 30px rgba(43,58,85,.16);border-radius:2px;display:block;touch-action:none;flex:0 0 auto;margin:auto}
 #canvas text{user-select:none}
-#canvas g[data-id]{cursor:move}
+#canvas g[data-id]{cursor:grab}
 #canvas [data-handle="scale"]{cursor:nwse-resize}
 #canvas [data-handle="rotate"]{cursor:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath fill='%232b3a55' d='M17.65 6.35A7.95 7.95 0 0 0 12 4a8 8 0 1 0 7.73 10h-2.08A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z'/%3E%3C/svg%3E") 12 12, grab}
 /* ============ 移动端（≤900px）：单栏画布 + 底部抽屉 ============ */
@@ -192,7 +205,7 @@ hr{border:0;border-top:1px solid #eef2f9;margin:14px 0}
   .cp-swatches i{width:16px;height:16px}
   .cp-actions{margin-top:8px}
 }
-#canvas.dragging{cursor:move}
+#canvas.dragging{cursor:grabbing}
 #canvas.dragging.scl{cursor:nwse-resize}
 #canvas.dragging.rot{cursor:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath fill='%232b3a55' d='M17.65 6.35A7.95 7.95 0 0 0 12 4a8 8 0 1 0 7.73 10h-2.08A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z'/%3E%3C/svg%3E") 12 12, grab}
 #canvas.dragging *{cursor:inherit!important}
@@ -797,9 +810,19 @@ function selectionMarkup() {
     s += '<g transform="' + elTransform(el) + '" class="sel" data-sel="' + el.id + '">';
     s += '<rect x="' + n2(-w) + '" y="' + n2(-h) + '" width="' + n2(2 * w) + '" height="' + n2(2 * h) +
       '" fill="none" stroke="#6aa9ff" stroke-width="' + n2(sw) + '" stroke-dasharray="' + n2(dash) + ' ' + n2(dash * 0.7) + '" pointer-events="none"/>';
+    /* 抓手内画图标：方块=斜向双箭头（缩放），圆点=环形箭头（旋转），图标不接管点击 */
+    const sx = w, sy = h, k = hs * 0.46, dk = hs * 0.3;
     s += '<rect data-handle="scale" x="' + n2(w - hs) + '" y="' + n2(h - hs) + '" width="' + n2(hs * 2) + '" height="' + n2(hs * 2) +
-      '" rx="' + n2(hs * 0.4) + '" fill="#fff" stroke="#6aa9ff" stroke-width="' + n2(sw) + '"/>';
-    s += '<circle data-handle="rotate" cx="0" cy="' + n2(-h - hs * 1.8) + '" r="' + n2(hs) + '" fill="#fff" stroke="#6aa9ff" stroke-width="' + n2(sw) + '"/>';
+      '" rx="' + n2(hs * 0.4) + '" fill="#fff" stroke="#6aa9ff" stroke-width="' + n2(sw * 0.6) + '"/>';
+    s += '<path pointer-events="none" fill="none" stroke="#6aa9ff" stroke-width="' + n2(sw * 0.5) + '" stroke-linecap="round" stroke-linejoin="round" d="' +
+      'M' + n2(sx - k) + ' ' + n2(sy - k) + 'L' + n2(sx + k) + ' ' + n2(sy + k) +
+      'M' + n2(sx - k + dk) + ' ' + n2(sy - k) + 'H' + n2(sx - k) + 'V' + n2(sy - k + dk) +
+      'M' + n2(sx + k - dk) + ' ' + n2(sy + k) + 'H' + n2(sx + k) + 'V' + n2(sy + k - dk) + '"/>';
+    /* 旋转抓手只留图标，圆只做透明点击区（pointer-events=all 保证无填充也能点） */
+    const rc = -h - hs * 1.8, gs = hs * 2.2 / 24;
+    s += '<circle data-handle="rotate" cx="0" cy="' + n2(rc) + '" r="' + n2(hs) + '" fill="none" pointer-events="all"/>';
+    s += '<g pointer-events="none" transform="translate(0 ' + n2(rc) + ') scale(' + n2(gs) + ') translate(-12 -12)">' +
+      '<path fill="#6aa9ff" d="M17.65 6.35A7.95 7.95 0 0 0 12 4a8 8 0 1 0 7.73 10h-2.08A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></g>';
     s += '</g>';
   });
   return s;
@@ -1226,10 +1249,11 @@ document.addEventListener('click', () => closeCsel());
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeCsel(); });
 window.addEventListener('scroll', () => closeCsel(), true);
 
+
 /* =========================================================
    6.6 颜色选择器（居中弹窗，替代原生取色器）
    ========================================================= */
-let cpEl = null, cpTarget = null, cpH = 0, cpS = 1, cpV = 1;
+let cpEl = null, cpTarget = null, cpH = 0, cpS = 1, cpV = 1, cpOrig = null;
 const cp01 = v => Math.max(0, Math.min(1, v));
 
 function hsv2hex(h, s, v) {
@@ -1264,9 +1288,10 @@ function cpBuild() {
     '<div class="cp-box">' +
     '<div class="cp-sv"><b class="cp-base"></b><b class="cp-white"></b><b class="cp-black"></b><u class="cp-dot"></u></div>' +
     '<div class="cp-hue"><u class="cp-hdot"></u></div>' +
-    '<div class="cp-row"><span class="cp-prev"></span><input class="cp-hex" maxlength="7" spellcheck="false" aria-label="十六进制颜色值"></div>' +
+    '<div class="cp-row"><span class="cp-prev"></span><button class="cp-eye" data-cp-eye="1" title="吸管取色" aria-label="吸管取色"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m2 22 1-1h3l9-9"/><path d="M3 21v-3l9-9"/><path d="m15 6 3.4-3.4a2.1 2.1 0 1 1 3 3L18 9l.4.4a2.1 2.1 0 1 1-3 3l-3.8-3.8a2.1 2.1 0 1 1 3-3z"/></svg></button><input class="cp-hex" maxlength="7" spellcheck="false" aria-label="十六进制颜色值"></div>' +
+    '<div class="cp-rgb"><label class="cp-num">R<input data-cp-ch="r" inputmode="numeric" maxlength="3" aria-label="红"></label><label class="cp-num">G<input data-cp-ch="g" inputmode="numeric" maxlength="3" aria-label="绿"></label><label class="cp-num">B<input data-cp-ch="b" inputmode="numeric" maxlength="3" aria-label="蓝"></label></div>' +
     '<div class="cp-swatches"></div>' +
-    '<div class="cp-actions"><button class="btn sm" data-cp-close="1">完成</button></div>' +
+    '<div class="cp-actions"><button class="btn sm ghost" data-cp-cancel="1">取消</button><button class="btn sm" data-cp-close="1">完成</button></div>' +
     '</div>';
   document.body.appendChild(cpEl);
   cpEl.querySelector('.cp-swatches').innerHTML = SWATCHES.map(c => '<i data-cp-c="' + c + '" style="background:' + c + '"></i>').join('');
@@ -1294,6 +1319,27 @@ function cpBuild() {
     cpH = c.h; cpS = c.s; cpV = c.v;
     cpPaint();
   });
+  /* 吸管：直接读屏幕像素，浏览器不支持就藏掉按钮 */
+  const eye = cpEl.querySelector('[data-cp-eye]');
+  if (window.EyeDropper) {
+    eye.addEventListener('click', async () => {
+      try {
+        const r = await new EyeDropper().open();
+        const c = hex2hsv(r.sRGBHex);
+        cpH = c.h; cpS = c.s; cpV = c.v; cpPaint();
+      } catch (err) { /* 用户按 Esc 放弃取色 */ }
+    });
+  } else eye.remove();
+  /* RGB 输入：和 HEX / 色域保持双向同步 */
+  const rgbIn = k => cpEl.querySelector('[data-cp-ch="' + k + '"]');
+  cpEl.querySelectorAll('[data-cp-ch]').forEach(inp => {
+    inp.addEventListener('input', () => {
+      const v = ['r', 'g', 'b'].map(k => parseInt(rgbIn(k).value, 10));
+      if (v.some(n => !isFinite(n))) return;
+      const c = hex2hsv('#' + v.map(n => ('0' + clamp(n, 0, 255).toString(16)).slice(-2)).join(''));
+      cpH = c.h; cpS = c.s; cpV = c.v; cpPaint();
+    });
+  });
   cpEl.querySelector('.cp-swatches').addEventListener('click', e => {
     const i = e.target.closest('[data-cp-c]');
     if (!i) return;
@@ -1302,7 +1348,9 @@ function cpBuild() {
     cpPaint();
   });
   cpEl.addEventListener('click', e => {
-    if (e.target === cpEl || (e.target.closest && e.target.closest('[data-cp-close]'))) cpClose();
+    /* 遮罩 / 完成 = 确认，Esc 和「取消」才回滚 */
+    if (e.target === cpEl || (e.target.closest && e.target.closest('[data-cp-close]'))) cpDone();
+    else if (e.target.closest && e.target.closest('[data-cp-cancel]')) cpCancel();
   });
 }
 function cpPaint() {
@@ -1314,7 +1362,14 @@ function cpPaint() {
   cpEl.querySelector('.cp-prev').style.background = hex;
   const hx = cpEl.querySelector('.cp-hex');
   if (document.activeElement !== hx) hx.value = hex.toUpperCase();
-  if (cpTarget) {
+  const rgbBox = cpEl.querySelector('.cp-rgb');
+  if (!rgbBox.contains(document.activeElement)) {
+    ['r', 'g', 'b'].forEach((k, i) => {
+      cpEl.querySelector('[data-cp-ch="' + k + '"]').value = parseInt(hex.substr(1 + i * 2, 2), 16);
+    });
+  }
+  /* 值没变就不派发事件，否则光是打开面板就会多出一条撤销记录 */
+  if (cpTarget && cpTarget.value !== hex) {
     cpTarget.value = hex;
     cpTarget.dispatchEvent(new Event('input', { bubbles: true }));
   }
@@ -1324,6 +1379,8 @@ function cpOpen(input) {
   cpTarget = input;
   const c = hex2hsv(input.value);
   cpH = c.h; cpS = c.s; cpV = c.v;
+  /* 记录打开前的状态，取消时回滚 */
+  cpOrig = { snap: snapshot(), undoLen: hist.undo.length, redo: hist.redo.slice() };
   cpEl.hidden = false;
   cpPaint();
   /* 贴着点击的色块弹出，四周留 10px，空间不够就翻到上方 / 左边 */
@@ -1341,6 +1398,32 @@ function cpOpen(input) {
 function cpClose() {
   if (cpEl) cpEl.hidden = true;
   cpTarget = null;
+  cpOrig = null;
+}
+/* 完成：拖动时是边改边提交的，这里把整段合并成一条撤销记录，撤销一步就能回到打开前 */
+function cpDone() {
+  const o = cpOrig;
+  if (o) {
+    if (hist.undo.length > o.undoLen) hist.undo.length = o.undoLen;   /* 丢掉拖动过程中堆的记录 */
+    if (o.undoLen) hist.undo[o.undoLen - 1] = o.snap;                 /* 同 key 的提交会覆盖末条，这里补回 */
+    hist.key = '';
+    if (snapshot() !== o.snap) commit('color' + (cpTarget ? cpTarget.dataset.key : ''));
+    else updateUndoBtns();                                           /* 转了一圈回到原色：不留记录 */
+  }
+  cpClose();
+}
+/* 取消：边拖边改是实时的，所以要把颜色和撤销历史一起退回打开前的状态 */
+function cpCancel() {
+  const o = cpOrig;
+  if (o) {
+    if (hist.undo.length > o.undoLen) hist.undo.length = o.undoLen;
+    if (o.undoLen) hist.undo[o.undoLen - 1] = o.snap;  /* 同 key 的提交会覆盖末条，这里补回 */
+    hist.key = '';
+    hist.redo = o.redo;  /* 拖动时的 commit 清空了重做栈，一并还原 */
+    restore(o.snap);
+    updateUndoBtns();
+  }
+  cpClose();
 }
 
 /* =========================================================
@@ -1985,7 +2068,7 @@ document.addEventListener('keydown', e => {
   if (meta && e.key.toLowerCase() === 'd') { e.preventDefault(); duplicateSel(); return; }
   if (meta && e.key.toLowerCase() === 'a') { e.preventDefault(); state.selected = curPageEls().map(x => x.id); renderAll(); renderPanels(); syncInspector(); return; }
   if (e.key === 'Delete' || e.key === 'Backspace') { e.preventDefault(); deleteSel(); return; }
-  if (e.key === 'Escape') { if (cpEl && !cpEl.hidden) { cpClose(); return; } closeCsel(); select(null); return; }
+  if (e.key === 'Escape') { if (cpEl && !cpEl.hidden) { cpCancel(); return; } closeCsel(); select(null); return; }
   if (e.key.indexOf('Arrow') === 0) {
     const sel = selectedEls();
     if (!sel.length) return;
