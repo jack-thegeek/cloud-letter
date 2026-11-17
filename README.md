@@ -96,7 +96,7 @@
 
 ## 构建
 
-源码是 `src/index.html`（不含 base64 字体，便于阅读和检索）。日常使用直接开 `index.html`，不需要构建。
+源码是 `src/index.html`（不含 base64 字体，便于阅读和检索）。**本地调试直接双击 `src/index.html`**，手写体自动从上级目录的 `xumin字体.TTF` 加载，改完刷新即可；交付给别人用之前构建一次：
 
 ```bash
 ./build.sh            # 生成 index.html（注入字体）+ index.min.html（压缩版），自动写入版本号
