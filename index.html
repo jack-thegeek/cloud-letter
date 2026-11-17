@@ -46,6 +46,12 @@ aside{background:#fff;display:flex;flex-direction:column;min-height:0}
 .tpl-card .thumb{height:64px;display:flex;align-items:center;justify-content:center;background:#fafcff;border-radius:8px;overflow:hidden}
 .tpl-card .thumb svg{width:100%;height:100%;display:block}
 .tpl-card .nm{font-size:11px;margin-top:4px;color:#5c6b87;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tpl-card .mytpl-del,.tpl-card .mytpl-edit{position:absolute;bottom:4px;width:20px;height:20px;border:0;border-radius:50%;background:rgba(43,58,85,.5);color:#fff;cursor:pointer;display:none;padding:0;align-items:center;justify-content:center}
+.tpl-card .mytpl-del{right:4px}
+.tpl-card .mytpl-edit{right:28px}
+.tpl-card:hover .mytpl-del,.tpl-card:hover .mytpl-edit{display:flex}
+.tpl-card .mytpl-del:hover{background:#e5484d}
+.tpl-card .mytpl-edit:hover{background:#6aa9ff}
 .row{display:flex;align-items:center;gap:8px;margin-bottom:9px}
 .row>label{flex:0 0 76px;color:#6b7a96;font-size:12px}
 .row>label.w{flex:0 0 60px}
@@ -218,8 +224,8 @@ hr{border:0;border-top:1px solid #eef2f9;margin:14px 0}
   <button class="btn ghost" id="btnRedo" title="重做 Ctrl+Shift+Z">↷ <span class="lbl">重做</span></button>
   <button class="btn danger" id="btnDelSel" title="删除选中元素 (Delete)" disabled>删除</button>
   <span class="tbsep"></span>
-  <button class="btn desk" id="btnFillW" title="缩放到占满页面宽度（位置不变）" disabled>↔ 横向铺满</button>
-  <button class="btn desk" id="btnFillH" title="缩放到占满页面高度（位置不变）" disabled>↕ 纵向铺满</button>
+  <button class="btn desk" id="btnFillW" title="缩放到占满页面宽度并水平居中" disabled>↔ 横向铺满</button>
+  <button class="btn desk" id="btnFillH" title="缩放到占满页面高度并垂直居中" disabled>↕ 纵向铺满</button>
   <button class="btn desk" id="btnGuides" title="显示可打印区域">▭ 边距线</button>
   <span class="tbsep desk"></span>
   <div class="tbgroup desk">
@@ -233,10 +239,10 @@ hr{border:0;border-top:1px solid #eef2f9;margin:14px 0}
     <option value="portrait">A4 纵向 794×1123</option>
     <option value="landscape" selected>A4 横向 1123×794</option>
   </select>
-  <button class="btn desk" id="btnImportJson" title="导入 JSON 工程文件（可换电脑继续编辑）">⬆ 导入 JSON</button>
-  <button class="btn desk" id="btnExportJson" title="导出 JSON 工程文件">⬇ 导出 JSON</button>
+  <button class="btn desk" id="btnImportJson" title="导入 JSON 工程文件（可换电脑继续编辑）"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7 9l5-5 5 5M5 20h14"/></svg> 导入 JSON</button>
+  <button class="btn desk" id="btnExportJson" title="导出 JSON 工程文件"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v12M7 11l5 5 5-5M5 20h14"/></svg> 导出 JSON</button>
   <button class="btn" id="btnExportPng" title="导出当前页 PNG 图片（3 倍图，约 288 dpi）">🖼 <span class="lbl">导出图片</span></button>
-  <button class="btn primary" id="btnExport">⬇ 导出 PDF</button>
+  <button class="btn primary" id="btnExport"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v12M7 11l5 5 5-5M5 20h14"/></svg> 导出 PDF</button>
 </header>
 <main>
   <aside id="left">
@@ -247,6 +253,13 @@ hr{border:0;border-top:1px solid #eef2f9;margin:14px 0}
     <div class="panel on" id="panel-tpl">
       <div class="sec">预设模板</div>
       <div class="tpl-grid" id="tplGrid"></div>
+      <div class="sec" style="display:flex;align-items:center;justify-content:space-between;gap:6px">
+        <span style="flex:1">我的模板</span>
+        <button class="btn sm ghost" id="btnImportMyTpl" title="从 JSON 文件导入我的模板（合并到现有）"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7 9l5-5 5 5M5 20h14"/></svg> 导入</button>
+        <button class="btn sm ghost" id="btnExportMyTpl" title="导出全部我的模板为 JSON 文件" disabled><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v12M7 11l5 5 5-5M5 20h14"/></svg> 导出</button>
+        <button class="btn sm primary" id="btnSaveMyTpl" disabled title="把选中元素的当前样式存为我的模板">＋ 保存</button>
+      </div>
+      <div class="tpl-grid" id="myTplGrid"></div>
     </div>
     <div class="panel" id="panel-page">
       <div class="sec">页面</div>
@@ -279,6 +292,7 @@ hr{border:0;border-top:1px solid #eef2f9;margin:14px 0}
   <button data-mtab="insp"><i>🎛</i>属性</button>
 </nav>
 <input type="file" id="fileJson" accept=".json,application/json" hidden>
+<input type="file" id="fileMyTpl" accept=".json,application/json" hidden>
 <div id="toast"></div>
 <script>
 'use strict';
@@ -871,6 +885,10 @@ function toSVG(e) {
    4. 持久化 / 撤销
    ========================================================= */
 const LSKEY = 'cloudletter.v1';
+const MY_TPLS_KEY = 'cloudletter.mytpls.v1';
+let myTpls = [];
+function loadMyTpls() { try { myTpls = JSON.parse(localStorage.getItem(MY_TPLS_KEY) || '[]') || []; } catch (e) { myTpls = []; } }
+function saveMyTpls() { try { localStorage.setItem(MY_TPLS_KEY, JSON.stringify(myTpls)); } catch (e) {} }
 const hist = { undo: [], redo: [], key: '', t: 0 };
 let saveTimer = 0;
 const snapshot = () => JSON.stringify({ unit: 'px', page: state.page, elements: state.elements, currentPage: state.currentPage });
@@ -936,6 +954,169 @@ function renderTemplates() {
     '<div class="tpl-card' + (state.tpl === t.id ? ' on' : '') + '" data-tpl="' + t.id + '" title="套用模板：' + t.name + '">' +
     '<div class="thumb">' + tplThumbSvg(t) + '</div><div class="nm">' + t.name + '</div></div>').join('');
 }
+/* 我的模板：套用逻辑与预设一致，差别仅在于来源是 localStorage 里的用户自存样式 */
+function renderMyTpls() {
+  const grid = $('#myTplGrid');
+  if (!grid) return;
+  if (!myTpls.length) {
+    grid.innerHTML = '<p class="hint" style="grid-column:1/-1;padding:10px 2px">选中一个元素，点上方「保存当前样式」即可存为模板。</p>';
+    return;
+  }
+  grid.innerHTML = myTpls.map(t =>
+    '<div class="tpl-card" data-mytpl="' + t.id + '" title="套用我的模板：' + t.name + '">' +
+    '<div class="thumb">' + tplThumbSvg(t) + '</div><div class="nm">' + t.name + '</div>' +
+    '<button class="mytpl-edit" data-rename="' + t.id + '" title="重命名" aria-label="重命名模板"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>' +
+    '<button class="mytpl-del" data-del="' + t.id + '" title="删除" aria-label="删除模板"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2m2 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M10 11v6M14 11v6"/></svg></button></div>').join('');
+  const btnExp = $('#btnExportMyTpl'); if (btnExp) btnExp.disabled = !myTpls.length;
+}
+function saveAsMyTpl() {
+  const el = selectedEls()[0];
+  if (!el) return toast('请先选中一个元素');
+  const name = String(el.style.text || '模板').slice(0, 12);
+  myTpls.unshift({ id: 'my_' + uid(), name: name, text: el.style.text, style: Object.assign({}, el.style) });
+  saveMyTpls(); renderMyTpls();
+  toast('已保存到我的模板：' + name);
+}
+function applyMyTpl(id, single) {
+  const tpl = myTpls.find(t => t.id === id);
+  if (!tpl) return;
+  const sel = selectedEls();
+  const rebuild = e => { e.style = Object.assign({}, DEFAULT_STYLE, tpl.style, { text: e.style.text }); fitWidth(e); };
+  if (single && sel.length === 1) rebuild(sel[0]);
+  else if (sel.length > 1) sel.forEach(rebuild);
+  else {
+    const { w: W, h: H } = pageDims();
+    const el = makeElement(Object.assign({ text: tpl.text }, tpl.style), W / 2, H * 0.36);
+    const geo = getGeo(el.style);
+    el.scale = n2(Math.min(1, (W - 2 * state.page.margin - 38) / geo.w));
+    state.elements.push(el);
+    state.selected = [el.id];
+    if (isMobile()) showSheet('insp');
+  }
+  commit('mytpl-' + id);
+  renderAll(); renderPanels(); syncInspector();
+  toast('已套用我的模板：' + tpl.name);
+}
+function delMyTpl(id) {
+  const tpl = myTpls.find(t => t.id === id);
+  if (!tpl) return;
+  confirmModal('确定删除模板「' + tpl.name + '」？', () => {
+    myTpls = myTpls.filter(t => t.id !== id);
+    saveMyTpls(); renderMyTpls();
+    toast('已删除该模板');
+  });
+}
+/* 居中模态输入框：卡片视觉对齐颜色选择器（.cp-box 同款） */
+function promptModal(title, value, onOk) {
+  const mask = document.createElement('div');
+  mask.style.cssText = 'position:fixed;inset:0;z-index:600;background:rgba(20,30,50,.32);display:flex;align-items:center;justify-content:center;padding:20px';
+  const box = document.createElement('div');
+  box.style.cssText = 'background:#fff;border-radius:14px;padding:18px;width:min(320px,calc(100vw - 40px));box-shadow:0 18px 48px rgba(20,30,50,.28);border:1px solid #e6ecf5';
+  const ttl = document.createElement('div');
+  ttl.style.cssText = 'font-size:13.5px;font-weight:700;color:#2b3a55;margin-bottom:12px';
+  ttl.textContent = title;
+  const inp = document.createElement('input');
+  inp.type = 'text';
+  inp.value = value;
+  inp.style.cssText = 'width:100%;border:1px solid #dbe4f2;border-radius:8px;padding:8px 10px;font-size:13px;outline:none';
+  const acts = document.createElement('div');
+  acts.style.cssText = 'display:flex;justify-content:flex-end;gap:8px;margin-top:14px';
+  const cancel = document.createElement('button');
+  cancel.className = 'btn sm ghost'; cancel.textContent = '取消';
+  const ok = document.createElement('button');
+  ok.className = 'btn sm primary'; ok.textContent = '确定';
+  acts.append(cancel, ok);
+  box.append(ttl, inp, acts);
+  mask.appendChild(box);
+  document.body.appendChild(mask);
+  inp.focus(); inp.select();
+  const close = () => mask.remove();
+  const done = () => { const v = inp.value.trim(); close(); onOk(v); };
+  ok.onclick = done;
+  cancel.onclick = close;
+  mask.onclick = e => { if (e.target === mask) close(); };
+  inp.onkeydown = e => {
+    if (e.key === 'Enter') done();
+    else if (e.key === 'Escape') close();
+  };
+}
+/* 居中确认框：与 promptModal 同款卡片，无输入框 */
+function confirmModal(title, onOk) {
+  const mask = document.createElement('div');
+  mask.style.cssText = 'position:fixed;inset:0;z-index:600;background:rgba(20,30,50,.32);display:flex;align-items:center;justify-content:center;padding:20px';
+  const box = document.createElement('div');
+  box.style.cssText = 'background:#fff;border-radius:14px;padding:18px;width:min(320px,calc(100vw - 40px));box-shadow:0 18px 48px rgba(20,30,50,.28);border:1px solid #e6ecf5';
+  const ttl = document.createElement('div');
+  ttl.style.cssText = 'font-size:13.5px;font-weight:700;color:#2b3a55;margin-bottom:14px';
+  ttl.textContent = title;
+  const acts = document.createElement('div');
+  acts.style.cssText = 'display:flex;justify-content:flex-end;gap:8px';
+  const cancel = document.createElement('button');
+  cancel.className = 'btn sm ghost'; cancel.textContent = '取消';
+  const ok = document.createElement('button');
+  ok.className = 'btn sm'; ok.textContent = '删除';
+  ok.style.cssText = 'background:linear-gradient(135deg,#ff8a8a,#e5484d);border:0;color:#fff;box-shadow:0 4px 14px rgba(229,72,77,.4);font-weight:600';
+  acts.append(cancel, ok);
+  box.append(ttl, acts);
+  mask.appendChild(box);
+  document.body.appendChild(mask);
+  ok.focus();
+  const close = () => { mask.remove(); document.removeEventListener('keydown', onKey); };
+  const onKey = e => { if (e.key === 'Escape') close(); };
+  document.addEventListener('keydown', onKey);
+  ok.onclick = () => { close(); onOk(); };
+  cancel.onclick = close;
+  mask.onclick = e => { if (e.target === mask) close(); };
+}
+function renameMyTpl(id) {
+  const tpl = myTpls.find(t => t.id === id);
+  if (!tpl) return;
+  promptModal('重命名模板', tpl.name, name => {
+    const n = String(name).slice(0, 20);
+    if (!n) return toast('名称不能为空');
+    tpl.name = n;
+    saveMyTpls(); renderMyTpls();
+    toast('已重命名');
+  });
+}
+/* 导入文件来自外部，按信任边界处理：逐字段校验，id 重新生成避免覆盖现有 */
+function exportMyTpls() {
+  if (!myTpls.length) return toast('没有可导出的模板');
+  const data = { app: 'cloud-letter-mytpls', version: 1, savedAt: new Date().toISOString(), templates: myTpls };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'cloud-letter-mytpls-' + new Date().toISOString().slice(0, 10) + '.json';
+  document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 4000);
+  toast('已导出 ' + myTpls.length + ' 个模板');
+}
+function importMyTpls(file) {
+  const rd = new FileReader();
+  rd.onerror = () => toast('读取文件失败');
+  rd.onload = () => {
+    let d;
+    try { d = JSON.parse(String(rd.result)); } catch (e) { return toast('导入失败：不是有效的 JSON 文件'); }
+    const list = Array.isArray(d) ? d : (d && Array.isArray(d.templates) ? d.templates : null);
+    if (!list) return toast('导入失败：缺少 templates 字段');
+    let added = 0;
+    list.forEach(t => {
+      if (!t || !t.style || typeof t.style !== 'object') return;
+      const st = Object.assign({}, DEFAULT_STYLE, t.style);
+      st.text = typeof st.text === 'string' ? st.text.slice(0, 300) : 'Word';
+      myTpls.unshift({
+        id: 'my_' + uid(),
+        name: String(t.name || st.text || '模板').slice(0, 20),
+        text: st.text,
+        style: pruneStyle(st)
+      });
+      added++;
+    });
+    if (added) { saveMyTpls(); renderMyTpls(); }
+    toast('已导入 ' + added + ' 个模板');
+  };
+  rd.readAsText(file);
+}
 function renderPanels() {
   $('#pageLabel').textContent = (state.currentPage + 1) + ' / ' + state.page.pages;
   $('#selOrient').value = state.page.orient;
@@ -946,6 +1127,7 @@ function renderPanels() {
   $('#btnDelSel').disabled = !hasSel;
   $('#btnFillW').disabled = !hasSel;
   $('#btnFillH').disabled = !hasSel;
+  const btnSaveMyTpl = $('#btnSaveMyTpl'); if (btnSaveMyTpl) btnSaveMyTpl.disabled = !hasSel;
   $('#btnGuides').classList.toggle('on', state.guides);
   $('#inspTitle').textContent = state.selected.length ? (state.selected.length > 1 ? state.selected.length + ' 个元素' : '') : '未选中';
 }
@@ -1553,10 +1735,15 @@ function fillPage(axis) {
   sel.forEach(el => {
     const b = elBounds(el);   /* 已含旋转与当前缩放 */
     const k = axis === 'h' ? availW / b.w : availH / b.h;
-    el.scale = n2(clamp((el.scale || 1) * k, 0.05, 6));   /* 只改缩放，位置保持不变 */
+    el.scale = n2(clamp((el.scale || 1) * k, 0.05, 6));
   });
+  /* 铺满后居中：横向居中 x 轴，纵向居中 y 轴（多选时整体居中，不重叠到一起） */
+  const bs = sel.map(elBounds);
+  const dx = axis === 'h' ? W / 2 - (Math.min.apply(null, bs.map(b => b.x)) + Math.max.apply(null, bs.map(b => b.x + b.w))) / 2 : 0;
+  const dy = axis === 'v' ? H / 2 - (Math.min.apply(null, bs.map(b => b.y)) + Math.max.apply(null, bs.map(b => b.y + b.h))) / 2 : 0;
+  sel.forEach(el => { el.x = n2(el.x + dx); el.y = n2(el.y + dy); });
   commit('fill' + axis); renderAll(); renderPanels(); syncInspector();
-  toast(axis === 'h' ? '已铺满页面宽度' : '已铺满页面高度');
+  toast(axis === 'h' ? '已铺满页面宽度并居中' : '已铺满页面高度并居中');
 }
 function duplicateSel() {
   const sel = selectedEls();
@@ -2035,6 +2222,23 @@ $('#tplGrid').addEventListener('click', e => {
   if (!c) return;
   applyTemplate(c.dataset.tpl, state.selected.length === 1);
 });
+$('#btnSaveMyTpl').onclick = saveAsMyTpl;
+$('#btnExportMyTpl').onclick = exportMyTpls;
+$('#btnImportMyTpl').onclick = () => $('#fileMyTpl').click();
+$('#fileMyTpl').onchange = e => {
+  const f = e.target.files && e.target.files[0];
+  e.target.value = '';
+  if (f) importMyTpls(f);
+};
+$('#myTplGrid').addEventListener('click', e => {
+  const rn = e.target.closest('[data-rename]');
+  if (rn) { e.stopPropagation(); renameMyTpl(rn.dataset.rename); return; }
+  const del = e.target.closest('[data-del]');
+  if (del) { e.stopPropagation(); delMyTpl(del.dataset.del); return; }
+  const c = e.target.closest('[data-mytpl]');
+  if (!c) return;
+  applyMyTpl(c.dataset.mytpl, state.selected.length === 1);
+});
 $('#selOrient').onchange = e => setOrient(e.target.value);
 $$('#segOrient button').forEach(b => { b.onclick = () => setOrient(b.dataset.v); });
 bindStepper($('#stpMargin'), v => {
@@ -2152,8 +2356,9 @@ function boot() {
     }
   } catch (err) { console.warn('读取本地数据失败', err); }
   if (!loaded) seedDemo();
+  loadMyTpls();
   renderAll(); renderPanels(); syncInspector();
-  setTimeout(renderTemplates, 30);   /* 缩略图较慢，先让画布出图 */
+  setTimeout(() => { renderTemplates(); renderMyTpls(); }, 30);
   enhanceSelect($('#selOrient'), true);
   hist.undo = [snapshot()];
   updateUndoBtns();
@@ -2162,11 +2367,11 @@ function boot() {
   /* 开发态（src 源码未注入 base64）直接加载上级目录的 TTF；交付版走内嵌字体，不进这个分支 */
   if (/__CLHAND_B64__/.test(document.querySelector('style').textContent)) {
     new FontFace('CLHand', "url('../xumin字体.TTF')").load()
-      .then(f => { document.fonts.add(f); GEOCACHE.clear(); renderAll(); setTimeout(renderTemplates, 0); })
+      .then(f => { document.fonts.add(f); GEOCACHE.clear(); renderAll(); setTimeout(() => { renderTemplates(); renderMyTpls(); }, 0); })
       .catch(() => {});
   } else if (document.fonts && document.fonts.load) {
     Promise.all([document.fonts.load('400 100px CLHand'), document.fonts.load('900 100px CLHand')])
-      .then(() => { GEOCACHE.clear(); renderAll(); setTimeout(renderTemplates, 0); })
+      .then(() => { GEOCACHE.clear(); renderAll(); setTimeout(() => { renderTemplates(); renderMyTpls(); }, 0); })
       .catch(() => {});
   }
 }
