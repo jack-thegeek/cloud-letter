@@ -328,8 +328,8 @@ function renderMask(st) {
   const lineH0 = BASE * LINE_HEIGHT;
   const blockH0 = asc0 + desc0 + (lines.length - 1) * lineH0;
 
-  /* 目标字号：按 3.2 倍超采样栅格化，同时限制总像素量 */
-  let targetFont = clamp((st.size || 113) * 3.2, 90, 640);
+  /* 目标字号：按 2 倍超采样栅格化（3.2 倍会到 64 万采样点、单次几何 ~100ms），同时限制总像素量 */
+  let targetFont = clamp((st.size || 113) * 1.6, 90, 640);
   let k = targetFont / BASE;
   const tw0 = Math.max.apply(null, widths) * k, th0 = blockH0 * k;
   const CAP = 1700;
