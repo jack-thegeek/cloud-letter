@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-<head>
+<head><!-- 本文件由 build.sh 生成（内嵌 base64 字体），改代码请编辑 src/index.html -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>云朵字工坊</title>
@@ -151,17 +151,17 @@ hr{border:0;border-top:1px solid #eef2f9;margin:14px 0}
   #topbar .spacer{display:none}
   #topbar .lbl{display:none}
   .mob{display:flex}
-  #btnExportPng{font-size:0;width:38px;padding:5px 0}
-  #btnExportPng::before{content:'🖼';font-size:15px}
   #topbar .btn.primary{margin-left:0}
   main{flex-direction:column;padding-bottom:calc(52px + env(safe-area-inset-bottom))}
-  #wrap{padding:10px}
-  #left,#right{position:fixed;left:0;right:0;bottom:calc(52px + env(safe-area-inset-bottom));width:auto;flex:0 0 auto;
-    max-height:min(60vh,560px);border:0;border-radius:16px 16px 0 0;box-shadow:0 -10px 34px rgba(43,58,85,.22);
-    transform:translateY(120%);transition:transform .22s ease;z-index:60}
-  #left.open,#right.open{transform:none}
+  #wrap{padding:10px;align-items:flex-start}
+  #canvas{margin:0 auto}
+  /* 画布固定在上，面板在下方占位展开：不覆盖画布，边改边看 */
+  #stage{order:1;flex:1 1 auto;min-height:40%}
+  #left,#right{order:2;position:static;width:auto;flex:0 1 auto;max-height:0;overflow:hidden;
+    border:0;border-radius:16px 16px 0 0;transition:max-height .22s ease}
+  #left.open,#right.open{max-height:min(52vh,520px);box-shadow:0 -6px 24px rgba(43,58,85,.13)}
   #left .tabs{display:none}
-  #left .panel,#inspector{max-height:min(60vh,560px);overflow:auto;padding:14px 14px 20px}
+  #left .panel,#inspector{max-height:none;overflow:auto;padding:12px 14px 16px}
   #mbar{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:61;background:#fff;border-top:1px solid #e3eaf5;
     height:calc(52px + env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom)}
   #mbar button{flex:1;border:0;background:transparent;color:#7d8aa3;font-size:11.5px;cursor:pointer;
@@ -182,13 +182,12 @@ hr{border:0;border-top:1px solid #eef2f9;margin:14px 0}
   .cp-sv{height:170px}
   #toast{bottom:calc(64px + env(safe-area-inset-bottom))}
 }
-/* 横屏手机：底部抽屉会吃掉画布，改成左右侧滑 */
+/* 横屏手机：面板改占右侧一列，同样不压画布 */
 @media (max-width:900px) and (orientation:landscape){
-  #left,#right{top:52px;bottom:calc(52px + env(safe-area-inset-bottom));width:min(360px,52vw);max-height:none;
-    border-radius:0;box-shadow:0 0 34px rgba(43,58,85,.22)}
-  #left{left:0;right:auto;transform:translateX(-105%)}
-  #right{left:auto;right:0;transform:translateX(105%)}
-  #left.open,#right.open{transform:none}
+  main{flex-direction:row}
+  #stage{order:1;flex:1 1 auto;min-width:0}
+  #left,#right{order:2;flex:0 0 0;width:0;max-height:none;height:auto;overflow:hidden;border-radius:0}
+  #left.open,#right.open{flex:0 0 min(360px,52vw);width:auto;box-shadow:-6px 0 24px rgba(43,58,85,.13)}
   #left .panel,#inspector{max-height:none}
 }
 /* 矮视口：取色器压缩，保证整块可见 */
@@ -231,32 +230,18 @@ hr{border:0;border-top:1px solid #eef2f9;margin:14px 0}
   </select>
   <button class="btn desk" id="btnImportJson" title="导入 JSON 工程文件（可换电脑继续编辑）">⬆ 导入 JSON</button>
   <button class="btn desk" id="btnExportJson" title="导出 JSON 工程文件">⬇ 导出 JSON</button>
-  <button class="btn" id="btnExportPng" title="导出当前页 PNG 图片（3 倍图，约 288 dpi）">🖼 导出图片</button>
+  <button class="btn" id="btnExportPng" title="导出当前页 PNG 图片（3 倍图，约 288 dpi）">🖼 <span class="lbl">导出图片</span></button>
   <button class="btn primary" id="btnExport">⬇ 导出 PDF</button>
 </header>
 <main>
   <aside id="left">
     <div class="tabs">
       <button data-tab="tpl" class="on">模板库</button>
-      <button data-tab="layers">元素</button>
       <button data-tab="page">页面</button>
     </div>
     <div class="panel on" id="panel-tpl">
       <div class="sec">预设组合模板</div>
       <div class="tpl-grid" id="tplGrid"></div>
-    </div>
-    <div class="panel" id="panel-layers">
-      <div class="sec">当前页元素</div>
-      <div id="layerList"></div>
-      <div class="sec">图层顺序</div>
-      <div class="mini-grid">
-        <button data-z="top">置顶</button>
-        <button data-z="up">上移</button>
-        <button data-z="down">下移</button>
-        <button data-z="bottom">置底</button>
-        <button data-z="dup">复制</button>
-        <button data-z="del">删除</button>
-      </div>
     </div>
     <div class="panel" id="panel-page">
       <div class="sec">页面</div>
@@ -285,7 +270,6 @@ hr{border:0;border-top:1px solid #eef2f9;margin:14px 0}
 </main>
 <nav id="mbar" aria-label="移动端面板">
   <button data-mtab="tpl"><i>🎨</i>模板</button>
-  <button data-mtab="layers"><i>📑</i>元素</button>
   <button data-mtab="page"><i>📐</i>页面</button>
   <button data-mtab="insp"><i>🎛</i>属性</button>
 </nav>
@@ -922,14 +906,19 @@ function renderTemplates() {
     '<div class="tpl-card' + (state.tpl === t.id ? ' on' : '') + '" data-tpl="' + t.id + '" title="套用模板：' + t.name + '">' +
     '<div class="thumb">' + tplThumbSvg(t) + '</div><div class="nm">' + t.name + '</div></div>').join('');
 }
-function renderPanels() {
+function renderLayers() {
+  const box = $('#layerList');
+  if (!box) return;
   const els = curPageEls().slice().reverse();
-  $('#layerList').innerHTML = els.length ? els.map(e =>
+  box.innerHTML = els.length ? els.map(e =>
     '<div class="layer' + (state.selected.includes(e.id) ? ' on' : '') + '" data-el="' + e.id + '">' +
     '<span class="dot" style="background:' + e.style.fill + '"></span>' +
     '<span class="t">' + (e.style.text.replace(/\n/g, ' ↵ ') || '（空）') + '</span>' +
     '<span class="eye" data-eye="' + e.id + '" title="显示/隐藏">' + (e.hidden ? '🚫' : '👁') + '</span></div>').join('')
     : '<p class="hint">还没有元素：双击画布空白处新建，或点左侧模板。</p>';
+}
+function renderPanels() {
+  renderLayers();
   $('#pageLabel').textContent = (state.currentPage + 1) + ' / ' + state.page.pages;
   $('#selOrient').value = state.page.orient;
   syncCsel($('#selOrient'));
@@ -1028,12 +1017,13 @@ function syncInspector() {
   const box = $('#inspector');
   const el = selectedEls()[0];
   if (!el) {
-    box.innerHTML = '<p class="hint">在画布上点选一个云朵字元素。</p>';
-    bindInspector(); return;
+    box.innerHTML = '<div class="sec">当前页元素</div><div id="layerList"></div><p class="hint">在画布上点选一个云朵字元素。</p>';
+    bindInspector(); renderLayers(); return;
   }
   const st = el.style;
   const multi = state.selected.length > 1;
   let h = '';
+  h += '<div class="sec">当前页元素</div><div id="layerList"></div>';
   h += '<div class="sec">文字</div>';
   if (multi) h += '<p class="hint" style="padding:2px 2px 10px;text-align:left">已选中 ' + state.selected.length + ' 个元素，参数会一起修改；文字内容请逐个编辑。</p>';
   else h += '<textarea id="txtInput" aria-label="文字内容" placeholder="输入英文单词、短语或句子">' + st.text + '</textarea>';
@@ -1068,11 +1058,15 @@ function syncInspector() {
   h += row('旋转', stepper({ prop: 'rotation', value: el.rotation, min: -180, max: 180, step: 1, unit: '°' }), true);
   h += row('透明度', stepper({ key: 'opacity', value: getVal('opacity'), min: 10, max: 100, step: 1, factor: 100, unit: '%' }), true);
 
+  h += '<div class="sec">元素操作</div><div class="mini-grid">' +
+    '<button data-z="top">置顶</button><button data-z="up">上移</button><button data-z="down">下移</button>' +
+    '<button data-z="bottom">置底</button><button data-z="dup">复制</button><button data-z="del">删除</button></div>';
+
   h += '<div class="desk"><div class="sec">排列</div><div class="mini-grid">' +
     '<button data-align="left">左对齐</button><button data-align="hcenter">水平居中</button><button data-align="right">右对齐</button>' +
     '<button data-align="top">顶部对齐</button><button data-align="vcenter">垂直居中</button><button data-align="bottom">底部对齐</button>' +
     '<button data-dist="h">水平等距</button><button data-dist="v">垂直等距</button><button data-act="centerPage">页面居中</button>' +
-    '<button data-act="fitPage">适应页面</button><button data-act="autoArr">自动排列</button><button data-act="dup">复制</button>' +
+    '<button data-act="fitPage">适应页面</button><button data-act="autoArr">自动排列</button>' +
     '</div></div>';
   box.innerHTML = h;
   /* 无障碍：把行标签关联到控件 */
@@ -1088,6 +1082,7 @@ function syncInspector() {
   closeCsel();
   cpClose();
   box.querySelectorAll('select').forEach(sel => enhanceSelect(sel));
+  renderLayers();
 }
 
 function bindInspector() {
@@ -1175,6 +1170,14 @@ function bindInspector() {
   box.querySelectorAll('[data-align]').forEach(b => { b.onclick = () => alignSel(b.dataset.align); });
   box.querySelectorAll('[data-dist]').forEach(b => { b.onclick = () => distribute(b.dataset.dist); });
   box.querySelectorAll('[data-act]').forEach(b => { b.onclick = () => action(b.dataset.act); });
+  box.querySelectorAll('[data-z]').forEach(b => {
+    b.onclick = () => {
+      const z = b.dataset.z;
+      if (z === 'dup') duplicateSel();
+      else if (z === 'del') deleteSel();
+      else layerOrder(z);
+    };
+  });
 }
 /* =========================================================
    6.5 自绘下拉框（原生 select 只负责存值，界面用 div 渲染）
@@ -1378,7 +1381,7 @@ function select(id, additive) {
   }
 }
 /* =========================================================
-   移动端底部抽屉：模板 / 元素 / 页面 共用左栏，属性用右栏
+   移动端底部抽屉：模板 / 页面 共用左栏，属性用右栏
    ========================================================= */
 const isMobile = () => window.matchMedia('(max-width:900px)').matches;
 function openSheet(k) {
@@ -1391,6 +1394,7 @@ function openSheet(k) {
     $$('#left .tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === next));
     $$('#left .panel').forEach(p => p.classList.toggle('on', p.id === 'panel-' + next));
   }
+  if (isMobile() && autoZoom) setTimeout(fitZoom, 240);   /* 面板占位后画布仍完整可见 */
 }
 const showSheet = k => { if ($('#mbar').dataset.open !== k) openSheet(k); };
 /* 旋转后的轴对齐包围盒（对齐 / 分布 / 铺满都按这个算） */
@@ -1461,9 +1465,6 @@ function action(act) {
     });
     state.selected = all.map(e => e.id);
     toast('已自动排列 ' + all.length + ' 个元素');
-  } else if (act === 'dup') {
-    duplicateSel();
-    return;
   }
   commit(); renderAll(); renderPanels(); syncInspector();
 }
@@ -1534,6 +1535,7 @@ function gestMove() {
   const px = (gest.mid.x - rect.left + gest.sl) / gest.zoom;
   const py = (gest.mid.y - rect.top + gest.st) / gest.zoom;
   state.zoom = Math.round(z * 100) / 100;
+  autoZoom = false;
   const { w: W, h: H } = pageDims();
   canvas.style.width = (W * state.zoom) + 'px';
   canvas.style.height = (H * state.zoom) + 'px';
@@ -1670,8 +1672,10 @@ function setOrient(v) {
   $('#selOrient').value = v;
   commit('orient'); renderAll(); renderPanels(); syncInspector(); fitZoom();
 }
+let autoZoom = true;   /* 是否仍处于「自动适应」状态：手动缩放/捏合后置 false */
 function setZoom(z) {
   state.zoom = clamp(Math.round(z * 100) / 100, 0.1, 4);
+  autoZoom = false;
   renderAll();
 }
 function fitZoom() {
@@ -1680,6 +1684,7 @@ function fitZoom() {
   const availW = wrap.clientWidth - pad, availH = wrap.clientHeight - pad;
   const pxW = W, pxH = H;
   setZoom(Math.min(availW / pxW, availH / pxH));
+  autoZoom = true;
 }
 /* =========================================================
    9. PDF 导出（纯矢量，零依赖）
@@ -1934,23 +1939,15 @@ $('#tplGrid').addEventListener('click', e => {
   if (!c) return;
   applyTemplate(c.dataset.tpl, state.selected.length === 1);
 });
-$('#layerList').addEventListener('click', e => {
+$('#inspector').addEventListener('click', e => {
   const eye = e.target.closest('[data-eye]');
   if (eye) {
     const el = state.elements.find(x => x.id === eye.dataset.eye);
-    if (el) { el.hidden = !el.hidden; commit('hide'); renderAll(); renderPanels(); }
+    if (el) { el.hidden = !el.hidden; commit('hide'); renderAll(); renderLayers(); }
     return;
   }
   const it = e.target.closest('[data-el]');
   if (it) select(it.dataset.el, e.shiftKey);
-});
-$$('#panel-layers [data-z]').forEach(b => {
-  b.onclick = () => {
-    const z = b.dataset.z;
-    if (z === 'dup') duplicateSel();
-    else if (z === 'del') deleteSel();
-    else layerOrder(z);
-  };
 });
 $('#selOrient').onchange = e => setOrient(e.target.value);
 $$('#segOrient button').forEach(b => { b.onclick = () => setOrient(b.dataset.v); });

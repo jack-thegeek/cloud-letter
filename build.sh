@@ -1,28 +1,44 @@
 #!/usr/bin/env bash
-# 构建单文件压缩版：index.html -> index.min.html
+# 构建交付文件：src/index.html（源码，无 base64）+ 内嵌字体 -> index.html / index.min.html
+# 源码不带 base64 字体，便于阅读与 AI 检索；改功能请编辑 src/index.html 后运行本脚本
 # 用法: ./build.sh [版本号]
 set -euo pipefail
 cd "$(dirname "$0")"
 
-SRC=index.html
-OUT=index.min.html
+SRC=src/index.html
+FONT=xumin字体.TTF
+OUT=index.html
+OUTMIN=index.min.html
 VER=${1:-$(date +%Y%m%d.%H%M)}
 TMP=$(mktemp -d)
 trap 'rm -rf "$TMP"' EXIT
 
-echo "→ 压缩 $SRC"
+echo "→ 注入字体生成 $OUT"
+python3 - "$SRC" "$FONT" "$TMP/full.html" <<'PY'
+import sys, base64
+src, font, out = sys.argv[1:4]
+s = open(src, encoding='utf-8').read()
+assert '__CLHAND_B64__' in s, 'src 里找不到字体占位符 __CLHAND_B64__'
+b64 = base64.b64encode(open(font, 'rb').read()).decode()
+s = s.replace('__CLHAND_B64__', b64, 1)
+assert '<head>' in s
+s = s.replace('<head>', '<head><!-- 本文件由 build.sh 生成（内嵌 base64 字体），改代码请编辑 src/index.html -->', 1)
+open(out, 'w', encoding='utf-8').write(s)
+PY
+cp "$TMP/full.html" "$OUT"
+
+echo "→ 压缩生成 $OUTMIN"
 npx --yes html-minifier-terser \
   --collapse-whitespace --remove-comments --remove-redundant-attributes \
   --remove-empty-attributes --use-short-doctype --sort-attributes \
   --minify-css true --minify-js true \
-  --output "$TMP/out.html" "$SRC"
+  --output "$TMP/out.html" "$TMP/full.html"
 
-# 压缩会删掉注释，版本信息在构建后插入
-python3 - "$TMP/out.html" "$OUT" "$VER" <<'PY'
+python3 - "$TMP/out.html" "$OUTMIN" "$VER" <<'PY'
 import sys, datetime
 src, dst, ver = sys.argv[1:4]
 s = open(src, encoding='utf-8').read()
-note = '<!-- 云朵字工坊 v%s · built %s · 由 build.sh 从 index.html 生成，勿直接编辑本文件 -->' % (
+note = '<!-- 云朵字工坊 v%s · built %s · 由 build.sh 从 src/index.html 生成，勿直接编辑本文件 -->' % (
     ver, datetime.datetime.now().strftime('%Y-%m-%d %H:%M'))
 assert '<head>' in s
 s = s.replace('<head>', '<head>' + note, 1)
@@ -30,18 +46,21 @@ open(dst, 'w', encoding='utf-8').write(s)
 print('  版本 %s' % ver)
 PY
 
-# 校验：内嵌字体与关键入口还在，且压缩后的 JS 仍能通过语法检查
-python3 - "$OUT" "$TMP/app.js" <<'PY'
+# 校验：字体已内嵌、占位符已替换、关键入口还在，压缩后的 JS 能通过语法检查
+python3 - "$OUT" "$OUTMIN" "$TMP/app.js" <<'PY'
 import sys, re
-out, js = sys.argv[1:3]
-s = open(out, encoding='utf-8').read()
-m = re.search(r'<script>(.*)</script>', s, re.S)
-assert m, '找不到 <script>'
-open(js, 'w', encoding='utf-8').write(m.group(1))
-for k in ['@font-face', 'CLHand', 'buildPDF', 'exportPNG', 'buildGeometry']:
-    assert k in s, '缺少 ' + k
+full, out, js = sys.argv[1:4]
+sfull = open(full, encoding='utf-8').read()
+sout = open(out, encoding='utf-8').read()
+for name, s in (('index.html', sfull), ('index.min.html', sout)):
+    assert '@font-face' in s and 'CLHand' in s, name + ' 缺少内嵌字体'
+    assert '__CLHAND_B64__' not in s, name + ' 字体占位符未被替换'
+    assert re.search(r'<script>.*</script>', s, re.S), name + ' 找不到 <script>'
+for k in ['buildPDF', 'exportPNG', 'buildGeometry']:
+    assert k in sfull, '缺少 ' + k
+open(js, 'w', encoding='utf-8').write(re.search(r'<script>(.*)</script>', sout, re.S).group(1))
 print('  内容校验通过')
 PY
 command -v node >/dev/null && node --check "$TMP/app.js" && echo '  语法校验通过'
 
-ls -l "$SRC" "$OUT" | awk '{printf "  %-14s %s bytes\n", $9, $5}'
+ls -l "$SRC" "$OUT" "$OUTMIN" | awk '{printf "  %-16s %s bytes\n", $9, $5}'
