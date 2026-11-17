@@ -6,7 +6,7 @@ set -euo pipefail
 cd "$(dirname "$0")"
 
 SRC=src/index.html
-FONT=xumin字体.TTF
+FONT=xumin字体.woff2
 OUT=index.html
 OUTMIN=index.min.html
 VER=${1:-$(date +%Y%m%d.%H%M)}

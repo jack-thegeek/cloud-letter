@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>云朵字工坊</title>
 <style>
-@font-face{font-family:'CLHand';src:url(data:font/ttf;base64,__CLHAND_B64__) format('truetype');font-weight:normal;font-style:normal;font-display:block}
+@font-face{font-family:'CLHand';src:url(data:font/woff2;base64,__CLHAND_B64__) format('woff2');font-weight:normal;font-style:normal;font-display:block}
 *{box-sizing:border-box}
 html,body{height:100%;margin:0}
 body{font-family:"PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;background:#eef2f9;color:#2b3a55;overflow:hidden;display:flex;flex-direction:column;font-size:13px;-webkit-font-smoothing:antialiased}
@@ -2391,9 +2391,9 @@ function boot() {
   updateUndoBtns();
   fitZoom();
   /* 内嵌手写体是异步加载的：到位后清掉几何缓存重绘，避免先用回退字体描边 */
-  /* 开发态（src 源码未注入 base64）直接加载上级目录的 TTF；交付版走内嵌字体，不进这个分支 */
+  /* 开发态（src 源码未注入 base64）直接加载上级目录的 WOFF2；交付版走内嵌字体，不进这个分支 */
   if (/__CLHAND_B64__/.test(document.querySelector('style').textContent)) {
-    new FontFace('CLHand', "url('../xumin字体.TTF')").load()
+    new FontFace('CLHand', "url('../xumin字体.woff2') format('woff2')").load()
       .then(f => { document.fonts.add(f); GEOCACHE.clear(); renderAll(); setTimeout(() => { renderTemplates(); renderMyTpls(); }, 0); })
       .catch(() => {});
   } else if (document.fonts && document.fonts.load) {

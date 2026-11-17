@@ -96,14 +96,14 @@
 
 ## 构建
 
-源码是 `src/index.html`（不含 base64 字体，便于阅读和检索）。**本地调试直接双击 `src/index.html`**，手写体自动从上级目录的 `xumin字体.TTF` 加载，改完刷新即可；交付给别人用之前构建一次：
+源码是 `src/index.html`（不含 base64 字体，便于阅读和检索）。**本地调试直接双击 `src/index.html`**，手写体自动从上级目录的 `xumin字体.woff2` 加载，改完刷新即可；交付给别人用之前构建一次：
 
 ```bash
 ./build.sh            # 生成 index.html（注入字体）+ index.min.html（压缩版），自动写入版本号
 ./build.sh v1.2.0     # 自定义版本号
 ```
 
-`build.sh` 把 `xumin字体.TTF` 以 base64 注入源码里的 `__CLHAND_B64__` 占位符，生成单文件 `index.html`；再用 `html-minifier-terser` 压缩出 `index.min.html`，最后校验内嵌字体、关键入口还在，并用 `node --check` 确认压缩后的 JS 仍能解析。
+`build.sh` 把 `xumin字体.woff2` 以 base64 注入源码里的 `__CLHAND_B64__` 占位符，生成单文件 `index.html`；再用 `html-minifier-terser` 压缩出 `index.min.html`，最后校验内嵌字体、关键入口还在，并用 `node --check` 确认压缩后的 JS 仍能解析。
 
 `index.html` 和 `index.min.html` 都是构建产物，**别直接改**，改 `src/index.html` 再重新构建。
 
