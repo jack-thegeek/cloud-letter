@@ -38,7 +38,7 @@ aside{background:#fff;display:flex;flex-direction:column;min-height:0}
 .panel.on{display:block}
 .sec{font-size:11px;color:#93a2bd;letter-spacing:1px;margin:14px 0 8px;font-weight:600}
 #inspector .sec{font-size:13.5px;color:#2b3a55;letter-spacing:.5px;margin:20px 0 10px;font-weight:700}
-.sec:first-child{margin-top:2px}
+.sec:first-child,#inspector .sec:first-child{margin-top:2px}
 .tpl-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
 .tpl-card{border:2px solid #eef2f9;border-radius:12px;padding:5px;cursor:pointer;background:#fff;transition:.15s;text-align:center;position:relative;overflow:hidden}
 .tpl-card:hover{border-color:#bcd8fb;transform:translateY(-1px);box-shadow:0 6px 16px rgba(43,58,85,.09)}
@@ -156,8 +156,11 @@ hr{border:0;border-top:1px solid #eef2f9;margin:14px 0}
 #mbar{display:none}
 .mob{display:none}
 @media (max-width:900px){
+  /* 触屏没有 hover：我的模板的编辑/删除按钮常驻显示 */
+  .tpl-card .mytpl-del,.tpl-card .mytpl-edit{display:flex}
   #topbar{height:auto;min-height:52px;flex-wrap:wrap;gap:5px;padding:6px 8px}
   .brand span{display:none}
+  .brand i{display:none}
   .desk{display:none!important}
   #topbar .btn{font-size:11.5px;padding:5px 8px;white-space:nowrap;flex:0 0 auto}
   #topbar .spacer{display:none}
@@ -239,8 +242,8 @@ hr{border:0;border-top:1px solid #eef2f9;margin:14px 0}
     <option value="portrait">A4 纵向 794×1123</option>
     <option value="landscape" selected>A4 横向 1123×794</option>
   </select>
-  <button class="btn desk" id="btnImportJson" title="导入 JSON 工程文件（可换电脑继续编辑）"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7 9l5-5 5 5M5 20h14"/></svg> 导入 JSON</button>
-  <button class="btn desk" id="btnExportJson" title="导出 JSON 工程文件"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v12M7 11l5 5 5-5M5 20h14"/></svg> 导出 JSON</button>
+  <button class="btn" id="btnImportJson" title="导入 JSON 工程文件（可换电脑继续编辑）"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7 9l5-5 5 5M5 20h14"/></svg> 导入 JSON</button>
+  <button class="btn" id="btnExportJson" title="导出 JSON 工程文件"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v12M7 11l5 5 5-5M5 20h14"/></svg> 导出 JSON</button>
   <button class="btn" id="btnExportPng" title="导出当前页 PNG 图片（3 倍图，约 288 dpi）">🖼 <span class="lbl">导出图片</span></button>
   <button class="btn primary" id="btnExport"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v12M7 11l5 5 5-5M5 20h14"/></svg> 导出 PDF</button>
 </header>
@@ -288,8 +291,8 @@ hr{border:0;border-top:1px solid #eef2f9;margin:14px 0}
 </main>
 <nav id="mbar" aria-label="移动端面板">
   <button data-mtab="tpl"><i>🎨</i>模板</button>
-  <button data-mtab="page"><i>📐</i>页面</button>
   <button data-mtab="insp"><i>🎛</i>属性</button>
+  <button data-mtab="page"><i>📐</i>页面</button>
 </nav>
 <input type="file" id="fileJson" accept=".json,application/json" hidden>
 <input type="file" id="fileMyTpl" accept=".json,application/json" hidden>
@@ -833,8 +836,8 @@ function selMarkupFor(el) {
   const z = state.zoom || 1;
   const geo = getGeo(el.style), sc = el.scale || 1;
   const w = geo.w / 2, h = geo.h / 2;
-  /* 手柄按屏幕像素恒定：13px 方块 / 4px 描边 / 15px 虚线（触摸屏放大到 19px） */
-  const hs = (isMobile() ? 19 : 13) / z / sc, sw = 4 / z / sc, dash = 15 / z / sc;
+  /* 手柄按屏幕像素恒定：13px 方块 / 4px 描边 / 15px 虚线（触摸屏放大到 16px） */
+  const hs = (isMobile() ? 16 : 13) / z / sc, sw = 4 / z / sc, dash = 15 / z / sc;
   let s = '<g transform="' + elTransform(el) + '" class="sel" data-sel="' + el.id + '" data-sc="' + sc + '" data-z="' + z + '">';
   s += '<rect x="' + n2(-w) + '" y="' + n2(-h) + '" width="' + n2(2 * w) + '" height="' + n2(2 * h) +
     '" fill="none" stroke="#6aa9ff" stroke-width="' + n2(sw) + '" stroke-dasharray="' + n2(dash) + ' ' + n2(dash * 0.7) + '" pointer-events="none"/>';
@@ -1633,17 +1636,14 @@ function select(id, additive) {
     if (i >= 0) state.selected.splice(i, 1); else state.selected.push(id);
   } else state.selected = [id];
   renderAll(); renderPanels(); syncInspector();
-  if (isMobile()) {
-    if (state.selected.length) showSheet('insp');
-    else if ($('#mbar').dataset.open === 'insp') openSheet('insp');   /* 点空白处收起属性抽屉 */
-  }
+  if (isMobile() && state.selected.length) showSheet('insp');
 }
 /* =========================================================
    移动端底部抽屉：模板 / 页面 共用左栏，属性用右栏
    ========================================================= */
 const isMobile = () => window.matchMedia('(max-width:900px)').matches;
 function openSheet(k) {
-  const bar = $('#mbar'), next = bar.dataset.open === k ? '' : k;
+  const bar = $('#mbar'), next = k;   /* 三个 tab 常驻一个激活，点自己或点画布都不收起 */
   bar.dataset.open = next;
   bar.querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.mtab === next));
   $('#left').classList.toggle('open', !!next && next !== 'insp');
@@ -2356,6 +2356,10 @@ function boot() {
     }
   } catch (err) { console.warn('读取本地数据失败', err); }
   if (!loaded) seedDemo();
+  if (isMobile()) {   /* 移动端默认打开属性抽屉，并选中当前页第一个元素 */
+    const first = curPageEls()[0];
+    if (first) select(first.id); else showSheet('insp');
+  }
   loadMyTpls();
   renderAll(); renderPanels(); syncInspector();
   setTimeout(() => { renderTemplates(); renderMyTpls(); }, 30);
