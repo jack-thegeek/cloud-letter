@@ -45,6 +45,10 @@ aside{background:#fff;display:flex;flex-direction:column;min-height:0}
 .tpl-card.on{border-color:#6aa9ff;box-shadow:0 0 0 3px rgba(106,169,255,.16)}
 .tpl-card .thumb{height:64px;display:flex;align-items:center;justify-content:center;background:#fafcff;border-radius:8px;overflow:hidden}
 .tpl-card .thumb svg{width:100%;height:100%;display:block}
+#pageGrid{margin-top:12px}
+#pageGrid .thumb{height:112px}
+#pageGrid img{width:100%;height:100%;object-fit:contain}
+#pageGrid .nm{display:block}
 .tpl-card .nm{font-size:11px;margin-top:4px;color:#5c6b87;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tpl-card .mytpl-del,.tpl-card .mytpl-edit{position:absolute;bottom:4px;width:20px;height:20px;border:0;border-radius:50%;background:rgba(43,58,85,.5);color:#fff;cursor:pointer;display:none;padding:0;align-items:center;justify-content:center}
 .tpl-card .mytpl-del{right:4px}
@@ -142,6 +146,10 @@ input[type=color]::-moz-color-swatch{border:0;border-radius:50%}
 hr{border:0;border-top:1px solid #eef2f9;margin:14px 0}
 #toast{position:fixed;left:50%;bottom:28px;transform:translate(-50%,14px);background:rgba(43,58,85,.94);color:#fff;padding:9px 16px;border-radius:10px;font-size:12.5px;opacity:0;pointer-events:none;transition:.25s;z-index:200;max-width:80vw;text-align:center}
 #toast.on{opacity:1;transform:translate(-50%,0)}
+#saveStatus{display:none;align-items:center;gap:5px;border:1px solid #ffd2d2;background:#fff1f1;color:#cf2f36;border-radius:10px;padding:5px 8px;font-size:12px;white-space:nowrap}
+#saveStatus.on{display:inline-flex}
+#saveStatus button{border:0;background:#cf2f36;color:#fff;border-radius:6px;padding:3px 7px;cursor:pointer;font-size:11px}
+#saveStatus button:hover{background:#b7272e}
 .hint{color:#93a2bd;font-size:12px;line-height:1.7;padding:20px 6px;text-align:center}
 #stage{flex:1;display:flex;flex-direction:column;min-width:0;background:#eef2f9}
 .tbgroup{display:flex;align-items:center;gap:4px}
@@ -240,6 +248,7 @@ hr{border:0;border-top:1px solid #eef2f9;margin:14px 0}
     <button class="btn sm" id="btnFit" title="缩放到适应窗口">适应窗口</button>
   </div>
   <div class="spacer"></div>
+  <span id="saveStatus" role="status" aria-live="polite"></span>
   <select class="desk" id="selOrient" aria-label="纸张方向" style="width:auto;padding:6px 10px;border-radius:10px">
     <option value="portrait">A4 纵向 794×1123</option>
     <option value="landscape" selected>A4 横向 1123×794</option>
@@ -270,11 +279,11 @@ hr{border:0;border-top:1px solid #eef2f9;margin:14px 0}
       <div class="sec">页面</div>
       <div class="row mob"><label>方向</label><div class="ctl"><div class="seg" id="segOrient"><button data-v="portrait">纵向</button><button data-v="landscape">横向</button></div></div></div>
       <div class="row"><label>页边距</label><div class="ctl"><span class="stepper" id="stpMargin" data-min="0" data-max="94" data-step="1" data-dec="0"><button type="button" data-d="-1" aria-label="减少页边距">−</button><input type="number" id="rngMargin" aria-label="页边距"><span class="unit">px</span><button type="button" data-d="1" aria-label="增加页边距">+</button></span></div></div>
-      <div class="row"><label>页数</label><div class="ctl"><button class="btn sm" id="btnPagePrev">◀</button><span id="pageLabel" style="flex:1;text-align:center">1 / 1</span><button class="btn sm" id="btnPageNext">▶</button></div></div>
       <div class="mini-grid two">
         <button id="btnAddPage">新增页</button>
         <button id="btnDelPage">删除页</button>
       </div>
+      <div class="tpl-grid" id="pageGrid"></div>
       <p class="hint" style="text-align:left;padding:12px 2px">所有编辑会自动保存在本机浏览器中，刷新不会丢失。</p>
     </div>
   </aside>
@@ -811,30 +820,30 @@ const polyD = pts => {
 function elTransform(el) {
   return 'translate(' + n2(el.x) + ' ' + n2(el.y) + ') rotate(' + n2(el.rotation || 0) + ') scale(' + n2(el.scale || 1) + ')';
 }
-function elementMarkup(el, geo) {
+function elementMarkup(el, geo, includeId = true) {
   const st = el.style;
   const fill = st.fill || '#fff';
   const isStroke = st.outline === 'stroke';
   /* 传统描边：直接给文字路径描边，stroke-width 取 2 倍让一半露在字形外 */
   const strokeW = w => n2(Math.max(0, w || 0) * 2);
   const strokeAttrs = c => 'fill="none" stroke="' + c + '" stroke-linejoin="round" stroke-linecap="round"';
-  let s = '<g data-id="' + el.id + '" transform="' + elTransform(el) + '" opacity="' + (st.opacity == null ? 1 : st.opacity) + '">';
+  let s = '<g' + (includeId ? ' data-id="' + el.id + '"' : '') + ' transform="' + elTransform(el) + '" opacity="' + (st.opacity == null ? 1 : st.opacity) + '">';
   const base = geo.outerD || geo.textD;
   const shadowOff = 'translate(' + n2(st.shadowX || 0) + ' ' + n2(st.shadowY || 0) + ')';
   const shadowAlpha = st.shadowAlpha == null ? 0.18 : st.shadowAlpha;
   if (st.shadow) {
     s += isStroke
-      ? '<path d="' + geo.textD + '" ' + strokeAttrs(st.shadowColor) + ' stroke-width="' + strokeW(st.outerWidth) + '" opacity="' + shadowAlpha + '" transform="' + shadowOff + '"/>'
-      : '<path d="' + base + '" fill="' + st.shadowColor + '" fill-rule="evenodd" opacity="' + shadowAlpha + '" transform="' + shadowOff + '"/>';
+      ? '<path d="' + geo.textD + '" ' + strokeAttrs(st.shadowColor) + ' stroke-width="' + strokeW(st.outerWidth) + '" opacity="' + shadowAlpha + '" transform="' + shadowOff + '" data-c="shadowColor" data-ca="stroke"/>'
+      : '<path d="' + base + '" fill="' + st.shadowColor + '" fill-rule="evenodd" opacity="' + shadowAlpha + '" transform="' + shadowOff + '" data-c="shadowColor" data-ca="fill"/>';
   }
   if (isStroke) {
-    s += '<path d="' + geo.textD + '" ' + strokeAttrs(st.outerColor) + ' stroke-width="' + strokeW(st.outerWidth) + '"/>';
-    if (st.innerWidth > 0) s += '<path d="' + geo.textD + '" ' + strokeAttrs(st.innerColor) + ' stroke-width="' + strokeW(st.innerWidth) + '"/>';
+    s += '<path d="' + geo.textD + '" ' + strokeAttrs(st.outerColor) + ' stroke-width="' + strokeW(st.outerWidth) + '" data-c="outerColor" data-ca="stroke"/>';
+    if (st.innerWidth > 0) s += '<path d="' + geo.textD + '" ' + strokeAttrs(st.innerColor) + ' stroke-width="' + strokeW(st.innerWidth) + '" data-c="innerColor" data-ca="stroke"/>';
   }
-  if (geo.outerD) s += '<path d="' + geo.outerD + '" fill="' + st.outerColor + '" fill-rule="evenodd"/>';
-  if (geo.innerD) s += '<path d="' + geo.innerD + '" fill="' + st.innerColor + '" fill-rule="evenodd"/>';
-  s += '<path d="' + geo.textD + '" fill="' + fill + '" fill-rule="evenodd"/>';
-  geo.deco.forEach(p => { s += '<path d="' + polyD(p) + '" fill="' + (st.decoColor || '#ffd93d') + '"/>'; });
+  if (geo.outerD) s += '<path d="' + geo.outerD + '" fill="' + st.outerColor + '" fill-rule="evenodd" data-c="outerColor" data-ca="fill"/>';
+  if (geo.innerD) s += '<path d="' + geo.innerD + '" fill="' + st.innerColor + '" fill-rule="evenodd" data-c="innerColor" data-ca="fill"/>';
+  s += '<path d="' + geo.textD + '" fill="' + fill + '" fill-rule="evenodd" data-c="fill" data-ca="fill"/>';
+  geo.deco.forEach(p => { s += '<path d="' + polyD(p) + '" fill="' + (st.decoColor || '#ffd93d') + '" data-c="decoColor" data-ca="fill"/>'; });
   return s + '</g>';
 }
 function selMarkupFor(el) {
@@ -883,6 +892,7 @@ function renderAll() {
   body += '<g id="rotGuide" pointer-events="none"></g>';
   canvas.innerHTML = body;
   $('#zoomLabel').textContent = Math.round(state.zoom * 100) + '%';
+  renderPageThumbs();
 }
 function toSVG(e) {
   const pt = canvas.createSVGPoint();
@@ -897,8 +907,25 @@ function toSVG(e) {
 const LSKEY = 'cloudletter.v1';
 const MY_TPLS_KEY = 'cloudletter.mytpls.v1';
 let myTpls = [];
-function loadMyTpls() { try { myTpls = JSON.parse(localStorage.getItem(MY_TPLS_KEY) || '[]') || []; } catch (e) { myTpls = []; } }
-function saveMyTpls() { try { localStorage.setItem(MY_TPLS_KEY, JSON.stringify(myTpls)); } catch (e) {} }
+function loadMyTpls() {
+  let list = [];
+  try { list = JSON.parse(localStorage.getItem(MY_TPLS_KEY) || '[]') || []; } catch (e) { list = []; }
+  const fixes = [];
+  let fixed = 0, skipped = 0;
+  myTpls = (Array.isArray(list) ? list : []).map(t => {
+    if (!t || !t.style || typeof t.style !== 'object') { skipped++; return null; }
+    const before = fixes.length;
+    const st = sanitizeStyle(t.style, fixes);
+    if (fixes.length > before) fixed++;
+    return { id: typeof t.id === 'string' && t.id ? t.id : 'my_' + uid(), name: String(t.name || st.text || '模板').slice(0, 20), text: st.text, style: st };
+  }).filter(Boolean);
+  if (fixed || skipped) console.warn('[cloud-letter] 本地模板已校验：' + fixed + ' 项修正，' + skipped + ' 项跳过；字段：' + Array.from(new Set(fixes)).join('、'));
+}
+const saveFails = new Set();   /* 写入失败的种类：project / templates */
+function saveMyTpls() {
+  try { localStorage.setItem(MY_TPLS_KEY, JSON.stringify(myTpls)); clearSaveFail('templates'); }
+  catch (e) { markSaveFail('templates'); }
+}
 const hist = { undo: [], redo: [], key: '', t: 0 };
 let saveTimer = 0;
 const snapshot = () => JSON.stringify({ unit: 'px', page: state.page, elements: state.elements, currentPage: state.currentPage });
@@ -916,12 +943,38 @@ function migrateToPX(d) {
   d.unit = 'px';
   return d;
 }
+function renderSaveStatus() {
+  const el = $('#saveStatus');
+  if (!el) return;
+  let html = '';
+  if (saveFails.has('project')) html += '<button type="button" data-export="project">导出工程</button>';
+  if (saveFails.has('templates')) html += '<button type="button" data-export="templates">导出模板</button>';
+  el.classList.toggle('on', !!html);
+  el.innerHTML = html ? '<span>未保存</span>' + html : '';
+}
+function markSaveFail(kind) {
+  if (saveFails.has(kind)) return;
+  saveFails.add(kind); renderSaveStatus(); toast('本地保存失败，数据未保存');
+}
+function clearSaveFail(kind) {
+  if (!saveFails.delete(kind)) return;
+  renderSaveStatus();
+}
+function writeProject() {
+  try { localStorage.setItem(LSKEY, snapshot()); clearSaveFail('project'); }
+  catch (err) { markSaveFail('project'); }
+}
 function saveSoon() {
   clearTimeout(saveTimer);
-  saveTimer = setTimeout(() => {
-    try { localStorage.setItem(LSKEY, snapshot()); } catch (err) { /* 隐私模式忽略 */ }
-  }, 400);
+  saveTimer = setTimeout(() => { saveTimer = 0; writeProject(); }, 400);
 }
+/* 页面转后台/关闭时立刻落盘待写入的修改，避免 400ms 防抖窗口内丢数据 */
+function flushSave() {
+  if (!saveTimer) return;
+  clearTimeout(saveTimer); saveTimer = 0; writeProject();
+}
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') flushSave(); });
+window.addEventListener('pagehide', flushSave);
 function commit(key) {
   const snap = snapshot(), now = Date.now();
   if (key && key === hist.key && now - hist.t < 900) hist.undo[hist.undo.length - 1] = snap;
@@ -1109,26 +1162,56 @@ function importMyTpls(file) {
     try { d = JSON.parse(String(rd.result)); } catch (e) { return toast('导入失败：不是有效的 JSON 文件'); }
     const list = Array.isArray(d) ? d : (d && Array.isArray(d.templates) ? d.templates : null);
     if (!list) return toast('导入失败：缺少 templates 字段');
-    let added = 0;
+    const fixes = [];
+    let added = 0, fixed = 0, skipped = 0;
     list.forEach(t => {
-      if (!t || !t.style || typeof t.style !== 'object') return;
-      const st = Object.assign({}, DEFAULT_STYLE, t.style);
-      st.text = typeof st.text === 'string' ? st.text.slice(0, 300) : 'Word';
+      if (!t || !t.style || typeof t.style !== 'object') { skipped++; return; }
+      const before = fixes.length;
+      const st = sanitizeStyle(t.style, fixes);
+      if (fixes.length > before) fixed++;
       myTpls.unshift({
         id: 'my_' + uid(),
         name: String(t.name || st.text || '模板').slice(0, 20),
         text: st.text,
-        style: pruneStyle(st)
+        style: st
       });
       added++;
     });
     if (added) { saveMyTpls(); renderMyTpls(); }
-    toast('已导入 ' + added + ' 个模板');
+    reportImport('已导入 ' + added + ' 个模板', fixed, skipped, fixes);
   };
   rd.readAsText(file);
 }
+function renderPageThumbs() {
+  if (!$('#panel-page').classList.contains('on') || (isMobile() && !$('#left').classList.contains('open'))) return;
+  const grid = $('#pageGrid');
+  const { w, h } = pageDims();
+  const pages = Array.from({ length: state.page.pages }, () => '');
+  state.elements.forEach(el => {
+    if (!el.hidden && pages[el.page] !== undefined) pages[el.page] += elementMarkup(el, getGeo(el.style), false);
+  });
+  while (grid.children.length > pages.length) grid.lastElementChild.remove();
+  pages.forEach((body, i) => {
+    let card = grid.children[i];
+    if (!card) {
+      card = document.createElement('button');
+      card.type = 'button';
+      card.className = 'tpl-card';
+      card.innerHTML = '<span class="thumb"><img alt="" loading="lazy"></span><span class="nm">第 ' + (i + 1) + ' 页</span>';
+      card.onclick = () => goToPage(i);
+      grid.appendChild(card);
+    }
+    const current = i === state.currentPage;
+    card.classList.toggle('on', current);
+    if (current) card.setAttribute('aria-current', 'page');
+    else card.removeAttribute('aria-current');
+    const img = card.querySelector('img');
+    const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + w + ' ' + h + '"><rect width="100%" height="100%" fill="white"/>' + body + '</svg>';
+    const src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+    if (img.getAttribute('src') !== src) img.src = src;
+  });
+}
 function renderPanels() {
-  $('#pageLabel').textContent = (state.currentPage + 1) + ' / ' + state.page.pages;
   $('#selOrient').value = state.page.orient;
   syncCsel($('#selOrient'));
   $$('#segOrient button').forEach(b => b.classList.toggle('on', b.dataset.v === state.page.orient));
@@ -1293,6 +1376,13 @@ function syncInspector() {
   box.querySelectorAll('select').forEach(sel => enhanceSelect(sel));
 }
 
+/* 调色只改选中元素的 fill/stroke 属性，不重建整页 SVG（其他元素节点原样保留） */
+function updateElementColors(key, value) {
+  selectedEls().forEach(el => {
+    canvas.querySelectorAll('[data-id="' + el.id + '"] [data-c="' + key + '"]').forEach(p => p.setAttribute(p.dataset.ca || 'fill', value));
+  });
+  renderPageThumbs();
+}
 function bindInspector() {
   const box = $('#inspector');
   const refreshDeco = $('#refreshDeco');
@@ -1332,6 +1422,7 @@ function bindInspector() {
       if (prop) {
         selectedEls().forEach(e => { e[prop] = v; });
         updateTransforms();
+        renderPageThumbs();
         commit(prop);
       } else {
         selectedEls().forEach(e => { e.style[k] = v; });
@@ -1351,7 +1442,8 @@ function bindInspector() {
   box.querySelectorAll('input[type=color]').forEach(inp => {
     inp.oninput = () => {
       selectedEls().forEach(e => { e.style[inp.dataset.key] = inp.value; });
-      renderAll(); commit('color' + inp.dataset.key);
+      updateElementColors(inp.dataset.key, inp.value);
+      commit('color' + inp.dataset.key);
     };
   });
   box.querySelectorAll('input[type=checkbox][data-key]').forEach(inp => {
@@ -1381,7 +1473,8 @@ function bindInspector() {
     i.onclick = () => {
       const k = i.dataset.swatch;
       selectedEls().forEach(e => { e.style[k] = i.dataset.c; });
-      renderAll(); commit('sw' + k); syncInspector();
+      updateElementColors(k, i.dataset.c);
+      commit('sw' + k); syncInspector();
     };
   });
   box.querySelectorAll('[data-align]').forEach(b => { b.onclick = () => alignSel(b.dataset.align); });
@@ -1667,6 +1760,7 @@ function openSheet(k) {
     $$('#left .tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === next));
     $$('#left .panel').forEach(p => p.classList.toggle('on', p.id === 'panel-' + next));
   }
+  if (next === 'page') renderPageThumbs();
   if (isMobile() && autoZoom) setTimeout(fitZoom, 240);   /* 面板占位后画布仍完整可见 */
 }
 const showSheet = k => { if ($('#mbar').dataset.open !== k) openSheet(k); };
@@ -1814,13 +1908,9 @@ function gestMove() {
   const py = (gest.mid.y - rect.top + gest.st) / gest.zoom;
   state.zoom = Math.round(z * 100) / 100;
   autoZoom = false;
-  const { w: W, h: H } = pageDims();
-  canvas.style.width = (W * state.zoom) + 'px';
-  canvas.style.height = (H * state.zoom) + 'px';
-  $('#zoomLabel').textContent = Math.round(state.zoom * 100) + '%';
+  applyZoomView();
   wrap.scrollLeft = px * state.zoom - (mid.x - rect.left);
   wrap.scrollTop = py * state.zoom - (mid.y - rect.top);
-  updateTransforms();   /* 画布缩放变了，选中抓手要按新缩放重画才不变形 */
 }
 canvas.addEventListener('pointerdown', e => {
   if (e.button !== 0) return;
@@ -1949,18 +2039,26 @@ function setOrient(v) {
   const old = pageDims();
   state.page.orient = v;
   const nw = pageDims();
-  curPageEls().forEach(e => {
+  state.elements.forEach(e => {
     e.x = n2(e.x - old.w / 2 + nw.w / 2);
     e.y = n2(e.y - old.h / 2 + nw.h / 2);
   });
   $('#selOrient').value = v;
   commit('orient'); renderAll(); renderPanels(); syncInspector(); fitZoom();
 }
+/* 缩放只改显示尺寸和选中层手柄，文字路径不变（捏合缩放也复用它） */
+function applyZoomView() {
+  const { w: W, h: H } = pageDims();
+  canvas.style.width = (W * state.zoom) + 'px';
+  canvas.style.height = (H * state.zoom) + 'px';
+  $('#zoomLabel').textContent = Math.round(state.zoom * 100) + '%';
+  updateTransforms();
+}
 let autoZoom = true;   /* 是否仍处于「自动适应」状态：手动缩放/捏合后置 false */
 function setZoom(z) {
   state.zoom = clamp(Math.round(z * 100) / 100, 0.1, 4);
   autoZoom = false;
-  renderAll();
+  applyZoomView();
 }
 function fitZoom() {
   const wrap = $('#wrap'), { w: W, h: H } = pageDims();
@@ -2139,28 +2237,36 @@ function exportPDF() {
 const HEXRE = /^#[0-9a-f]{6}$/i;
 const num = (v, d, lo, hi) => (typeof v === 'number' && isFinite(v)) ? clamp(v, lo, hi) : d;
 const pick = (v, list, d) => list.indexOf(v) >= 0 ? v : d;
-/* 导入文件来自外部，按信任边界处理：逐字段校验并回落到安全默认值 */
-function sanitizeElement(e, pages) {
+const PAGE_CAP = 10000; /* shortcut: 安全上限，仅防异常文件撑爆渲染 */
+/* 统一校验：外部数据逐字段回落到安全值，fixes 收集被改动的字段名 */
+function sanitizeStyle(raw, fixes) {
+  const st = Object.assign({}, DEFAULT_STYLE, raw && typeof raw === 'object' ? raw : {});
+  if (!raw || typeof raw !== 'object') { if (fixes) fixes.push('style'); }
+  const fix = (k, v) => { if (st[k] !== v) { if (fixes) fixes.push(k); st[k] = v; } };
+  if (typeof st.text !== 'string') fix('text', 'Word');
+  else if (st.text.length > 300) fix('text', st.text.slice(0, 300));
+  fix('font', pick(st.font, Object.keys(FONTS), 'round'));
+  fix('outline', pick(st.outline, ['cloud', 'bubble', 'rounded', 'irregular', 'stroke', 'none'], 'cloud'));
+  fix('deco', pick(st.deco, ['none', 'dots', 'stars', 'hearts', 'confetti', 'flowers'], 'none'));
+  fix('decoSeed', Math.floor(num(st.decoSeed, 0, 0, 4294967295)));
+  ['fill', 'outerColor', 'innerColor', 'decoColor', 'shadowColor'].forEach(k => { if (!HEXRE.test(st[k])) fix(k, DEFAULT_STYLE[k]); });
+  fix('weight', pick(+st.weight, [400, 600, 700, 900], 900));
+  fix('size', num(st.size, 113, 20, 600));
+  fix('letterSpacing', num(st.letterSpacing, 0.02, -0.2, 0.8));
+  fix('outerWidth', num(st.outerWidth, 34, 0, 120));
+  fix('innerWidth', num(st.innerWidth, 13, 0, 120));
+  fix('bumpSize', num(st.bumpSize, 57, 8, 230));
+  fix('bumpAmp', num(st.bumpAmp, 0.2, 0, 1));
+  fix('opacity', num(st.opacity, 1, 0.05, 1));
+  fix('shadowX', num(st.shadowX, 4, -40, 40));
+  fix('shadowY', num(st.shadowY, 6, -40, 40));
+  fix('shadowAlpha', num(st.shadowAlpha, 0.18, 0, 1));
+  fix('shadow', !!st.shadow);
+  return pruneStyle(st);
+}
+/* 元素按同一套规则校验：非对象跳过，字段异常由 fixes 记录 */
+function sanitizeElement(e, pages, fixes) {
   if (!e || typeof e !== 'object') return null;
-  const st = Object.assign({}, DEFAULT_STYLE, e.style && typeof e.style === 'object' ? e.style : {});
-  st.text = typeof st.text === 'string' ? st.text.slice(0, 300) : 'Word';
-  st.font = pick(st.font, Object.keys(FONTS), 'round');
-  st.outline = pick(st.outline, ['cloud', 'bubble', 'rounded', 'irregular', 'stroke', 'none'], 'cloud');
-  st.deco = pick(st.deco, ['none', 'dots', 'stars', 'hearts', 'confetti', 'flowers'], 'none');
-  st.decoSeed = Math.floor(num(st.decoSeed, 0, 0, 4294967295));
-  ['fill', 'outerColor', 'innerColor', 'decoColor', 'shadowColor'].forEach(k => { if (!HEXRE.test(st[k])) st[k] = DEFAULT_STYLE[k]; });
-  st.weight = pick(+st.weight, [400, 600, 700, 900], 900);
-  st.size = num(st.size, 113, 20, 600);
-  st.letterSpacing = num(st.letterSpacing, 0.02, -0.2, 0.8);
-  st.outerWidth = num(st.outerWidth, 34, 0, 120);
-  st.innerWidth = num(st.innerWidth, 13, 0, 120);
-  st.bumpSize = num(st.bumpSize, 57, 8, 230);
-  st.bumpAmp = num(st.bumpAmp, 0.2, 0, 1);
-  st.opacity = num(st.opacity, 1, 0.05, 1);
-  st.shadowX = num(st.shadowX, 4, -40, 40);
-  st.shadowY = num(st.shadowY, 6, -40, 40);
-  st.shadowAlpha = num(st.shadowAlpha, 0.18, 0, 1);
-  st.shadow = !!st.shadow;
   return {
     id: typeof e.id === 'string' && e.id ? e.id : uid(),
     x: num(e.x, 100, -2000, 2000), y: num(e.y, 100, -2000, 2000),
@@ -2168,7 +2274,7 @@ function sanitizeElement(e, pages) {
     rotation: num(e.rotation, 0, -360, 360),
     page: Math.round(num(e.page, 0, 0, Math.max(0, pages - 1))),
     hidden: !!e.hidden,
-    style: pruneStyle(st)
+    style: sanitizeStyle(e.style, fixes)
   };
 }
 function exportJSON() {
@@ -2189,21 +2295,29 @@ function importJSON(file) {
     try { d = migrateToPX(JSON.parse(String(rd.result))); } catch (err) { return toast('导入失败：不是有效的 JSON 文件'); }
     if (!d || typeof d !== 'object' || !Array.isArray(d.elements) || !d.page || typeof d.page !== 'object')
       return toast('导入失败：缺少 page / elements 字段');
-    const pages = Math.round(num(d.page.pages, 1, 1, 50));
-    const els = d.elements.map(e => sanitizeElement(e, pages)).filter(Boolean);
+    const fixes = [];
+    const els = [];
+    let fixed = 0, skipped = 0;
+    d.elements.forEach(raw => {
+      const before = fixes.length;
+      const el = sanitizeElement(raw, PAGE_CAP, fixes);
+      if (!el) { skipped++; return; }
+      if (fixes.length > before) fixed++;
+      els.push(el);
+    });
     const seen = new Set();
     els.forEach(e => { while (seen.has(e.id)) e.id = uid(); seen.add(e.id); });
     state.page = {
       orient: pick(d.page.orient, ['portrait', 'landscape'], 'landscape'),
       margin: num(d.page.margin, 38, 0, 113),
-      pages: Math.max(pages, 1 + els.reduce((m, e) => Math.max(m, e.page), -1))
+      pages: Math.min(PAGE_CAP, Math.max(1, Math.round(num(d.page.pages, 1, 1, PAGE_CAP)), 1 + els.reduce((m, e) => Math.max(m, e.page), -1)))
     };
     state.elements = els;
     state.currentPage = Math.round(num(d.currentPage, 0, 0, state.page.pages - 1));
     state.selected = [];
     commit('import');
     renderAll(); renderPanels(); syncInspector(); fitZoom();
-    toast('已导入 ' + els.length + ' 个元素');
+    reportImport('已导入 ' + els.length + ' 个元素', fixed, skipped, fixes);
   };
   rd.readAsText(file);
 }
@@ -2217,6 +2331,14 @@ function toast(msg) {
   t.classList.add('on');
   clearTimeout(toast._t);
   toast._t = setTimeout(() => t.classList.remove('on'), 2400);
+}
+/* 统一提示：条数 + 修正 / 跳过，字段明细走 console */
+function reportImport(label, fixed, skipped, fixes) {
+  let msg = label;
+  if (fixed) msg += '（' + fixed + ' 项修正）';
+  if (skipped) msg += '，跳过 ' + skipped + ' 项';
+  toast(msg);
+  if (fixes && fixes.length) console.warn('[cloud-letter] 已修正字段：' + Array.from(new Set(fixes)).join('、'));
 }
 const ROT_SNAP = 5;   /* 距 90° 整点多少度内吸附 */
 /* 旋转吸附辅助线：过旋转轴心、沿吸附角度画虚线，并标出角度；snap 为 null 时清空 */
@@ -2254,6 +2376,7 @@ $$('#left .tabs button').forEach(b => {
   b.onclick = () => {
     $$('#left .tabs button').forEach(x => x.classList.toggle('on', x === b));
     $$('#left .panel').forEach(p => p.classList.toggle('on', p.id === 'panel-' + b.dataset.tab));
+    if (b.dataset.tab === 'page') renderPageThumbs();
   };
 });
 $('#tplGrid').addEventListener('click', e => {
@@ -2263,6 +2386,11 @@ $('#tplGrid').addEventListener('click', e => {
 });
 $('#btnSaveMyTpl').onclick = saveAsMyTpl;
 $('#btnExportMyTpl').onclick = exportMyTpls;
+$('#saveStatus').addEventListener('click', e => {
+  const b = e.target.closest('button[data-export]');
+  if (!b) return;
+  if (b.dataset.export === 'templates') exportMyTpls(); else exportJSON();
+});
 $('#btnImportMyTpl').onclick = () => $('#fileMyTpl').click();
 $('#fileMyTpl').onchange = e => {
   const f = e.target.files && e.target.files[0];
@@ -2284,8 +2412,11 @@ bindStepper($('#stpMargin'), v => {
   state.page.margin = v;
   renderAll(); commit('margin');
 });
-$('#btnPagePrev').onclick = () => { if (state.currentPage > 0) { state.currentPage--; state.selected = []; renderAll(); renderPanels(); syncInspector(); } };
-$('#btnPageNext').onclick = () => { if (state.currentPage < state.page.pages - 1) { state.currentPage++; state.selected = []; renderAll(); renderPanels(); syncInspector(); } };
+function goToPage(page) {
+  if (page < 0 || page >= state.page.pages || page === state.currentPage) return;
+  state.currentPage = page; state.selected = [];
+  renderAll(); renderPanels(); syncInspector(); saveSoon();
+}
 $('#btnAddPage').onclick = () => {
   state.page.pages++; state.currentPage = state.page.pages - 1; state.selected = [];
   commit('addpage'); renderAll(); renderPanels(); syncInspector();
@@ -2355,7 +2486,7 @@ document.addEventListener('keydown', e => {
     const dx = e.key === 'ArrowLeft' ? -step : e.key === 'ArrowRight' ? step : 0;
     const dy = e.key === 'ArrowUp' ? -step : e.key === 'ArrowDown' ? step : 0;
     sel.forEach(el => { el.x = n2(el.x + dx); el.y = n2(el.y + dy); });
-    updateTransforms(); commit('nudge'); syncInspector();
+    updateTransforms(); renderPageThumbs(); commit('nudge'); syncInspector();
   }
 });
 
@@ -2384,12 +2515,23 @@ function boot() {
     const raw = localStorage.getItem(LSKEY);
     if (raw) {
       const d = migrateToPX(JSON.parse(raw));
-      if (d && d.elements && d.page) {
+      if (d && Array.isArray(d.elements) && d.page) {
         state.page = Object.assign({ orient: 'landscape', margin: 38, pages: 1 }, d.page);
-        state.elements = d.elements;
-        state.elements.forEach(e => pruneStyle(e.style));
-        state.currentPage = d.currentPage || 0;
+        state.page.pages = Math.min(PAGE_CAP, Math.max(1, Math.round(num(state.page.pages, 1, 1, PAGE_CAP))));
+        const fixes = [];
+        const els = [];
+        let fixed = 0, skipped = 0;
+        d.elements.forEach(e => {
+          const before = fixes.length;
+          const el = sanitizeElement(e, state.page.pages, fixes);
+          if (!el) { skipped++; return; }
+          if (fixes.length > before) fixed++;
+          els.push(el);
+        });
+        state.elements = els;
+        state.currentPage = Math.round(num(d.currentPage, 0, 0, state.page.pages - 1));
         if (state.currentPage >= state.page.pages) state.currentPage = 0;
+        if (fixed || skipped) reportImport('本地数据 ' + els.length + ' 个元素', fixed, skipped, fixes);
         loaded = true;
       }
     }
