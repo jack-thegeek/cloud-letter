@@ -64,6 +64,7 @@ aside{background:#fff;display:flex;flex-direction:column;min-height:0}
 select,input[type=text],textarea{width:100%;border:1px solid #dbe4f2;border-radius:8px;padding:6px 8px;background:#fff;outline:none}
 select:focus,textarea:focus,input[type=text]:focus{border-color:#8fbdf8;box-shadow:0 0 0 3px rgba(106,169,255,.13)}
 textarea{resize:vertical;min-height:52px;line-height:1.45}
+.txt-count{color:#93a2bd;font-size:12px;text-align:right;margin:2px 2px 8px}
 /* 数字步进器：− 输入框 +（替代拖动滑块） */
 .stepper{display:flex;align-items:center;height:30px;border:1px solid #dbe4f2;border-radius:8px;background:#fff;overflow:hidden;flex:0 0 auto}
 .stepper button{width:25px;height:100%;border:0;padding:0;background:#f4f8ff;color:#5b7095;font-size:15px;line-height:1;cursor:pointer;transition:.12s;user-select:none}
@@ -325,9 +326,9 @@ const A4 = { w: 210 * PXMM, h: 297 * PXMM };
 
 /* ---------------- 字体 ---------------- */
 const FONTS = {
-  round: { name: '圆体 Rounded', stack: '"Arial Rounded MT Bold","Varela Round",Nunito,"Trebuchet MS","Segoe UI",sans-serif' },
-  hand: { name: '手写体 Hand', stack: "'CLHand',cursive" },
-  sys: { name: '系统默认 System', stack: 'system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif' }
+  round: { name: '圆体', stack: '"Arial Rounded MT Bold","Varela Round",Nunito,"Trebuchet MS","Segoe UI",sans-serif' },
+  hand: { name: '手写体', stack: "'CLHand',cursive" },
+  sys: { name: '系统默认', stack: 'system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif' }
 };
 const fontStack = st => (FONTS[st.font] || FONTS.round).stack;
 const LINE_HEIGHT = 1.12;   /* 多行固定行距 */
@@ -1319,7 +1320,7 @@ function syncInspector() {
   let h = '';
   h += '<div class="sec">文字</div>';
   if (multi) h += '<p class="hint" style="padding:2px 2px 10px;text-align:left">已选中 ' + state.selected.length + ' 个元素，参数会一起修改；文字内容请逐个编辑。</p>';
-  else h += '<textarea id="txtInput" aria-label="文字内容" placeholder="输入英文单词、短语或句子">' + st.text + '</textarea>';
+  else h += '<textarea id="txtInput" maxlength="300" aria-label="文字内容" placeholder="输入英文单词、短语或句子">' + st.text + '</textarea><div id="txtCount" class="txt-count">' + st.text.length + '/300</div>';
   h += row('字体', '<select data-key="font">' + Object.keys(FONTS).map(k => '<option value="' + k + '"' + (getVal('font') === k ? ' selected' : '') + '>' + FONTS[k].name + '</option>').join('') + '</select>', true);
   h += row('字号', stepper({ key: 'size', value: getVal('size'), min: 30, max: 450, step: 1, unit: 'px' }), true);
   h += row('字重', '<div class="seg" data-key="weight">' + [[400, '常规'], [700, '粗'], [900, '超粗']].map(([v, t]) => '<button data-val="' + v + '" class="' + (getVal('weight') === v ? 'on' : '') + '">' + t + '</button>').join('') + '</div>', true);
@@ -1407,6 +1408,7 @@ function bindInspector() {
     txt.oninput = () => {
       const v = txt.value;
       selectedEls().forEach(e => { e.style.text = v; });
+      const cnt = $('#txtCount'); if (cnt) cnt.textContent = v.length + '/300';
       renderPanels();
       clearTimeout(txt._t);
       txt._t = setTimeout(flush, 300);   /* 描边重算约 200ms，输入时防抖 */
@@ -2244,7 +2246,6 @@ function sanitizeStyle(raw, fixes) {
   if (!raw || typeof raw !== 'object') { if (fixes) fixes.push('style'); }
   const fix = (k, v) => { if (st[k] !== v) { if (fixes) fixes.push(k); st[k] = v; } };
   if (typeof st.text !== 'string') fix('text', 'Word');
-  else if (st.text.length > 300) fix('text', st.text.slice(0, 300));
   fix('font', pick(st.font, Object.keys(FONTS), 'round'));
   fix('outline', pick(st.outline, ['cloud', 'bubble', 'rounded', 'irregular', 'stroke', 'none'], 'cloud'));
   fix('deco', pick(st.deco, ['none', 'dots', 'stars', 'hearts', 'confetti', 'flowers'], 'none'));
