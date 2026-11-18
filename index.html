@@ -30,7 +30,7 @@ button,input,select,textarea{font-family:inherit;font-size:13px;color:inherit}
 main{flex:1;display:flex;min-height:0}
 aside{background:#fff;display:flex;flex-direction:column;min-height:0}
 #left{width:266px;flex:0 0 266px;border-right:1px solid #e3eaf5}
-#right{width:302px;flex:0 0 302px;border-left:1px solid #e3eaf5}
+#right{width:332px;flex:0 0 332px;border-left:1px solid #e3eaf5}
 .tabs{display:flex;gap:4px;padding:10px 10px 0;flex:0 0 auto}
 .tabs button{flex:1;border:0;background:#f2f6fc;border-radius:9px 9px 0 0;padding:8px 0;cursor:pointer;color:#7d8aa3;font-size:12.5px}
 .tabs button.on{background:#eaf3ff;color:#2b6fd6;font-weight:600}
@@ -136,8 +136,9 @@ input[type=color]::-moz-color-swatch{border:0;border-radius:50%}
 .mini-grid button{border:1px solid #e2e9f5;background:#fff;border-radius:8px;padding:6px 2px;cursor:pointer;font-size:11.5px;color:#5c6b87}
 .mini-grid button:hover{background:#f3f8ff;border-color:#bcd8fb;color:#2b6fd6}
 .swatches{display:flex;gap:5px;flex-wrap:wrap}
+.chip-wrap + .swatches{margin-inline-start:6px}
 .swatches i{width:17px;height:17px;border-radius:50%;cursor:pointer;border:2px solid #fff;box-shadow:0 0 0 1px #dbe4f2}
-.row:has(.swatches){margin-top:8px;margin-bottom:12px}   /* 色板行多留上下空隙，色点不贴相邻控件 */
+.row:has(.chip-wrap){margin-top:12px;margin-bottom:16px}   /* 颜色行多留上下空隙，色点不贴相邻控件 */
 hr{border:0;border-top:1px solid #eef2f9;margin:14px 0}
 #toast{position:fixed;left:50%;bottom:28px;transform:translate(-50%,14px);background:rgba(43,58,85,.94);color:#fff;padding:9px 16px;border-radius:10px;font-size:12.5px;opacity:0;pointer-events:none;transition:.25s;z-index:200;max-width:80vw;text-align:center}
 #toast.on{opacity:1;transform:translate(-50%,0)}
@@ -650,7 +651,7 @@ function buildGeometry(st) {
   const grow = isStroke ? 2 * Math.max(0, st.outerWidth || 0) : 0;
   const w = (maxx - minx) / scale + grow, h = (maxy - miny) / scale + grow;
 
-  /* 装饰：沿轮廓外侧均匀散布 */
+  /* 装饰：沿轮廓分段散布，每段内随机偏移以避免聚堆 */
   let deco = [];
   if (st.deco && st.deco !== 'none') {
     const src = (o.length ? o : tx).slice().sort((a, b) => b.length - a.length)[0];
@@ -665,15 +666,18 @@ function buildGeometry(st) {
       }
       const N = Math.max(4, Math.min(9, Math.round(per / Math.max(53, w * 0.32))));
       const base = st.deco === 'dots' ? 6 : st.deco === 'confetti' ? 7 : st.deco === 'hearts' ? 9 : 8;
+      let seed = st.decoSeed || 0;
       for (let k = 0; k < N; k++) {
-        const target = per * (k + 0.5) / N;
+        seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
+        const offset = st.decoSeed ? 0.15 + 0.7 * seed / 4294967296 : 0.5;
+        const target = per * (k + offset) / N;
         let s0 = seg[0];
         for (let j = 0; j < seg.length; j++) if (seg[j].at <= target) s0 = seg[j];
         const t = s0.d ? (target - s0.at) / s0.d : 0;
         const px = s0.a[0] + (s0.b[0] - s0.a[0]) * t, py = s0.a[1] + (s0.b[1] - s0.a[1]) * t;
         let nx = px - cen[0], ny = py - cen[1];
         const nl = Math.hypot(nx, ny) || 1; nx /= nl; ny /= nl;
-        const sc = base * (0.75 + 0.45 * Math.abs(Math.sin(k * 2.3 + 1.1)));
+        const sc = base * (0.55 + 0.95 * (seed & 0xffff) / 65536);
         const off = 6 + sc * 0.85;
         const pts = shapePoly(st.deco, sc, k + 1).map(p => [p[0] + px + nx * off, p[1] + py + ny * off]);
         deco.push(pts);
@@ -698,7 +702,7 @@ function buildGeometry(st) {
 const GEOCACHE = new Map();
 function geoKey(st) {
   return [st.text, st.font, st.weight, st.size, st.letterSpacing,
-    st.outline, st.outerWidth, st.innerWidth, st.bumpSize, st.bumpAmp, st.deco].join('¦');
+    st.outline, st.outerWidth, st.innerWidth, st.bumpSize, st.bumpAmp, st.deco, st.decoSeed || 0].join('¦');
 }
 function getGeo(st) {
   const k = geoKey(st);
@@ -720,7 +724,7 @@ const DEFAULT_STYLE = {
   outline: 'cloud', outerColor: '#bfe4ff', outerWidth: 34, innerColor: '#ffffff', innerWidth: 13,
   bumpSize: 57, bumpAmp: 0.22,
   shadow: true, shadowColor: '#4a90c2', shadowX: 4, shadowY: 6, shadowAlpha: 0.18,
-  deco: 'none', decoColor: '#ffd93d', opacity: 1
+  deco: 'none', decoColor: '#ffd93d', decoSeed: 0, opacity: 1
 };
 
 const STYLE_KEYS = Object.keys(DEFAULT_STYLE);
@@ -1221,7 +1225,8 @@ const SWATCHES = ['#ffffff', '#ffd93d', '#ff8c42', '#ff6f9c', '#6aa9ff', '#47e0a
 
 function syncInspector() {
   const box = $('#inspector');
-  const el = selectedEls()[0];
+  const selected = selectedEls();
+  const el = selected[0];
   if (!el) {
     box.innerHTML = '<p class="hint">在画布上点选一个云朵字元素。</p>';
     bindInspector(); return;
@@ -1249,19 +1254,18 @@ function syncInspector() {
   h += row('起伏强度', stepper({ key: 'bumpAmp', value: getVal('bumpAmp'), min: 0, max: 80, step: 2, factor: 100, unit: '%' }), true);
 
   h += '<div class="sec">装饰 / 阴影</div>';
-  h += row('装饰', '<select data-key="deco">' + [['none', '无'], ['dots', '圆点'], ['stars', '星星'], ['hearts', '爱心'], ['confetti', '彩纸'], ['flowers', '小花']].map(([v, t]) => '<option value="' + v + '"' + (getVal('deco') === v ? ' selected' : '') + '>' + t + '</option>').join('') + '</select>', true);
-  h += row('装饰色', '<span class="chip-wrap"><input type="color" data-key="decoColor" value="' + st.decoColor + '"><i class="chip-open"></i></span>');
+  h += row('装饰', '<select data-key="deco">' + [['none', '无'], ['dots', '圆点'], ['stars', '星星'], ['hearts', '爱心'], ['confetti', '彩纸']].map(([v, t]) => '<option value="' + v + '"' + (getVal('deco') === v ? ' selected' : '') + '>' + t + '</option>').join('') + '</select>' +
+    '<button type="button" class="btn" id="refreshDeco" aria-label="随机刷新装饰位置"' + (selected.some(e => e.style.deco && e.style.deco !== 'none') ? '' : ' disabled') + '>刷新</button>', true);
+  h += row('装饰色', '<span class="chip-wrap"><input type="color" data-key="decoColor" value="' + st.decoColor + '"><i class="chip-open"></i></span>' + '<div class="swatches">' + SWATCHES.map(c => '<i data-swatch="decoColor" data-c="' + c + '" style="background:' + c + '"></i>').join('') + '</div>');
   h += row('阴影', '<label class="cbx"><input type="checkbox" data-key="shadow"' + (getVal('shadow') ? ' checked' : '') + '><i></i><span>开启立体阴影</span></label>');
   h += row('阴影色', '<span class="chip-wrap"><input type="color" data-key="shadowColor" value="' + st.shadowColor + '"><i class="chip-open"></i></span>' + '<div class="swatches">' + SWATCHES.map(c => '<i data-swatch="shadowColor" data-c="' + c + '" style="background:' + c + '"></i>').join('') + '</div>');
   h += row('阴影 X', stepper({ key: 'shadowX', value: st.shadowX, min: -15, max: 15, step: 1, unit: 'px' }), true);
   h += row('阴影 Y', stepper({ key: 'shadowY', value: st.shadowY, min: -4, max: 6, step: 0.2, dec: 1, unit: 'px' }), true);
 
   h += '<div class="sec">位置与变换</div>';
-  h += row('X 位置', stepper({ prop: 'x', value: el.x, min: -190, max: Math.round(pageDims().w), step: 1, unit: 'px' }), true);
-  h += row('Y 位置', stepper({ prop: 'y', value: el.y, min: -190, max: Math.round(pageDims().h), step: 1, unit: 'px' }), true);
   h += row('缩放', stepper({ prop: 'scale', value: el.scale, min: 10, max: 600, step: 1, factor: 100, unit: '%' }), true);
   h += row('旋转', stepper({ prop: 'rotation', value: el.rotation, min: -180, max: 180, step: 1, unit: '°' }), true);
-  h += row('透明度', stepper({ key: 'opacity', value: getVal('opacity'), min: 10, max: 100, step: 1, factor: 100, unit: '%' }), true);
+  h += row('不透明度', stepper({ key: 'opacity', value: getVal('opacity'), min: 10, max: 100, step: 1, factor: 100, unit: '%' }), true);
 
   h += '<div class="sec">元素操作</div><div class="mini-grid">' +
     '<button data-z="top">置顶</button><button data-z="up">上移</button><button data-z="down">下移</button>' +
@@ -1291,6 +1295,15 @@ function syncInspector() {
 
 function bindInspector() {
   const box = $('#inspector');
+  const refreshDeco = $('#refreshDeco');
+  if (refreshDeco) refreshDeco.onclick = () => {
+    selectedEls().forEach(e => {
+      if (!e.style.deco || e.style.deco === 'none') return;
+      const seed = 1 + Math.floor(Math.random() * 4294967295);
+      e.style.decoSeed = seed === e.style.decoSeed ? 1 + seed % 4294967295 : seed;
+    });
+    renderAll(); commit();
+  };
   const txt = $('#txtInput');
   if (txt) {
     const flush = () => {
@@ -2134,6 +2147,7 @@ function sanitizeElement(e, pages) {
   st.font = pick(st.font, Object.keys(FONTS), 'round');
   st.outline = pick(st.outline, ['cloud', 'bubble', 'rounded', 'irregular', 'stroke', 'none'], 'cloud');
   st.deco = pick(st.deco, ['none', 'dots', 'stars', 'hearts', 'confetti', 'flowers'], 'none');
+  st.decoSeed = Math.floor(num(st.decoSeed, 0, 0, 4294967295));
   ['fill', 'outerColor', 'innerColor', 'decoColor', 'shadowColor'].forEach(k => { if (!HEXRE.test(st[k])) st[k] = DEFAULT_STYLE[k]; });
   st.weight = pick(+st.weight, [400, 600, 700, 900], 900);
   st.size = num(st.size, 113, 20, 600);
