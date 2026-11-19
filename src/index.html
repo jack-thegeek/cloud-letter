@@ -327,12 +327,11 @@ const A4 = { w: 210 * PXMM, h: 297 * PXMM };
 
 /* ---------------- 字体 ---------------- */
 const FONTS = {
-  round: { name: '圆体', stack: '"Arial Rounded MT Bold","Varela Round",Nunito,"Trebuchet MS","Segoe UI",sans-serif' },
   hand: { name: '手写体', stack: "'CLHand',cursive" },
   noto: { name: '思源黑体', stack: "'CLNoto',sans-serif" },
   sys: { name: '系统默认', stack: 'system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif' }
 };
-const fontStack = st => (FONTS[st.font] || FONTS.round).stack;
+const fontStack = st => (FONTS[st.font] || FONTS.hand).stack;
 const LINE_HEIGHT = 1.12;   /* 多行固定行距 */
 const fontCSS = (st, px) => (st.weight || 900) + ' ' + px + 'px ' + fontStack(st);
 
@@ -752,48 +751,48 @@ const STYLE_KEYS = Object.keys(DEFAULT_STYLE);
 function pruneStyle(st) {
   if (!st || typeof st !== 'object') return st;
   Object.keys(st).forEach(k => { if (STYLE_KEYS.indexOf(k) < 0) delete st[k]; });
-  if (st.font && !FONTS[st.font]) st.font = 'round';
+  if (st.font && !FONTS[st.font]) st.font = 'noto';   /* 已下架的「圆体」并入思源黑体 */
   return st;
 }
 const T = (id, name, text, style) => ({ id, name, text, style });
 const TEMPLATES = [
   T('cloud', '云朵 Cloud', 'Hello', {
-    font: 'hand', size: 121, outline: 'cloud', bumpSize: 57, bumpAmp: 0.22,
+    font: 'hand', size: 130, outline: 'cloud', bumpSize: 57, bumpAmp: 0.22,
     fill: '#3aa0e8', innerColor: '#ffffff', innerWidth: 13, outerColor: '#bfe4ff', outerWidth: 34,
     shadow: true, shadowColor: '#4a90c2', shadowAlpha: 0.18
   }),
   T('bubble', '气泡 Bubble', 'POP', {
-    font: 'round', weight: 900, size: 129, outline: 'rounded', bumpSize: 60, bumpAmp: 0.08,
+    font: 'noto', weight: 900, size: 130, outline: 'rounded', bumpSize: 60, bumpAmp: 0.08,
     fill: '#ffd6e2', innerColor: '#ffffff', innerWidth: 11, outerColor: '#ff6f9c', outerWidth: 26,
     shadow: true, shadowColor: '#ff6f9c', shadowAlpha: 0.3
   }),
   T('cute', '可爱 Cute', 'Sweet', {
-    font: 'hand', size: 113, outline: 'cloud', bumpSize: 49, bumpAmp: 0.24,
+    font: 'hand', size: 130, outline: 'cloud', bumpSize: 49, bumpAmp: 0.24,
     fill: '#ff5c8a', innerColor: '#ffffff', innerWidth: 11, outerColor: '#ffe066', outerWidth: 28,
     deco: 'hearts', decoColor: '#ff9ec4', shadow: true, shadowColor: '#d99ab0', shadowAlpha: 0.25
   }),
   T('cartoon', '卡通 Cartoon', 'WOW!', {
-    font: 'round', weight: 900, size: 129, outline: 'cloud', bumpSize: 76, bumpAmp: 0.26,
+    font: 'noto', weight: 900, size: 130, outline: 'cloud', bumpSize: 76, bumpAmp: 0.26,
     fill: '#ffd93d', innerColor: '#ffffff', innerWidth: 13, outerColor: '#1b1b1b', outerWidth: 21,
     deco: 'stars', decoColor: '#ff6f9c', shadow: true, shadowColor: '#1b1b1b', shadowAlpha: 0.22
   }),
   T('classroom', '英语课堂', 'Welcome!', {
-    font: 'round', size: 113, outline: 'cloud', bumpSize: 53, bumpAmp: 0.24,
+    font: 'noto', size: 130, outline: 'cloud', bumpSize: 53, bumpAmp: 0.24,
     fill: '#ffffff', innerColor: '#4a90e2', innerWidth: 11, outerColor: '#ffef5c', outerWidth: 36,
     deco: 'dots', decoColor: '#4a90e2', shadow: true, shadowColor: '#c9a227', shadowAlpha: 0.22
   }),
   T('sunny', '阳光 Sunny', 'Sunny', {
-    font: 'hand', size: 121, outline: 'cloud', bumpSize: 49, bumpAmp: 0.24,
+    font: 'hand', size: 130, outline: 'cloud', bumpSize: 49, bumpAmp: 0.24,
     fill: '#fff3c4', innerColor: '#ffb020', innerWidth: 11, outerColor: '#ff8c42', outerWidth: 26,
     deco: 'dots', decoColor: '#ffb020', shadow: true, shadowColor: '#d97b1a', shadowAlpha: 0.25
   }),
   T('navy', '星星 Star', 'Super', {
-    font: 'round', weight: 900, size: 113, outline: 'irregular', bumpSize: 60, bumpAmp: 0.3,
+    font: 'noto', weight: 900, size: 130, outline: 'irregular', bumpSize: 60, bumpAmp: 0.3,
     fill: '#ffffff', innerColor: '#5b8def', innerWidth: 11, outerColor: '#1f3c88', outerWidth: 26,
     deco: 'stars', decoColor: '#ffd93d', shadow: true, shadowColor: '#12224d', shadowAlpha: 0.3
   }),
   T('wordcards', '单词卡 Word Cards', 'Apple', {
-    font: 'round', size: 76, outline: 'rounded', bumpSize: 38, bumpAmp: 0,
+    font: 'noto', size: 130, outline: 'rounded', bumpSize: 38, bumpAmp: 0,
     fill: '#ffffff', innerColor: '#ffffff', innerWidth: 0, outerColor: '#ffb3c9', outerWidth: 15,
     shadow: true, shadowColor: '#c98aa0', shadowAlpha: 0.2
   })
@@ -1332,7 +1331,9 @@ function syncInspector() {
   if (multi) h += '<p class="hint" style="padding:2px 2px 10px;text-align:left">已选中 ' + state.selected.length + ' 个元素，参数会一起修改；文字内容请逐个编辑。</p>';
   else h += '<textarea id="txtInput" maxlength="300" aria-label="文字内容" placeholder="输入英文单词、短语或句子">' + st.text + '</textarea><div id="txtCount" class="txt-count">' + st.text.length + '/300</div>';
   h += row('字体', '<select data-key="font">' + Object.keys(FONTS).map(k => '<option value="' + k + '"' + (getVal('font') === k ? ' selected' : '') + '>' + FONTS[k].name + '</option>').join('') + '</select>', true);
-  h += row('字号', stepper({ key: 'size', value: getVal('size'), min: 30, max: 450, step: 1, unit: 'px' }), true);
+  /* 字号上限按 A4 横向纸张推导：100% 缩放下，3 个汉字刚好占满可打印宽度（1046px）
+     再大请用「缩放」：字号每变一档都要重算几何，缩放是纯变换 */
+  h += row('字号', stepper({ key: 'size', value: getVal('size'), min: 30, max: 320, step: 1, unit: 'px' }), true);
   h += row('字重', '<div class="seg" data-key="weight">' + [[400, '常规'], [700, '粗'], [900, '超粗']].map(([v, t]) => '<button data-val="' + v + '" class="' + (getVal('weight') === v ? 'on' : '') + '">' + t + '</button>').join('') + '</div>', true);
   h += row('字间距', stepper({ key: 'letterSpacing', value: getVal('letterSpacing'), min: -0.05, max: 0.4, step: 0.01, dec: 2, unit: 'em' }), true);
 
@@ -2256,7 +2257,7 @@ function sanitizeStyle(raw, fixes) {
   if (!raw || typeof raw !== 'object') { if (fixes) fixes.push('style'); }
   const fix = (k, v) => { if (st[k] !== v) { if (fixes) fixes.push(k); st[k] = v; } };
   if (typeof st.text !== 'string') fix('text', 'Word');
-  fix('font', pick(st.font, Object.keys(FONTS), 'round'));
+  fix('font', pick(st.font, Object.keys(FONTS), 'noto'));
   fix('outline', pick(st.outline, ['cloud', 'bubble', 'rounded', 'irregular', 'stroke', 'none'], 'cloud'));
   fix('deco', pick(st.deco, ['none', 'dots', 'stars', 'hearts', 'confetti', 'flowers'], 'none'));
   fix('decoSeed', Math.floor(num(st.decoSeed, 0, 0, 4294967295)));
