@@ -6,6 +6,7 @@
 <title>云朵字工坊</title>
 <style>
 @font-face{font-family:'CLHand';src:url(data:font/woff2;base64,__CLHAND_B64__) format('woff2');font-weight:normal;font-style:normal;font-display:block}
+@font-face{font-family:'CLNoto';src:url(data:font/woff2;base64,__NOTO_B64__) format('woff2');font-weight:normal;font-style:normal;font-display:block}
 *{box-sizing:border-box}
 html,body{height:100%;margin:0}
 body{font-family:"PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;background:#eef2f9;color:#2b3a55;overflow:hidden;display:flex;flex-direction:column;font-size:13px;-webkit-font-smoothing:antialiased}
@@ -328,6 +329,7 @@ const A4 = { w: 210 * PXMM, h: 297 * PXMM };
 const FONTS = {
   round: { name: '圆体', stack: '"Arial Rounded MT Bold","Varela Round",Nunito,"Trebuchet MS","Segoe UI",sans-serif' },
   hand: { name: '手写体', stack: "'CLHand',cursive" },
+  noto: { name: '思源黑体', stack: "'CLNoto',sans-serif" },
   sys: { name: '系统默认', stack: 'system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif' }
 };
 const fontStack = st => (FONTS[st.font] || FONTS.round).stack;
@@ -2549,14 +2551,18 @@ function boot() {
   hist.undo = [snapshot()];
   updateUndoBtns();
   fitZoom();
-  /* 内嵌手写体是异步加载的：到位后清掉几何缓存重绘，避免先用回退字体描边 */
+  /* 内嵌字体是异步加载的：到位后清掉几何缓存重绘，避免先用回退字体描边 */
   /* 开发态（src 源码未注入 base64）直接加载上级目录的 WOFF2；交付版走内嵌字体，不进这个分支 */
-  if (/__CLHAND_B64__/.test(document.querySelector('style').textContent)) {
-    new FontFace('CLHand', "url('../xumin字体.woff2') format('woff2')").load()
-      .then(f => { document.fonts.add(f); GEOCACHE.clear(); renderAll(); setTimeout(() => { renderTemplates(); renderMyTpls(); }, 0); })
-      .catch(() => {});
+  if (/__CLHAND_B64__|__NOTO_B64__/.test(document.querySelector('style').textContent)) {
+    Promise.all([
+      new FontFace('CLHand', "url('../xumin字体.woff2') format('woff2')").load(),
+      new FontFace('CLNoto', "url('../NotoSans-Regular.woff2') format('woff2')").load()
+    ]).then(fs => {
+      fs.forEach(f => document.fonts.add(f));
+      GEOCACHE.clear(); renderAll(); setTimeout(() => { renderTemplates(); renderMyTpls(); }, 0);
+    }).catch(() => {});
   } else if (document.fonts && document.fonts.load) {
-    Promise.all([document.fonts.load('400 100px CLHand'), document.fonts.load('900 100px CLHand')])
+    Promise.all([document.fonts.load('400 100px CLHand'), document.fonts.load('900 100px CLHand'), document.fonts.load('400 100px CLNoto')])
       .then(() => { GEOCACHE.clear(); renderAll(); setTimeout(() => { renderTemplates(); renderMyTpls(); }, 0); })
       .catch(() => {});
   }

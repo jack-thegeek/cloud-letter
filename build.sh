@@ -7,6 +7,7 @@ cd "$(dirname "$0")"
 
 SRC=src/index.html
 FONT=xumin字体.woff2
+NOTOFONT=NotoSans-Regular.woff2
 OUT=index.html
 OUTMIN=index.min.html
 VER=${1:-$(date +%Y%m%d.%H%M)}
@@ -14,14 +15,15 @@ TMP=$(mktemp -d)
 trap 'rm -rf "$TMP"' EXIT
 
 echo "→ 注入字体生成 $OUT"
-python3 - "$SRC" "$FONT" "$TMP/full.html" <<'PY'
+python3 - "$SRC" "$FONT" "$NOTOFONT" "$TMP/full.html" <<'PY'
 import sys, base64
-src, font, out = sys.argv[1:4]
+src, font, notofont, out = sys.argv[1:5]
 s = open(src, encoding='utf-8').read()
-assert 'base64,__CLHAND_B64__' in s, 'src 里找不到字体占位符 base64,__CLHAND_B64__'
-b64 = base64.b64encode(open(font, 'rb').read()).decode()
-# 只替换 CSS 里的 data-URI 占位符；JS 开发态分支里的 __CLHAND_B64__ 字面量必须保留
-s = s.replace('base64,__CLHAND_B64__', 'base64,' + b64, 1)
+# 只替换 CSS 里的 data-URI 占位符；JS 开发态分支里的占位符字面量必须保留
+for path, ph in ((font, '__CLHAND_B64__'), (notofont, '__NOTO_B64__')):
+    holder = 'base64,' + ph
+    assert holder in s, 'src 里找不到字体占位符 ' + holder
+    s = s.replace(holder, 'base64,' + base64.b64encode(open(path, 'rb').read()).decode(), 1)
 assert '<head>' in s
 s = s.replace('<head>', '<head><!-- 本文件由 build.sh 生成（内嵌 base64 字体），改代码请编辑 src/index.html -->', 1)
 open(out, 'w', encoding='utf-8').write(s)
@@ -54,9 +56,11 @@ full, out, js = sys.argv[1:4]
 sfull = open(full, encoding='utf-8').read()
 sout = open(out, encoding='utf-8').read()
 for name, s in (('index.html', sfull), ('index.min.html', sout)):
-    assert '@font-face' in s and 'CLHand' in s, name + ' 缺少内嵌字体'
-    assert 'base64,__CLHAND_B64__' not in s, name + ' 字体占位符未被替换'
-    assert '__CLHAND_B64__' in s, name + ' 缺少开发态字体分支（JS 字面量）'
+    assert '@font-face' in s and 'CLHand' in s, name + ' 缺少内嵌手写体'
+    assert 'CLNoto' in s, name + ' 缺少内嵌思源黑体'
+    for ph in ('__CLHAND_B64__', '__NOTO_B64__'):
+        assert 'base64,' + ph not in s, name + ' 字体占位符 ' + ph + ' 未被替换'
+        assert ph in s, name + ' 缺少开发态字体分支 ' + ph
     assert re.search(r'<script>.*</script>', s, re.S), name + ' 找不到 <script>'
 for k in ['buildPDF', 'exportPNG', 'buildGeometry']:
     assert k in sfull, '缺少 ' + k
