@@ -239,8 +239,8 @@ hr{border:0;border-top:1px solid #eef2f9;margin:14px 0}
   <button class="btn ghost" id="btnRedo" title="重做 Ctrl+Shift+Z">↷ <span class="lbl">重做</span></button>
   <button class="btn danger" id="btnDelSel" title="删除选中元素 (Delete)" disabled>删除</button>
   <span class="tbsep"></span>
-  <button class="btn desk" id="btnFillW" title="缩放到占满页面宽度并水平居中" disabled>↔ 横向铺满</button>
-  <button class="btn desk" id="btnFillH" title="缩放到占满页面高度并垂直居中" disabled>↕ 纵向铺满</button>
+  <button class="btn" id="btnFillW" title="缩放到占满页面宽度并水平居中" disabled>↔ 横向铺满</button>
+  <button class="btn" id="btnFillH" title="缩放到占满页面高度并垂直居中" disabled>↕ 纵向铺满</button>
   <button class="btn desk" id="btnGuides" title="显示可打印区域">▭ 边距线</button>
   <span class="tbsep desk"></span>
   <div class="tbgroup desk">
@@ -255,8 +255,8 @@ hr{border:0;border-top:1px solid #eef2f9;margin:14px 0}
     <option value="portrait">A4 纵向 794×1123</option>
     <option value="landscape" selected>A4 横向 1123×794</option>
   </select>
-  <button class="btn" id="btnImportJson" title="导入数据文件（可换电脑继续编辑）"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7 9l5-5 5 5M5 20h14"/></svg> 导入数据</button>
-  <button class="btn" id="btnExportJson" title="导出数据文件"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v12M7 11l5 5 5-5M5 20h14"/></svg> 导出数据</button>
+  <button class="btn desk" id="btnImportJson" title="导入数据文件（可换电脑继续编辑）"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7 9l5-5 5 5M5 20h14"/></svg> 导入数据</button>
+  <button class="btn desk" id="btnExportJson" title="导出数据文件"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v12M7 11l5 5 5-5M5 20h14"/></svg> 导出数据</button>
   <button class="btn desk" id="btnExportPng" title="导出当前页 PNG 图片（3 倍图，约 288 dpi）">🖼 <span class="lbl">导出图片</span></button>
   <button class="btn primary" id="btnExport"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v12M7 11l5 5 5-5M5 20h14"/></svg> 导出 PDF</button>
 </header>
@@ -333,7 +333,7 @@ const FONTS = {
 };
 const fontStack = st => (FONTS[st.font] || FONTS.hand).stack;
 const LINE_HEIGHT = 1.12;   /* 多行固定行距 */
-const fontCSS = (st, px) => (st.weight || 900) + ' ' + px + 'px ' + fontStack(st);
+const fontCSS = (st, px) => (st.weight || 700) + ' ' + px + 'px ' + fontStack(st);
 
 /* =========================================================
    1. 位图 -> 矢量：Canvas 渲染 -> 距离场 -> Marching Squares
@@ -738,7 +738,7 @@ function getGeo(st) {
    ========================================================= */
 const DEFAULT_STYLE = {
   text: 'Hello',
-  font: 'hand', weight: 900, size: 113, letterSpacing: 0.02,
+  font: 'hand', weight: 700, size: 113, letterSpacing: 0.02,
   fill: '#3aa0e8',
   outline: 'cloud', outerColor: '#bfe4ff', outerWidth: 34, innerColor: '#ffffff', innerWidth: 13,
   bumpSize: 57, bumpAmp: 0.22,
@@ -762,7 +762,7 @@ const TEMPLATES = [
     shadow: true, shadowColor: '#4a90c2', shadowAlpha: 0.18
   }),
   T('bubble', '气泡 Bubble', 'POP', {
-    font: 'noto', weight: 900, size: 130, outline: 'rounded', bumpSize: 60, bumpAmp: 0.08,
+    font: 'noto', weight: 700, size: 130, outline: 'rounded', bumpSize: 60, bumpAmp: 0.08,
     fill: '#ffd6e2', innerColor: '#ffffff', innerWidth: 11, outerColor: '#ff6f9c', outerWidth: 26,
     shadow: true, shadowColor: '#ff6f9c', shadowAlpha: 0.3
   }),
@@ -772,7 +772,7 @@ const TEMPLATES = [
     deco: 'hearts', decoColor: '#ff9ec4', shadow: true, shadowColor: '#d99ab0', shadowAlpha: 0.25
   }),
   T('cartoon', '卡通 Cartoon', 'WOW!', {
-    font: 'noto', weight: 900, size: 130, outline: 'cloud', bumpSize: 76, bumpAmp: 0.26,
+    font: 'noto', weight: 700, size: 130, outline: 'cloud', bumpSize: 76, bumpAmp: 0.26,
     fill: '#ffd93d', innerColor: '#ffffff', innerWidth: 13, outerColor: '#1b1b1b', outerWidth: 21,
     deco: 'stars', decoColor: '#ff6f9c', shadow: true, shadowColor: '#1b1b1b', shadowAlpha: 0.22
   }),
@@ -787,7 +787,7 @@ const TEMPLATES = [
     deco: 'dots', decoColor: '#ffb020', shadow: true, shadowColor: '#d97b1a', shadowAlpha: 0.25
   }),
   T('navy', '星星 Star', 'Super', {
-    font: 'noto', weight: 900, size: 130, outline: 'irregular', bumpSize: 60, bumpAmp: 0.3,
+    font: 'noto', weight: 700, size: 130, outline: 'irregular', bumpSize: 60, bumpAmp: 0.3,
     fill: '#ffffff', innerColor: '#5b8def', innerWidth: 11, outerColor: '#1f3c88', outerWidth: 26,
     deco: 'stars', decoColor: '#ffd93d', shadow: true, shadowColor: '#12224d', shadowAlpha: 0.3
   }),
@@ -891,9 +891,9 @@ function renderAll() {
   canvas.style.height = (H * state.zoom) + 'px';
   let body = '<rect x="0" y="0" width="' + W + '" height="' + H + '" fill="#ffffff"/>';
   if (state.guides) {
-    const m = state.page.margin || 0;
+    const m = state.page.margin || 0, zk = 1 / (state.zoom || 1);  // 线宽/虚线按缩放反算，小屏缩小后仍看得见
     body += '<rect x="' + m + '" y="' + m + '" width="' + (W - 2 * m) + '" height="' + (H - 2 * m) +
-      '" fill="none" stroke="#c9dcf5" stroke-width="0.3" stroke-dasharray="2 2" pointer-events="none"/>';
+      '" fill="none" stroke="#c9dcf5" stroke-width="' + (0.6 * zk) + '" stroke-dasharray="' + (2 * zk) + ' ' + (2 * zk) + '" pointer-events="none"/>';
   }
   curPageEls().filter(e => !e.hidden).forEach(el => {
     body += elementMarkup(el, getGeo(el.style));
@@ -1334,17 +1334,17 @@ function syncInspector() {
   /* 字号上限按 A4 横向纸张推导：100% 缩放下，3 个汉字刚好占满可打印宽度（1046px）
      再大请用「缩放」：字号每变一档都要重算几何，缩放是纯变换 */
   h += row('字号', stepper({ key: 'size', value: getVal('size'), min: 30, max: 320, step: 1, unit: 'px' }), true);
-  h += row('字重', '<div class="seg" data-key="weight">' + [[400, '常规'], [700, '粗'], [900, '超粗']].map(([v, t]) => '<button data-val="' + v + '" class="' + (getVal('weight') === v ? 'on' : '') + '">' + t + '</button>').join('') + '</div>', true);
+  h += row('字重', '<div class="seg" data-key="weight">' + [[400, '常规'], [700, '加粗']].map(([v, t]) => '<button data-val="' + v + '" class="' + (getVal('weight') === v ? 'on' : '') + '">' + t + '</button>').join('') + '</div>', true);
   h += row('字间距', stepper({ key: 'letterSpacing', value: getVal('letterSpacing'), min: -0.05, max: 0.4, step: 0.01, dec: 2, unit: 'em' }), true);
 
   h += row('颜色', '<span class="chip-wrap"><input type="color" data-key="fill" value="' + st.fill + '"><i class="chip-open"></i></span>' + '<div class="swatches">' + SWATCHES.map(c => '<i data-swatch="fill" data-c="' + c + '" style="background:' + c + '"></i>').join('') + '</div>');
 
   h += '<div class="sec">轮廓</div>';
   h += row('类型', '<select data-key="outline">' + [['cloud', '云朵'], ['bubble', '气泡'], ['rounded', '圆角'], ['irregular', '不规则'], ['stroke', '传统描边'], ['none', '无轮廓']].map(([v, t]) => '<option value="' + v + '"' + (getVal('outline') === v ? ' selected' : '') + '>' + t + '</option>').join('') + '</select>', true);
-  h += row('外框颜色', '<span class="chip-wrap"><input type="color" data-key="outerColor" value="' + st.outerColor + '"><i class="chip-open"></i></span>' + '<div class="swatches">' + SWATCHES.map(c => '<i data-swatch="outerColor" data-c="' + c + '" style="background:' + c + '"></i>').join('') + '</div>');
+  h += row('内框粗细', stepper({ key: 'innerWidth', value: getVal('innerWidth'), min: 0, max: 53, step: 1, unit: 'px' }), true);
   h += row('外框粗细', stepper({ key: 'outerWidth', value: getVal('outerWidth'), min: 0, max: 76, step: 1, unit: 'px' }), true);
   h += row('内框颜色', '<span class="chip-wrap"><input type="color" data-key="innerColor" value="' + st.innerColor + '"><i class="chip-open"></i></span>' + '<div class="swatches">' + SWATCHES.map(c => '<i data-swatch="innerColor" data-c="' + c + '" style="background:' + c + '"></i>').join('') + '</div>');
-  h += row('内框粗细', stepper({ key: 'innerWidth', value: getVal('innerWidth'), min: 0, max: 53, step: 1, unit: 'px' }), true);
+  h += row('外框颜色', '<span class="chip-wrap"><input type="color" data-key="outerColor" value="' + st.outerColor + '"><i class="chip-open"></i></span>' + '<div class="swatches">' + SWATCHES.map(c => '<i data-swatch="outerColor" data-c="' + c + '" style="background:' + c + '"></i>').join('') + '</div>');
   h += row('起伏大小', stepper({ key: 'bumpSize', value: getVal('bumpSize'), min: 11, max: 113, step: 1, unit: 'px' }), true);
   h += row('起伏强度', stepper({ key: 'bumpAmp', value: getVal('bumpAmp'), min: 0, max: 80, step: 2, factor: 100, unit: '%' }), true);
 
@@ -2262,7 +2262,7 @@ function sanitizeStyle(raw, fixes) {
   fix('deco', pick(st.deco, ['none', 'dots', 'stars', 'hearts', 'confetti', 'flowers'], 'none'));
   fix('decoSeed', Math.floor(num(st.decoSeed, 0, 0, 4294967295)));
   ['fill', 'outerColor', 'innerColor', 'decoColor', 'shadowColor'].forEach(k => { if (!HEXRE.test(st[k])) fix(k, DEFAULT_STYLE[k]); });
-  fix('weight', pick(+st.weight, [400, 600, 700, 900], 900));
+  fix('weight', pick(+st.weight, [400, 700], 700));
   fix('size', num(st.size, 113, 20, 600));
   fix('letterSpacing', num(st.letterSpacing, 0.02, -0.2, 0.8));
   fix('outerWidth', num(st.outerWidth, 34, 0, 120));
